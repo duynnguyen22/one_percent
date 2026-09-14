@@ -10,6 +10,7 @@ import '../../../../core/errors/result.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../../../injection/dependency_injection.dart';
 
 /// Which half of the flow the page is showing.
@@ -200,16 +201,15 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
       setState(() => _step = _Step.code);
       _startResendTimer();
       if (isResend) {
-        _showSnackBar('A new code is on its way to $email', AppColors.primary);
+        AppToast.success('A new code is on its way to $email');
       }
       return;
     }
 
     // A failure leaves the user where they are — on the email step that means
     // the field is still there to correct.
-    _showSnackBar(
+    AppToast.error(
       result.failureOrNull?.message ?? 'Could not send the code.',
-      AppColors.error,
     );
   }
 
@@ -218,10 +218,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
 
     final code = _controllers.map((c) => c.text).join();
     if (code.length < _otpLength) {
-      _showSnackBar(
-        'Please enter all $_otpLength digits of the code.',
-        AppColors.error,
-      );
+      AppToast.error('Please enter all $_otpLength digits of the code.');
       return;
     }
 
@@ -247,7 +244,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
         // attempts-exhausted alike, so show it as-is and clear the boxes for
         // another try.
         _clearCode();
-        _showSnackBar(failure.message, AppColors.error);
+        AppToast.error(failure.message);
     }
   }
 
@@ -274,17 +271,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
       _secondsRemaining = 0;
       _step = _Step.email;
     });
-  }
-
-  void _showSnackBar(String message, Color background) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: background,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
   @override

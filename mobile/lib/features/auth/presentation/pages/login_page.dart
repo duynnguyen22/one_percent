@@ -6,6 +6,7 @@ import '../../../../app/theme/theme.dart';
 import '../../../../app/router/route_names.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 /// Pixel-accurate Login Screen extracted from Stitch project specifications.
 class LoginPage extends ConsumerStatefulWidget {
@@ -72,18 +73,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
       if (!success) {
         final error = ref.read(authNotifierProvider).errorMessage;
-        if (error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error),
-              backgroundColor: AppColors.error,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-        }
+        if (error != null) AppToast.error(error);
       }
     }
   }

@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/toasts.dart';
 
 void main() {
   late MockHabitRepository habits;
@@ -53,6 +54,7 @@ void main() {
           name: 'Drink water',
           color: any(named: 'color'),
         )).called(1);
+    await clearToasts(tester);
   });
 
   testWidgets('creates a custom habit from the text field', (tester) async {
@@ -68,6 +70,7 @@ void main() {
           name: 'Walk the dog',
           color: any(named: 'color'),
         )).called(1);
+    await clearToasts(tester);
   });
 
   testWidgets('a blank custom name never reaches the API', (tester) async {
@@ -82,7 +85,8 @@ void main() {
           name: any(named: 'name'),
           color: any(named: 'color'),
         ));
-    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Please enter a habit name'), findsOneWidget);
+    await clearToasts(tester);
   });
 
   testWidgets('a chosen colour is sent with the habit', (tester) async {
@@ -95,6 +99,7 @@ void main() {
 
     verify(() => habits.createHabit(name: 'Drink water', color: '#C77D52'))
         .called(1);
+    await clearToasts(tester);
   });
 
   testWidgets('a server failure keeps the form open with a message',
@@ -110,5 +115,6 @@ void main() {
 
     expect(find.text('boom'), findsOneWidget);
     expect(find.byType(AddHabitPage), findsOneWidget);
+    await clearToasts(tester);
   });
 }

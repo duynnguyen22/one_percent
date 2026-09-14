@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/toasts.dart';
 
 void main() {
   late MockHabitRepository habits;
@@ -120,7 +121,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('0/1'), findsOneWidget);
-    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text(const NetworkFailure().message), findsOneWidget);
+    await clearToasts(tester);
   });
 
   testWidgets('shows an empty state when there are no habits yet',

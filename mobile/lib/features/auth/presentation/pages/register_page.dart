@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../../../app/router/route_names.dart';
 import '../providers/auth_provider.dart';
 
@@ -64,7 +65,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
   Future<void> _handleRegister() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final success = await ref.read(authNotifierProvider.notifier).register(
+    final success = await ref
+        .read(authNotifierProvider.notifier)
+        .register(
           email: _emailController.text,
           password: _passwordController.text,
         );
@@ -74,26 +77,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
     if (success) {
       // The router redirects to the main shell on its own once the auth state
       // flips, so this only has to confirm what happened.
-      _showSnackBar(
-        'Account created successfully! Welcome to Bloom.',
-        AppColors.primary,
-      );
+      AppToast.success('Account created successfully! Welcome to Bloom.');
       return;
     }
 
     final error = ref.read(authNotifierProvider).errorMessage;
-    if (error != null) _showSnackBar(error, AppColors.error);
-  }
-
-  void _showSnackBar(String message, Color background) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: background,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    if (error != null) AppToast.error(error);
   }
 
   void _navigateToLogin() {
@@ -146,12 +135,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Center(
-                            child: Icon(
-                              Icons.spa_rounded,
-                              size: 36,
-                              color: AppColors.primary, // Sage Green fallback
-                            ),
-                          ),
+                                child: Icon(
+                                  Icons.spa_rounded,
+                                  size: 36,
+                                  color:
+                                      AppColors.primary, // Sage Green fallback
+                                ),
+                              ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -253,7 +243,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                               borderRadius: AppSpacing.borderRadiusPill,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.15),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 8),
                                 ),
@@ -268,8 +260,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          AppColors.onPrimary,
-                                        ),
+                                              AppColors.onPrimary,
+                                            ),
                                       ),
                                     )
                                   : Text(

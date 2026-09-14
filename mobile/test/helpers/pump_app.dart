@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/app/theme/theme.dart';
 import 'package:mobile/core/errors/result.dart';
+import 'package:mobile/core/widgets/app_toast.dart';
 import 'package:mobile/features/auth/domain/entities/user.dart';
 import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/injection/dependency_injection.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:toastification/toastification.dart';
 
 import 'mocks.dart';
 
@@ -26,7 +28,10 @@ Future<void> pumpApp(
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides,
-      child: MaterialApp(theme: AppTheme.lightTheme, home: widget),
+      child: ToastificationWrapper(
+        config: AppToast.config,
+        child: MaterialApp(theme: AppTheme.lightTheme, home: widget),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -58,9 +63,12 @@ Future<void> pumpRoutedApp(
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides,
-      child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
-        routerConfig: router,
+      child: ToastificationWrapper(
+        config: AppToast.config,
+        child: MaterialApp.router(
+          theme: AppTheme.lightTheme,
+          routerConfig: router,
+        ),
       ),
     ),
   );

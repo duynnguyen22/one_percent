@@ -6,12 +6,15 @@ import 'package:mobile/app/router/route_names.dart';
 import 'package:mobile/app/theme/theme.dart';
 import 'package:mobile/core/errors/failures.dart';
 import 'package:mobile/core/errors/result.dart';
+import 'package:mobile/core/widgets/app_toast.dart';
 import 'package:mobile/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:mobile/features/auth/presentation/pages/reset_password_page.dart';
 import 'package:mobile/injection/dependency_injection.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../../helpers/mocks.dart';
+import '../../../helpers/toasts.dart';
 
 const _email = 'alex.bloom@example.com';
 
@@ -54,9 +57,12 @@ Future<GoRouter> pumpResetFlow(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [authRepositoryProvider.overrideWithValue(repository)],
-      child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
-        routerConfig: router,
+      child: ToastificationWrapper(
+        config: AppToast.config,
+        child: MaterialApp.router(
+          theme: AppTheme.lightTheme,
+          routerConfig: router,
+        ),
       ),
     ),
   );
@@ -147,6 +153,9 @@ void main() {
       final router = await pumpResetFlow(tester, repository);
 
       await enterCode(tester, '000000');
+      // Settling is off the table (see pumpResetFlow), so step the clock far
+      // enough for the toast's entrance animation to build it.
+      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Invalid or expired code'), findsOneWidget);
       // Still on the code screen, with the boxes emptied for another try.
@@ -158,6 +167,7 @@ void main() {
         find.byType(TextFormField).first,
       );
       expect(firstBox.controller?.text, isEmpty);
+      await clearToasts(tester);
     });
   });
 
@@ -292,6 +302,7 @@ void main() {
             resetToken: 'reset-token',
             newPassword: 'newsecret',
           )).called(1);
+      await clearToasts(tester);
     });
 
     testWidgets('returns the user to login once the password is set',
@@ -314,6 +325,7 @@ void main() {
         router.routerDelegate.currentConfiguration.uri.path,
         RouteNames.loginPath,
       );
+      await clearToasts(tester);
     });
 
     testWidgets('refuses a mismatched confirmation without calling the API',

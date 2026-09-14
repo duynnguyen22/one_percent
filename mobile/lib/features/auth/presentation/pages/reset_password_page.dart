@@ -7,6 +7,7 @@ import '../../../../app/theme/theme.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../../../injection/dependency_injection.dart';
 
 /// The last step of the reset flow: choose a new password.
@@ -93,10 +94,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage>
     setState(() => _isSubmitting = false);
 
     if (result.isSuccess) {
-      _showSnackBar(
-        'Password updated. Sign in with your new password.',
-        AppColors.primary,
-      );
+      AppToast.success('Password updated. Sign in with your new password.');
       context.goNamed(RouteNames.login);
       return;
     }
@@ -104,20 +102,8 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage>
     // A rejected token means the ten minutes elapsed or the code was already
     // spent — the user has to start over, so say that rather than just echoing
     // the message.
-    _showSnackBar(
+    AppToast.error(
       result.failureOrNull?.message ?? 'Could not update your password.',
-      AppColors.error,
-    );
-  }
-
-  void _showSnackBar(String message, Color background) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: background,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
     );
   }
 

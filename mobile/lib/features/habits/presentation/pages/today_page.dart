@@ -9,6 +9,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/widgets/app_error.dart';
 import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/daily_habits_provider.dart';
 import '../widgets/habit_check_card.dart';
@@ -48,13 +49,7 @@ class _TodayPageState extends ConsumerState<TodayPage> {
         await ref.read(dailyHabitsProvider.notifier).toggle(habitId);
     if (failure == null || !mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(failure.message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.error(failure.message);
   }
 
   @override

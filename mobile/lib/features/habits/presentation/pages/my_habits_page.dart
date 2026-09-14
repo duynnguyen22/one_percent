@@ -9,6 +9,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/widgets/app_error.dart';
 import '../../../../core/widgets/app_loading.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../../domain/entities/daily_habit.dart';
 import '../providers/daily_habits_provider.dart';
 import '../widgets/habit_color.dart';
@@ -248,13 +249,7 @@ class _HabitRow extends ConsumerWidget {
     }
 
     if (failure == null || !context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(failure.message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.error(failure.message);
   }
 
   Future<Failure?> _rename(

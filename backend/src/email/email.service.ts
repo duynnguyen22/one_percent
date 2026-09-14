@@ -4,6 +4,7 @@ import * as nodemailer from 'nodemailer';
 
 /** Matches the `expiresAt` window `AuthService.forgotPassword` stamps on the row. */
 const CODE_TTL_LABEL = '5 minutes';
+const CODE_TTL_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class EmailService {
@@ -20,6 +21,8 @@ export class EmailService {
         user: this.config.get<string>('SMTP_USER'),
         pass: this.config.get<string>('SMTP_PASS'),
       },
+      connectionTimeout: CODE_TTL_MS,
+      greetingTimeout: CODE_TTL_MS,
     });
 
     this.from =

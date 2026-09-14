@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/app_toast.dart';
 import '../providers/daily_habits_provider.dart';
 import '../widgets/habit_color.dart';
 
@@ -44,7 +45,7 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
         : _selectedSeed;
 
     if (habitName.isEmpty) {
-      _showMessage('Please enter a habit name', AppColors.error);
+      AppToast.error('Please enter a habit name');
       return;
     }
 
@@ -59,22 +60,12 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
 
     if (failure != null) {
       // Keep the form open so the user does not lose what they typed.
-      _showMessage(failure.message, AppColors.error);
+      AppToast.error(failure.message);
       return;
     }
 
-    _showMessage('Planted habit "$habitName"!', AppColors.primary);
+    AppToast.success('Planted habit "$habitName"!');
     context.pop();
-  }
-
-  void _showMessage(String message, Color background) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: background,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override
