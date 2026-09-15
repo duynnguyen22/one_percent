@@ -124,6 +124,11 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  /// Updates the currently authenticated user in state.
+  void updateUser(User user) {
+    state = state.copyWith(user: user);
+  }
+
   /// Dismisses the error banner without changing anything else.
   void clearError() => state = state.copyWith(failure: null);
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -109,37 +111,62 @@ class ProfilePage extends ConsumerWidget {
                         ),
                         boxShadow: AppSpacing.ambientShadow,
                       ),
-                      child: Center(
-                        child: Text(
-                          displayName.isEmpty ? '\u{1F331}' : displayName[0],
-                          style: AppTypography.display.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 42,
-                          ),
-                        ),
+                      child: ClipOval(
+                        child: (user?.avatarUrl != null &&
+                                user!.avatarUrl!.trim().isNotEmpty)
+                            ? Image.network(
+                                user.avatarUrl!.trim(),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Text(
+                                    displayName.isEmpty
+                                        ? '\u{1F331}'
+                                        : displayName[0],
+                                    style: AppTypography.display.copyWith(
+                                      color: AppColors.primary,
+                                      fontSize: 42,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Text(
+                                  displayName.isEmpty
+                                      ? '\u{1F331}'
+                                      : displayName[0],
+                                  style: AppTypography.display.copyWith(
+                                    color: AppColors.primary,
+                                    fontSize: 42,
+                                  ),
+                                ),
+                              ),
                       ),
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primaryContainer,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.edit_rounded,
-                          color: AppColors.onPrimaryContainer,
-                          size: 16,
+                      child: GestureDetector(
+                        key: const Key('edit_profile_badge_button'),
+                        onTap: () => context.pushNamed(RouteNames.editProfile),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryContainer,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: AppColors.onPrimaryContainer,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
@@ -156,6 +183,16 @@ class ProfilePage extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (user?.userPhone != null &&
+                  user!.userPhone!.trim().isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  user.userPhone!.trim(),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 _growingSince(user?.createdAt),

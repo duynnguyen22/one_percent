@@ -14,6 +14,7 @@ import '../../features/habits/presentation/pages/my_habits_page.dart';
 import '../../features/habits/presentation/pages/add_habit_page.dart';
 import '../../features/insights/presentation/pages/insights_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -155,6 +156,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: RouteNames.profilePath,
                 name: RouteNames.profile,
                 builder: (context, state) => const ProfilePage(),
+                routes: [
+                  GoRoute(
+                    path: RouteNames.editProfilePath,
+                    name: RouteNames.editProfile,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => const EditProfilePage(),
+                  ),
+                ],
               ),
             ],
           ),

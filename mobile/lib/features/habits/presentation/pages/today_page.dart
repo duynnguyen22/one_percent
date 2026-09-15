@@ -45,8 +45,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
   /// Flips a habit's check-off, surfacing the message if the write is rejected.
   /// The provider has already rolled the list back by the time this returns.
   Future<void> _toggle(String habitId) async {
-    final failure =
-        await ref.read(dailyHabitsProvider.notifier).toggle(habitId);
+    final failure = await ref
+        .read(dailyHabitsProvider.notifier)
+        .toggle(habitId);
     if (failure == null || !mounted) return;
 
     AppToast.error(failure.message);
@@ -87,7 +88,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                            color: AppColors.primaryContainer.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -116,7 +119,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                           shape: BoxShape.circle,
                           color: AppColors.primaryFixed,
                           border: Border.all(
-                            color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                            color: AppColors.outlineVariant.withValues(
+                              alpha: 0.5,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -195,19 +200,37 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  CircularProgressIndicator(
-                                    value: total == 0 ? 0 : completed / total,
-                                    strokeWidth: 7,
-                                    backgroundColor: AppColors.surfaceVariant,
-                                    color: AppColors.primary,
-                                    strokeCap: StrokeCap.round,
-                                  ),
-                                  Text(
-                                    '$completed/$total',
-                                    style: AppTypography.headlineSmall.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.onSurface,
+                                  Positioned.fill(
+                                    child: CircularProgressIndicator(
+                                      value: total == 0 ? 0 : completed / total,
+                                      strokeWidth: 6.0,
+                                      backgroundColor: AppColors.surfaceVariant,
+                                      color: AppColors.primary,
+                                      strokeCap: StrokeCap.round,
                                     ),
+                                  ),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '$completed',
+                                          style: AppTypography.headlineSmall.copyWith(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.onSurface,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: '/$total',
+                                          style: AppTypography.labelSmall.copyWith(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
@@ -255,7 +278,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                             Text(
                               'Day Streak',
                               style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.onPrimaryContainer.withValues(alpha: 0.85),
+                                color: AppColors.onPrimaryContainer.withValues(
+                                  alpha: 0.85,
+                                ),
                               ),
                             ),
                           ],
@@ -284,7 +309,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                         color: AppColors.surfaceContainerLow,
                         borderRadius: AppSpacing.borderRadiusCard,
                         border: Border.all(
-                          color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
                           width: 1,
                         ),
                         boxShadow: AppSpacing.ambientShadow,
@@ -299,7 +326,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                                  color: AppColors.primaryContainer.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -323,14 +352,17 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                                     ),
                                     const SizedBox(height: 6),
                                     AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 300),
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
                                       child: Text(
                                         _quotes[_quoteIndex],
                                         key: ValueKey<int>(_quoteIndex),
-                                        style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.onSurface,
-                                          fontStyle: FontStyle.italic,
-                                        ),
+                                        style: AppTypography.bodyMedium
+                                            .copyWith(
+                                              color: AppColors.onSurface,
+                                              fontStyle: FontStyle.italic,
+                                            ),
                                       ),
                                     ),
                                   ],
@@ -380,7 +412,10 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_rounded, color: AppColors.primary),
+                      icon: const Icon(
+                        Icons.add_rounded,
+                        color: AppColors.primary,
+                      ),
                       onPressed: () => context.pushNamed(RouteNames.addHabit),
                       tooltip: 'Add Habit',
                     ),
@@ -392,46 +427,46 @@ class _TodayPageState extends ConsumerState<TodayPage> {
             // Daily habits, from GET /habits?date=today
             switch (habitsAsync) {
               AsyncError(:final error) => SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: AppError(
-                      message: error is Failure
-                          ? error.message
-                          : 'Could not load your habits.',
-                      onRetry: () =>
-                          ref.read(dailyHabitsProvider.notifier).refresh(),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: AppError(
+                    message: error is Failure
+                        ? error.message
+                        : 'Could not load your habits.',
+                    onRetry: () =>
+                        ref.read(dailyHabitsProvider.notifier).refresh(),
                   ),
                 ),
+              ),
               AsyncData(:final value) when value.isEmpty =>
                 const SliverToBoxAdapter(child: _EmptyHabits()),
               AsyncData(:final value) => SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerMargin,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: value.length + 1,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppSpacing.stackGap),
-                    itemBuilder: (context, index) {
-                      // Trailing spacer clears the floating nav dock.
-                      if (index == value.length) {
-                        return const SizedBox(height: 110);
-                      }
-                      final habit = value[index];
-                      return HabitCheckCard(
-                        habit: habit,
-                        onToggle: () => _toggle(habit.id),
-                      );
-                    },
-                  ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.containerMargin,
                 ),
+                sliver: SliverList.separated(
+                  itemCount: value.length + 1,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.stackGap),
+                  itemBuilder: (context, index) {
+                    // Trailing spacer clears the floating nav dock.
+                    if (index == value.length) {
+                      return const SizedBox(height: 110);
+                    }
+                    final habit = value[index];
+                    return HabitCheckCard(
+                      habit: habit,
+                      onToggle: () => _toggle(habit.id),
+                    );
+                  },
+                ),
+              ),
               _ => const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: AppLoading(),
-                  ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: AppLoading(),
                 ),
+              ),
             },
           ],
         ),
@@ -442,11 +477,27 @@ class _TodayPageState extends ConsumerState<TodayPage> {
   static String _formattedDate() {
     final now = DateTime.now();
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     const weekdays = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
   }
@@ -468,15 +519,17 @@ class _EmptyHabits extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'No habits yet',
-            style:
-                AppTypography.headlineSmall.copyWith(color: AppColors.onSurface),
+            style: AppTypography.headlineSmall.copyWith(
+              color: AppColors.onSurface,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             'Plant your first one and it will show up here every day.',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium
-                .copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
         ],
       ),

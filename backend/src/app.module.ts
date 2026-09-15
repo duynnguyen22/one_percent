@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { HabitModule } from './habit/habit.module';
 import { EntriesModule } from './entries/entries.module';
 import { EmailModule } from './email/email.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { EmailModule } from './email/email.module';
     HabitModule,
     EntriesModule,
     EmailModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

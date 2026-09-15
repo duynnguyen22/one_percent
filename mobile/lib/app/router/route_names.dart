@@ -43,6 +43,9 @@ abstract final class RouteNames {
   static const String profile = 'profile';
   static const String profilePath = '/profile';
 
+  static const String editProfile = 'edit-profile';
+  static const String editProfilePath = 'edit';
+
   /// Routes reachable while signed out. Everything else redirects to login.
   static const Set<String> publicPaths = {
     welcomePath,

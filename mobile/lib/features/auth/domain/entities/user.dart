@@ -9,6 +9,9 @@ class User {
     required this.id,
     required this.email,
     required this.createdAt,
+    this.userName,
+    this.userPhone,
+    this.avatarUrl,
   });
 
   /// UUID assigned by the backend.
@@ -19,12 +22,16 @@ class User {
   /// When the account was created.
   final DateTime createdAt;
 
-  /// A display name derived from the email local part, capitalised.
-  ///
-  /// The API only ever sends an email, so this is the most the app can honestly
-  /// show. Empty when the local part is empty, which callers greet around
-  /// rather than substituting a made-up name.
+  final String? userName;
+  final String? userPhone;
+  final String? avatarUrl;
+
+  /// A display name preferred from [userName], falling back to the email local
+  /// part, capitalised. Empty when neither is available.
   String get displayName {
+    if (userName != null && userName!.trim().isNotEmpty) {
+      return userName!.trim();
+    }
     final local = email.split('@').first;
     if (local.isEmpty) return '';
     return '${local[0].toUpperCase()}${local.substring(1)}';
@@ -36,11 +43,16 @@ class User {
       other is User &&
           id == other.id &&
           email == other.email &&
-          createdAt == other.createdAt;
+          createdAt == other.createdAt &&
+          userName == other.userName &&
+          userPhone == other.userPhone &&
+          avatarUrl == other.avatarUrl;
 
   @override
-  int get hashCode => Object.hash(id, email, createdAt);
+  int get hashCode =>
+      Object.hash(id, email, createdAt, userName, userPhone, avatarUrl);
 
   @override
-  String toString() => 'User(id: $id, email: $email)';
+  String toString() =>
+      'User(id: $id, email: $email, userName: $userName, userPhone: $userPhone, avatarUrl: $avatarUrl)';
 }

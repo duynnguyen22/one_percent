@@ -8,8 +8,10 @@ import 'package:mobile/features/habits/data/models/habit_model.dart';
 import 'package:mobile/features/habits/domain/repositories/habit_repository.dart';
 import 'package:mobile/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:mobile/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:mobile/features/auth/data/models/user_model.dart';
 import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:mobile/features/auth/data/models/user_model.dart';
+import 'package:mobile/features/profile/data/datasources/profile_remote_datasource.dart';
+import 'package:mobile/features/profile/domain/repositories/profile_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Shared test doubles.
@@ -32,16 +34,27 @@ class MockHabitRepository extends Mock implements HabitRepository {}
 
 class MockEntryRepository extends Mock implements EntryRepository {}
 
+class MockProfileRemoteDataSource extends Mock
+    implements ProfileRemoteDataSource {}
+
+class MockProfileRepository extends Mock implements ProfileRepository {}
+
 /// A representative user, so tests do not each invent their own.
 UserModel buildUserModel({
   String id = '11111111-1111-4111-8111-111111111111',
   String email = 'alex.bloom@example.com',
   DateTime? createdAt,
+  String? userName,
+  String? userPhone,
+  String? avatarUrl,
 }) {
   return UserModel(
     id: id,
     email: email,
     createdAt: createdAt ?? DateTime.utc(2026, 1, 1),
+    userName: userName,
+    userPhone: userPhone,
+    avatarUrl: avatarUrl,
   );
 }
 

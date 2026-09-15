@@ -46,6 +46,10 @@ import '../features/habits/domain/usecases/create_habit.dart';
 import '../features/habits/domain/usecases/delete_habit.dart';
 import '../features/habits/domain/usecases/get_daily_habits.dart';
 import '../features/habits/domain/usecases/update_habit.dart';
+import '../features/profile/data/datasources/profile_remote_datasource.dart';
+import '../features/profile/data/repositories/profile_repository_impl.dart';
+import '../features/profile/domain/repositories/profile_repository.dart';
+import '../features/profile/domain/usecases/update_profile.dart';
 
 
 // ---------------------------------------------------------------------------
@@ -223,4 +227,24 @@ final setEntryUseCaseProvider = Provider<SetEntry>(
 
 final getEntriesUseCaseProvider = Provider<GetEntries>(
   (ref) => GetEntries(ref.watch(entryRepositoryProvider)),
+);
+
+// ---------------------------------------------------------------------------
+// Feature: profile
+// ---------------------------------------------------------------------------
+
+final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>(
+  (ref) => ProfileRemoteDataSourceImpl(ref.watch(apiClientProvider)),
+);
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return ProfileRepositoryImpl(
+    remoteDataSource: ref.watch(profileRemoteDataSourceProvider),
+    authLocalDataSource: ref.watch(authLocalDataSourceProvider),
+    networkInfo: ref.watch(networkInfoProvider),
+  );
+});
+
+final updateProfileUseCaseProvider = Provider<UpdateProfile>(
+  (ref) => UpdateProfile(ref.watch(profileRepositoryProvider)),
 );

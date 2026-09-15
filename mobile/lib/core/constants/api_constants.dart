@@ -11,7 +11,7 @@ abstract final class ApiConstants {
   /// `flutter run --dart-define=API_BASE_URL=https://api.example.com`
   static const String _override = String.fromEnvironment('API_BASE_URL');
 
-  static const int _port = 8080;
+  static const int _port = 3001;
 
   /// Resolved base URL.
   ///
@@ -46,6 +46,9 @@ abstract final class ApiConstants {
   static String entries(String habitId) => '/habits/$habitId/entries';
   static String entry(String habitId, String date) =>
       '/habits/$habitId/entries/$date';
+
+  // Profile — backend/src/profile/profile.controller.ts
+  static const String profile = '/profile';
 
   // Headers
   static const String authorizationHeader = 'Authorization';

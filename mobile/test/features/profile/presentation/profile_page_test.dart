@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/errors/result.dart';
@@ -84,5 +85,36 @@ void main() {
     await pumpApp(tester, const ProfilePage(), overrides: overrides());
 
     expect(find.text('Welcome to Bloom'), findsOneWidget);
+  });
+
+  testWidgets('shows userName and userPhone when provided on user profile',
+      (tester) async {
+    await pumpApp(
+      tester,
+      const ProfilePage(),
+      overrides: overrides(
+        auth: signedInOverrides(
+          buildUserModel(
+            userName: 'Samantha Ray',
+            userPhone: '+1-555-0199',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Samantha Ray'), findsOneWidget);
+    expect(find.text('+1-555-0199'), findsOneWidget);
+  });
+
+  testWidgets('renders interactive edit badge button', (tester) async {
+    await pumpApp(
+      tester,
+      const ProfilePage(),
+      overrides: overrides(
+        auth: signedInOverrides(buildUserModel()),
+      ),
+    );
+
+    expect(find.byKey(const Key('edit_profile_badge_button')), findsOneWidget);
   });
 }
