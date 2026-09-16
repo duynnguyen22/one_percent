@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import 'dotenv/config';
-import type { PrismaConfig } from 'prisma';
-import { env } from 'prisma/config';
+import { definePrismaConfig } from 'prisma/config';
+import { defineConfig as definePostgresConfig } from '@prisma/orm-postgres/config';
 
-export default {
-  schema: 'prisma/schema.prisma',
-  migrations: {
-    path: 'prisma/migrations',
-  },
-  datasource: {
-    url: env('DATABASE_URL'),
-  },
-} satisfies PrismaConfig;
+declare const process: {
+  env: {
+    DATABASE_URL?: string;
+  };
+};
+
+export default definePrismaConfig({
+  orm: definePostgresConfig({
+    contract: 'prisma8/contract.prisma',
+    output: 'generated/prisma8',
+    db: {
+      connection: process.env.DATABASE_URL,
+    },
+  }),
+});
