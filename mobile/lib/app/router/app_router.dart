@@ -15,6 +15,7 @@ import '../../features/habits/presentation/pages/add_habit_page.dart';
 import '../../features/insights/presentation/pages/insights_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/offline/presentation/pages/offline_page.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -102,6 +103,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => ResetPasswordPage(
           resetToken: state.uri.queryParameters['token'] ?? '',
           email: state.uri.queryParameters['email'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.offlinePath,
+        name: RouteNames.offline,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => OfflinePage(
+          flowTitle: state.uri.queryParameters['flowTitle'] ?? 'Add Habit Flow',
+          lastSyncedText: state.uri.queryParameters['lastSynced'] ?? 'Synced 8:30 AM',
         ),
       ),
       StatefulShellRoute.indexedStack(
