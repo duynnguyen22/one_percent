@@ -69,10 +69,33 @@ class MyHabitsPage extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    Text(
-                      'Habits',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                    InkWell(
+                      onTap: () => context.pushNamed(RouteNames.routines),
+                      borderRadius: AppSpacing.borderRadiusPill,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                          borderRadius: AppSpacing.borderRadiusPill,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Routines',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

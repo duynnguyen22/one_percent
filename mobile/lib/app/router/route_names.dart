@@ -46,6 +46,29 @@ abstract final class RouteNames {
   static const String editProfile = 'edit-profile';
   static const String editProfilePath = 'edit';
 
+  // Routines
+  static const String routines = 'routines';
+  static const String routinesPath = '/routines';
+
+  static const String routineDetail = 'routine-detail';
+  static const String routineDetailPath = ':routineId';
+  static String routineDetailLocation(String routineId) => '$routinesPath/$routineId';
+
+  static const String createRoutine = 'create-routine';
+  static const String createRoutinePath = 'create';
+
+  static const String editRoutine = 'edit-routine';
+  static const String editRoutinePath = ':routineId/edit';
+  static String editRoutineLocation(String routineId) => '$routinesPath/$routineId/edit';
+
+  static const String routineExecution = 'routine-execution';
+  static const String routineExecutionPath = ':routineId/execute';
+  static String routineExecutionLocation(String routineId) => '$routinesPath/$routineId/execute';
+
+  static const String routineCompleted = 'routine-completed';
+  static const String routineCompletedPath = ':routineId/completed';
+  static String routineCompletedLocation(String routineId) => '$routinesPath/$routineId/completed';
+
   // Offline
   static const String offline = 'offline';
   static const String offlinePath = '/offline';

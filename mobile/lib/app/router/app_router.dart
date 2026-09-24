@@ -16,6 +16,13 @@ import '../../features/insights/presentation/pages/insights_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/offline/presentation/pages/offline_page.dart';
+import '../../features/routines/domain/entities/routine.dart';
+import '../../features/routines/presentation/pages/create_routine_page.dart';
+import '../../features/routines/presentation/pages/edit_routine_page.dart';
+import '../../features/routines/presentation/pages/routine_completed_page.dart';
+import '../../features/routines/presentation/pages/routine_detail_page.dart';
+import '../../features/routines/presentation/pages/routine_execution_page.dart';
+import '../../features/routines/presentation/pages/routines_home_page.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -146,6 +153,83 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => _PlaceholderPage(
                       title: 'Habit ${state.pathParameters['habitId']}',
                     ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.routinesPath,
+                name: RouteNames.routines,
+                builder: (context, state) => const RoutinesHomePage(),
+                routes: [
+                  GoRoute(
+                    path: RouteNames.createRoutinePath,
+                    name: RouteNames.createRoutine,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => const CreateRoutinePage(),
+                  ),
+                  GoRoute(
+                    path: RouteNames.routineDetailPath,
+                    name: RouteNames.routineDetail,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final routineId = state.pathParameters['routineId'] ?? '';
+                      final extra = state.extra as Routine?;
+                      final routine = extra ??
+                          Routine.defaults.firstWhere(
+                            (r) => r.id == routineId,
+                            orElse: () => Routine.defaults.first,
+                          );
+                      return RoutineDetailPage(routine: routine);
+                    },
+                  ),
+                  GoRoute(
+                    path: RouteNames.editRoutinePath,
+                    name: RouteNames.editRoutine,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final routineId = state.pathParameters['routineId'] ?? '';
+                      final extra = state.extra as Routine?;
+                      final routine = extra ??
+                          Routine.defaults.firstWhere(
+                            (r) => r.id == routineId,
+                            orElse: () => Routine.defaults.first,
+                          );
+                      return EditRoutinePage(routine: routine);
+                    },
+                  ),
+                  GoRoute(
+                    path: RouteNames.routineExecutionPath,
+                    name: RouteNames.routineExecution,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final routineId = state.pathParameters['routineId'] ?? '';
+                      final extra = state.extra as Routine?;
+                      final routine = extra ??
+                          Routine.defaults.firstWhere(
+                            (r) => r.id == routineId,
+                            orElse: () => Routine.defaults.first,
+                          );
+                      return RoutineExecutionPage(routine: routine);
+                    },
+                  ),
+                  GoRoute(
+                    path: RouteNames.routineCompletedPath,
+                    name: RouteNames.routineCompleted,
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final routineId = state.pathParameters['routineId'] ?? '';
+                      final extra = state.extra as Routine?;
+                      final routine = extra ??
+                          Routine.defaults.firstWhere(
+                            (r) => r.id == routineId,
+                            orElse: () => Routine.defaults.first,
+                          );
+                      return RoutineCompletedPage(routine: routine);
+                    },
                   ),
                 ],
               ),

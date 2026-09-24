@@ -9,7 +9,7 @@ void main() {
       await pumpApp(tester, const WelcomePage(), overrides: signedOutOverrides());
 
       expect(find.text('THE 1% RULE'), findsOneWidget);
-      expect(find.text('Est. 2024'), findsOneWidget);
+      expect(find.text('Est. 2026'), findsOneWidget);
       expect(find.text('Bloom'), findsOneWidget);
       expect(
         find.textContaining('Small habits, remarkable compounding.',

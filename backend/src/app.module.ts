@@ -7,6 +7,7 @@ import { HabitModule } from './habit/habit.module';
 import { EntriesModule } from './entries/entries.module';
 import { EmailModule } from './email/email.module';
 import { ProfileModule } from './profile/profile.module';
+import { RoutineModule } from './routine/routine.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProfileModule } from './profile/profile.module';
     EntriesModule,
     EmailModule,
     ProfileModule,
+    RoutineModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../theme/routine_icon.dart';
 
 /// App shell housing the primary tabs (Today, Habits, Insights, Profile)
 /// with a floating frosted-glass bottom navigation bar.
@@ -36,8 +37,12 @@ class MainShellScaffold extends StatelessWidget {
 
           // Floating Frosted Glass Bottom Navigation Bar
           Positioned(
-            left: AppSpacing.containerMargin,
-            right: AppSpacing.containerMargin,
+            left: MediaQuery.sizeOf(context).width < 360
+                ? 12.0
+                : AppSpacing.containerMargin,
+            right: MediaQuery.sizeOf(context).width < 360
+                ? 12.0
+                : AppSpacing.containerMargin,
             bottom: MediaQuery.paddingOf(context).bottom > 0
                 ? MediaQuery.paddingOf(context).bottom + 4
                 : 16,
@@ -109,13 +114,24 @@ class _FloatingBottomNavBar extends StatelessWidget {
               _NavItem(
                 index: 2,
                 currentIndex: currentIndex,
+                customIconBuilder: (context, isSelected, color) => RoutineNavIcon(
+                  isSelected: isSelected,
+                  color: color,
+                  size: 24,
+                ),
+                label: 'Routines',
+                onTap: onTap,
+              ),
+              _NavItem(
+                index: 3,
+                currentIndex: currentIndex,
                 icon: Icons.insights_rounded,
                 activeIcon: Icons.insights_rounded,
                 label: 'Insights',
                 onTap: onTap,
               ),
               _NavItem(
-                index: 3,
+                index: 4,
                 currentIndex: currentIndex,
                 icon: Icons.person_outline_rounded,
                 activeIcon: Icons.person_rounded,
@@ -134,16 +150,21 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.index,
     required this.currentIndex,
-    required this.icon,
-    required this.activeIcon,
+    this.icon,
+    this.activeIcon,
+    this.customIconBuilder,
     required this.label,
     required this.onTap,
-  });
+  }) : assert(
+          customIconBuilder != null || (icon != null && activeIcon != null),
+          'Either customIconBuilder or both icon and activeIcon must be provided.',
+        );
 
   final int index;
   final int currentIndex;
-  final IconData icon;
-  final IconData activeIcon;
+  final IconData? icon;
+  final IconData? activeIcon;
+  final Widget Function(BuildContext context, bool isSelected, Color color)? customIconBuilder;
   final String label;
   final ValueChanged<int> onTap;
 
@@ -152,6 +173,14 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _isSelected ? AppColors.primary : AppColors.onSurfaceVariant;
+
+    final Widget iconWidget = customIconBuilder != null
+        ? customIconBuilder!(context, _isSelected, color)
+        : Icon(
+            _isSelected ? activeIcon : icon,
+            color: color,
+            size: 24,
+          );
 
     return Expanded(
       child: Material(
@@ -166,7 +195,7 @@ class _NavItem extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
-                width: _isSelected ? 28 : 0,
+                width: _isSelected ? 24 : 0,
                 height: 3,
                 decoration: BoxDecoration(
                   color: _isSelected ? AppColors.primary : Colors.transparent,
@@ -174,17 +203,20 @@ class _NavItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Icon(
-                _isSelected ? activeIcon : icon,
-                color: color,
-                size: 24,
-              ),
+              iconWidget,
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: AppTypography.labelSmall.copyWith(
-                  color: color,
-                  fontWeight: _isSelected ? FontWeight.w600 : FontWeight.w500,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: color,
+                      fontWeight: _isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
             ],
