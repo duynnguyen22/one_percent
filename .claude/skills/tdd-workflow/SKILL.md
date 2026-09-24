@@ -1,5 +1,5 @@
 ---
-name: ttd-workflow
+name: tdd-workflow
 description: Enforce Test-Driven Development (TDD) rules and development cycle for new features.
 ---
 

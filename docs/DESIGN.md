@@ -1,7 +1,118 @@
+---
+name: Bloom
+colors:
+  surface: '#fbf9f4'
+  surface-dim: '#dbdad5'
+  surface-bright: '#fbf9f4'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f5f3ee'
+  surface-container: '#f0eee9'
+  surface-container-high: '#eae8e3'
+  surface-container-highest: '#e4e2dd'
+  on-surface: '#1b1c19'
+  on-surface-variant: '#434844'
+  inverse-surface: '#30312e'
+  inverse-on-surface: '#f2f1ec'
+  outline: '#737873'
+  outline-variant: '#c3c8c2'
+  surface-tint: '#506356'
+  primary: '#4d6054'
+  on-primary: '#ffffff'
+  primary-container: '#66796c'
+  on-primary-container: '#f6fff6'
+  inverse-primary: '#b7ccbc'
+  secondary: '#7c5454'
+  on-secondary: '#ffffff'
+  secondary-container: '#ffcaca'
+  on-secondary-container: '#7b5353'
+  tertiary: '#4c5f69'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#647782'
+  on-tertiary-container: '#fbfdff'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#d2e8d8'
+  primary-fixed-dim: '#b7ccbc'
+  on-primary-fixed: '#0d1f15'
+  on-primary-fixed-variant: '#384b3f'
+  secondary-fixed: '#ffdad9'
+  secondary-fixed-dim: '#edbaba'
+  on-secondary-fixed: '#2f1314'
+  on-secondary-fixed-variant: '#613d3d'
+  tertiary-fixed: '#d1e6f2'
+  tertiary-fixed-dim: '#b5c9d6'
+  on-tertiary-fixed: '#0a1e27'
+  on-tertiary-fixed-variant: '#374953'
+  background: '#fbf9f4'
+  on-background: '#1b1c19'
+  surface-variant: '#e4e2dd'
+typography:
+  display:
+    fontFamily: Manrope
+    fontSize: 40px
+    fontWeight: '700'
+    lineHeight: 48px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Manrope
+    fontSize: 32px
+    fontWeight: '600'
+    lineHeight: 40px
+    letterSpacing: -0.01em
+  headline-lg-mobile:
+    fontFamily: Manrope
+    fontSize: 28px
+    fontWeight: '600'
+    lineHeight: 36px
+  headline-md:
+    fontFamily: Manrope
+    fontSize: 24px
+    fontWeight: '600'
+    lineHeight: 32px
+  body-lg:
+    fontFamily: Manrope
+    fontSize: 18px
+    fontWeight: '400'
+    lineHeight: 28px
+  body-md:
+    fontFamily: Manrope
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
+  label-md:
+    fontFamily: Manrope
+    fontSize: 14px
+    fontWeight: '500'
+    lineHeight: 20px
+    letterSpacing: 0.01em
+  label-sm:
+    fontFamily: Manrope
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: 16px
+    letterSpacing: 0.05em
+rounded:
+  sm: 0.5rem
+  DEFAULT: 1rem
+  md: 1.5rem
+  lg: 2rem
+  xl: 3rem
+  full: 9999px
+spacing:
+  container-margin: 24px
+  stack-gap: 16px
+  section-gap: 40px
+  touch-target: 56px
+  card-padding: 20px
+---
+
 # Design System: Bloom
 
 **Skill:** stitch-design-taste · **Platform:** Flutter mobile app (iOS + Android), portrait phone first
 **Source of truth in code:** `mobile/lib/app/theme/` (`app_colors.dart`, `app_typography.dart`, `app_spacing.dart`, `app_theme.dart`). If this file and the code disagree, fix one of them. Never let them drift.
+**Tokens:** the YAML block at the top of this file is the Stitch token export that the Dart theme mirrors. Change a token there and in `app_colors.dart` / `app_typography.dart` / `app_spacing.dart` in the same commit.
 
 ---
 
@@ -59,6 +170,20 @@ A routine may carry ONE of these as its identity color. It tints only that routi
 
 Text and icons on a routine color are white (#FFFFFF). Tinted backgrounds use the routine color at 12 to 15 percent opacity.
 
+### Habit identity swatches (user-chosen, scoped)
+Each habit may carry one swatch from `HabitColors.palette`. All are earthy and desaturated, so they sit quietly next to Sage:
+- **Sage Green** (#4D6054): default
+- **Olive Leaf** (#8A9A5B)
+- **Pale Fern** (#B5C4A1)
+- **Terracotta Clay** (#C77D52)
+- **Dusk Blue** (#7D8CA3)
+- **Faded Brick** (#A8756B)
+
+A swatch tints only that habit's own marks: its leading dot, its check ring, and its row in Insights charts. Buttons, focus rings and the active tab stay Sage no matter which habit is on screen.
+
+### Muted data tints (icon badges only)
+Rose Veil (#FFDAD9) behind a Dusty Rose (#7C5454) icon, and Sky Veil (#D1E6F2) behind a Sky Slate (#4C5F69) icon, may tell apart small icon badges and metadata glyphs (Profile stat tiles, routine step durations, the Offline illustration). They never fill buttons, cards or large surfaces.
+
 ### Status
 - **Alert Red** (#BA1A1A) on **Blush** (#FFDAD6): errors only (validation, failed sync). Never decorative
 
@@ -66,7 +191,7 @@ Text and icons on a routine color are white (#FFFFFF). Tinted backgrounds use th
 - Purple or violet gradients, neon glows, "AI blue" highlights
 - Pure black (#000000) and pure white page backgrounds (#FFFFFF is for cards, not canvases)
 - Any cool gray (slate, zinc) mixed into the warm sand family
-- A second interface accent. Dusty Rose and Sky Slate exist only as routine identity colors
+- A second interface accent. Dusty Rose and Sky Slate exist only as routine identity colors and small icon-badge tints
 
 ---
 
@@ -116,6 +241,7 @@ Detail and form screens use a standard app bar instead: back arrow on the left, 
 * **Cards:** 24px rounded corners, no border. Habit Card Sand fill for lists, Paper White with a whisper shadow for elevated items. Whisper shadow: sage-tinted, 4 percent opacity, 30px blur, 8px down (`rgba(77,96,84,0.04)`). Internal padding 20px (24px for large cards)
 * **Chips and badges:** fully rounded pills, Deep Sand or accent tint at 12 percent, Label Small or Label Medium text
 * **Inputs:** fully rounded pill fields (multi-line fields use 24px corners), Recessed Sand fill, no border at rest, 1.5px Sage Green border on focus, 1.5px Alert Red border on error. Uppercase Label Small label ABOVE the field, error text BELOW it. No floating labels, and never a placeholder used as the only label
+* **Habit row (Today):** a Habit Card Sand card, 24px corners, 20px padding. Left: a small dot in the habit's swatch, the habit name in Label Large and the streak in Label Small, Moss Grey ("12 days in a row"). Right: a 44px circular check ring (2px stroke, habit swatch) inside a 56px tap zone. Checked: the ring fills, a white check appears, and the card eases to a Pale Sage tint. Tapping again undoes it. If the server rejects the change, the row returns to its previous state and a one-line inline note appears under it, never a toast
 * **Lists and steps:** each row is a card with a leading icon inside a tinted circle (32 to 36px), a title in Label Large, and metadata ("5 min · Movement") in Label Small. Reorderable rows show a drag handle in Hairline Sage on the left
 * **Bottom navigation:** a floating dock with 32px rounded corners, frosted Warm Cream at 85 percent opacity with a 20px blur, and a whisper shadow. The active tab uses Sage Green, inactive tabs use Stone Outline
 * **Bottom sheets:** Sheet Sand, 24px top corners, a drag handle, and a single primary action at the bottom
