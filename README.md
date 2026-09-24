@@ -12,22 +12,6 @@ A daily habit tracker. Sign in, plant a few habits, check them off once a day, a
 
 ---
 
-## Screenshots
-
-Captured from the iOS simulator against a local backend with a seeded demo account.
-
-| Today | Habits | Insights |
-|:--:|:--:|:--:|
-| <img src="docs/screenshots/today.png" width="230" alt="Today screen showing 5 of 5 habits done and a 9 day streak" /> | <img src="docs/screenshots/habits.png" width="230" alt="Habits screen listing five habits with their streaks" /> | <img src="docs/screenshots/insights.png" width="230" alt="Insights screen with current streak, best streak and a weekly flow chart" /> |
-| Ring is done/total for the day, badge is your longest live streak, tapping a card checks it off | Rename, recolour, archive or delete anything you are tracking | 30 days of history: perfect-day streaks, weekly flow, and which habit is carrying you |
-
-| Profile | Add Habit | Sign in |
-|:--:|:--:|:--:|
-| <img src="docs/screenshots/profile.png" width="230" alt="Profile screen with consistency, habit count and streak" /> | <img src="docs/screenshots/add_habit.png" width="230" alt="Add habit screen with seed presets and a colour picker" /> | <img src="docs/screenshots/login.png" width="230" alt="Sign in screen" /> |
-| Consistency, habit count and streak, all computed from real entries | Pick a starter habit or write your own, then a colour | Email + password, JWT stored in the Keychain / EncryptedSharedPreferences |
-
----
-
 ## Features
 
 - **Email + password accounts.** JWT bearer auth, token kept in encrypted storage, session restored on launch.
