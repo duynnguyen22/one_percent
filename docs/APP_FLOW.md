@@ -454,4 +454,4 @@ the unbound `date` query DTO, the mis-keyed entry delete, the module-load
 | Entry endpoints | [backend/src/entries/entries.controller.ts](../backend/src/entries/entries.controller.ts) |
 | Streak rule | [backend/src/utils/streak.ts](../backend/src/utils/streak.ts) |
 | Error envelope | [backend/src/common/filters/all-exceptions.filter.ts](../backend/src/common/filters/all-exceptions.filter.ts) |
-| Schema | [backend/prisma/schema.prisma](../backend/prisma/schema.prisma) |
+| Schema (Prisma 8 contract) | [backend/prisma8/contract.prisma](../backend/prisma8/contract.prisma) |

@@ -28,7 +28,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "generated/prisma/**/*.ts",
+    "test/**/*.ts",
     "generated/prisma8/**/*.d.ts"
   ]
 }

@@ -1,120 +1,63 @@
-import { Test } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { RoutineService } from './routine.service';
-import { PrismaService } from 'src/prisma.service';
-
-const USER_ID = 'user-1';
-const ROUTINE_ID = 'eeeeeeee-0000-4000-8000-000000000001';
-const WATER = 'aaaaaaaa-0000-4000-8000-000000000001';
-const STRETCH = 'aaaaaaaa-0000-4000-8000-000000000002';
-const JOURNAL = 'aaaaaaaa-0000-4000-8000-000000000003';
-
-const day = (key: string) => new Date(`${key}T00:00:00.000Z`);
-const CREATED = new Date('2026-09-25T08:00:00.000Z');
-
-const habit = (id: string, name: string, archivedAt: Date | null = null) => ({
-  id,
-  userId: USER_ID,
-  name,
-  color: '#4d6054',
-  createdAt: CREATED,
-  archivedAt,
-});
-
-const step = (
-  h: ReturnType<typeof habit>,
-  order: number,
-  durationMinutes: number,
-) => ({
-  routineId: ROUTINE_ID,
-  habitId: h.id,
-  order,
-  durationMinutes,
-  habit: h,
-});
-
-const routineRow = (steps: ReturnType<typeof step>[], id = ROUTINE_ID) => ({
-  id,
-  userId: USER_ID,
-  name: 'Morning Ritual',
-  description: 'Start slow.',
-  color: '#4d6054',
-  cadence: 'Morning',
-  createdAt: CREATED,
-  updatedAt: CREATED,
-  steps,
-});
-
-type Entry = { habitId: string; date: Date };
+import { toDbTimestamp } from 'src/utils/temporal';
+import {
+  createEntry,
+  createHabit,
+  createUser,
+  useDatabaseService,
+} from '../../test/factories';
 
 describe('RoutineService', () => {
-  let service: RoutineService;
-  let entries: Entry[];
-  let prisma: {
-    routine: {
-      findMany: jest.Mock;
-      findFirst: jest.Mock;
-      create: jest.Mock;
-      update: jest.Mock;
-      delete: jest.Mock;
-    };
-    routineHabit: { deleteMany: jest.Mock; createMany: jest.Mock };
-    habit: { count: jest.Mock };
-    habitEntry: { findMany: jest.Mock };
-    $transaction: jest.Mock;
-  };
+  const ctx = useDatabaseService(RoutineService);
+  let userId: string;
+  let water: string;
+  let stretch: string;
+  let journal: string;
 
   beforeEach(async () => {
-    entries = [];
-    prisma = {
-      routine: {
-        findMany: jest.fn().mockResolvedValue([]),
-        findFirst: jest.fn().mockResolvedValue(null),
-        create: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
-      },
-      routineHabit: {
-        deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-        createMany: jest.fn().mockResolvedValue({ count: 0 }),
-      },
-      habit: { count: jest.fn() },
-      // Behaves like the table: only entries for the asked habits and day.
-      habitEntry: {
-        findMany: jest.fn(
-          ({ where }: { where: { habitId: { in: string[] }; date: Date } }) =>
-            Promise.resolve(
-              entries.filter(
-                (e) =>
-                  where.habitId.in.includes(e.habitId) &&
-                  e.date.getTime() === where.date.getTime(),
-              ),
-            ),
-        ),
-      },
-      // Interactive transactions run the callback against the same mock.
-      $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(prisma)),
-    };
-
-    const moduleRef = await Test.createTestingModule({
-      providers: [RoutineService, { provide: PrismaService, useValue: prisma }],
-    }).compile();
-    service = moduleRef.get(RoutineService);
+    userId = (await createUser(ctx.prisma)).id;
+    water = (await createHabit(ctx.prisma, userId, { name: 'Drink Water' })).id;
+    stretch = (
+      await createHabit(ctx.prisma, userId, { name: 'Gentle Stretch' })
+    ).id;
+    journal = (await createHabit(ctx.prisma, userId, { name: 'Journal' })).id;
   });
 
+  const morning = (steps: { habitId: string; durationMinutes?: number }[]) =>
+    ctx.service.create(userId, {
+      name: 'Morning Ritual',
+      description: 'Start slow.',
+      color: '#4d6054',
+      cadence: 'Morning',
+      steps,
+    });
+
+  const archive = (habitId: string) =>
+    ctx.prisma.orm.Habit.where({ id: habitId }).update({
+      archivedAt: toDbTimestamp(new Date()),
+    });
+
+  const storedSteps = async (routineId: string) =>
+    (
+      await ctx.prisma.orm.RoutineHabit.where({ routineId })
+        .orderBy((s) => s.order.asc())
+        .all()
+    ).map((s) => [s.habitId, s.order, s.durationMinutes]);
+
   describe('findOne', () => {
-    const water = habit(WATER, 'Drink Water');
-    const stretch = habit(STRETCH, 'Gentle Stretch');
-
     it('returns the routine with ordered steps and totals', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([step(stretch, 2, 5), step(water, 1, 2)]),
-      );
+      const { data: created } = await morning([
+        { habitId: water, durationMinutes: 2 },
+        { habitId: stretch },
+      ]);
 
-      const view = await service.findOne(USER_ID, ROUTINE_ID, {});
+      const res = await ctx.service.findOne(userId, created.id, {});
 
-      expect(view).toEqual({
-        id: ROUTINE_ID,
+      expect(res.statusCode).toBe(200);
+      expect(res.message).toBe('Routine retrieved successfully');
+      expect(res.data).toEqual({
+        id: created.id,
         name: 'Morning Ritual',
         description: 'Start slow.',
         color: '#4d6054',
@@ -123,61 +66,57 @@ describe('RoutineService', () => {
         totalDurationMinutes: 7,
         steps: [
           {
-            habitId: WATER,
+            habitId: water,
             name: 'Drink Water',
             color: '#4d6054',
             order: 1,
             durationMinutes: 2,
           },
           {
-            habitId: STRETCH,
+            habitId: stretch,
             name: 'Gentle Stretch',
             color: '#4d6054',
             order: 2,
             durationMinutes: 5,
           },
         ],
-        createdAt: CREATED,
-        updatedAt: CREATED,
+        createdAt: expect.any(Date) as Date,
+        updatedAt: expect.any(Date) as Date,
       });
     });
 
-    it('only looks up routines owned by the caller', async () => {
-      await expect(
-        service.findOne('someone-else', ROUTINE_ID, {}),
-      ).rejects.toThrow(NotFoundException);
-      expect(prisma.routine.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: ROUTINE_ID, userId: 'someone-else' },
-        }),
+    it('only finds routines owned by the caller', async () => {
+      const { data: created } = await morning([{ habitId: water }]);
+      const other = (await createUser(ctx.prisma)).id;
+
+      await expect(ctx.service.findOne(other, created.id, {})).rejects.toThrow(
+        NotFoundException,
       );
     });
 
     it('hides steps whose habit is archived', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([
-          step(water, 1, 2),
-          step(habit(JOURNAL, 'Journal', CREATED), 2, 10),
-        ]),
-      );
+      const { data: created } = await morning([
+        { habitId: water, durationMinutes: 2 },
+        { habitId: journal, durationMinutes: 10 },
+      ]);
+      await archive(journal);
 
-      const view = await service.findOne(USER_ID, ROUTINE_ID, {});
+      const { data: view } = await ctx.service.findOne(userId, created.id, {});
 
-      expect(view.steps.map((s) => s.habitId)).toEqual([WATER]);
+      expect(view.steps.map((s) => s.habitId)).toEqual([water]);
       expect(view.stepCount).toBe(1);
       expect(view.totalDurationMinutes).toBe(2);
     });
 
     it('marks steps done on the given date', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([step(water, 1, 2), step(stretch, 2, 5)]),
-      );
-      entries = [
-        { habitId: WATER, date: day('2026-09-25') },
-        { habitId: STRETCH, date: day('2026-09-24') },
-      ];
+      const { data: created } = await morning([
+        { habitId: water },
+        { habitId: stretch },
+      ]);
+      await createEntry(ctx.prisma, water, '2026-09-25');
+      await createEntry(ctx.prisma, stretch, '2026-09-24');
 
-      const view = await service.findOne(USER_ID, ROUTINE_ID, {
+      const { data: view } = await ctx.service.findOne(userId, created.id, {
         date: '2026-09-25',
       });
 
@@ -186,15 +125,14 @@ describe('RoutineService', () => {
     });
 
     it('is completed when every active step is done', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([
-          step(water, 1, 2),
-          step(habit(JOURNAL, 'Journal', CREATED), 2, 10),
-        ]),
-      );
-      entries = [{ habitId: WATER, date: day('2026-09-25') }];
+      const { data: created } = await morning([
+        { habitId: water },
+        { habitId: journal },
+      ]);
+      await archive(journal);
+      await createEntry(ctx.prisma, water, '2026-09-25');
 
-      const view = await service.findOne(USER_ID, ROUTINE_ID, {
+      const { data: view } = await ctx.service.findOne(userId, created.id, {
         date: '2026-09-25',
       });
 
@@ -202,9 +140,10 @@ describe('RoutineService', () => {
     });
 
     it('is never completed with no active steps', async () => {
-      prisma.routine.findFirst.mockResolvedValue(routineRow([]));
+      const { data: created } = await morning([{ habitId: journal }]);
+      await archive(journal);
 
-      const view = await service.findOne(USER_ID, ROUTINE_ID, {
+      const { data: view } = await ctx.service.findOne(userId, created.id, {
         date: '2026-09-25',
       });
 
@@ -218,203 +157,188 @@ describe('RoutineService', () => {
   });
 
   describe('findAll', () => {
-    it('returns an empty list without touching entries', async () => {
-      expect(await service.findAll(USER_ID, { date: '2026-09-25' })).toEqual(
-        [],
-      );
-      expect(prisma.habitEntry.findMany).not.toHaveBeenCalled();
+    it('returns an empty list', async () => {
+      await expect(
+        ctx.service.findAll(userId, { date: '2026-09-25' }),
+      ).resolves.toEqual({
+        statusCode: 200,
+        message: 'Routines retrieved successfully',
+        data: [],
+      });
     });
 
-    it("lists the caller's routines, newest first", async () => {
-      await service.findAll(USER_ID, {});
+    it("lists only the caller's routines, newest first", async () => {
+      const { data: first } = await morning([{ habitId: water }]);
+      const { data: second } = await morning([{ habitId: stretch }]);
+      const other = (await createUser(ctx.prisma)).id;
+      const theirs = (await createHabit(ctx.prisma, other)).id;
+      await ctx.service.create(other, {
+        name: 'Theirs',
+        steps: [{ habitId: theirs }],
+      });
 
-      expect(prisma.routine.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { userId: USER_ID },
-          orderBy: { createdAt: 'desc' },
-        }),
-      );
+      const { data: views } = await ctx.service.findAll(userId, {});
+
+      expect(views.map((v) => v.id)).toEqual([second.id, first.id]);
     });
 
-    it('reads entries for all routines in one query', async () => {
-      prisma.routine.findMany.mockResolvedValue([
-        routineRow([step(habit(WATER, 'Drink Water'), 1, 2)], 'r1'),
-        routineRow([step(habit(JOURNAL, 'Journal'), 1, 5)], 'r2'),
-      ]);
-      entries = [{ habitId: JOURNAL, date: day('2026-09-25') }];
+    it('marks each routine completed on the given date', async () => {
+      const { data: r1 } = await morning([{ habitId: water }]);
+      const { data: r2 } = await morning([{ habitId: journal }]);
+      await createEntry(ctx.prisma, journal, '2026-09-25');
 
-      const views = await service.findAll(USER_ID, { date: '2026-09-25' });
+      const { data: views } = await ctx.service.findAll(userId, {
+        date: '2026-09-25',
+      });
 
-      expect(prisma.habitEntry.findMany).toHaveBeenCalledTimes(1);
       expect(views.map((v) => [v.id, v.completedToday])).toEqual([
-        ['r1', false],
-        ['r2', true],
+        [r2.id, true],
+        [r1.id, false],
       ]);
     });
   });
 
   describe('create', () => {
-    const body = {
-      name: 'Morning Ritual',
-      cadence: 'Morning',
-      steps: [{ habitId: STRETCH, durationMinutes: 5 }, { habitId: WATER }],
-    };
-
     it('stores steps in array order with default durations', async () => {
-      prisma.habit.count.mockResolvedValue(2);
-      prisma.routine.create.mockResolvedValue(
-        routineRow([
-          step(habit(STRETCH, 'Gentle Stretch'), 1, 5),
-          step(habit(WATER, 'Drink Water'), 2, 5),
-        ]),
-      );
+      const res = await morning([
+        { habitId: stretch, durationMinutes: 5 },
+        { habitId: water },
+      ]);
 
-      const view = await service.create(USER_ID, body);
-
-      expect(prisma.routine.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: {
-            name: 'Morning Ritual',
-            cadence: 'Morning',
-            userId: USER_ID,
-            steps: {
-              create: [
-                { habitId: STRETCH, order: 1, durationMinutes: 5 },
-                { habitId: WATER, order: 2, durationMinutes: 5 },
-              ],
-            },
-          },
-        }),
-      );
-      expect(view.totalDurationMinutes).toBe(10);
+      expect(res.statusCode).toBe(201);
+      expect(res.message).toBe('Routine created successfully');
+      expect(res.data.totalDurationMinutes).toBe(10);
+      expect(await storedSteps(res.data.id)).toEqual([
+        [stretch, 1, 5],
+        [water, 2, 5],
+      ]);
     });
 
     it('rejects the same habit twice', async () => {
       await expect(
-        service.create(USER_ID, {
-          name: 'x',
-          steps: [{ habitId: WATER }, { habitId: WATER }],
-        }),
+        morning([{ habitId: water }, { habitId: water }]),
       ).rejects.toThrow('Each habit can appear only once in a routine');
-      expect(prisma.routine.create).not.toHaveBeenCalled();
+      expect(await ctx.prisma.orm.Routine.first()).toBeNull();
     });
 
     it("rejects habits that are archived or someone else's", async () => {
-      prisma.habit.count.mockResolvedValue(1);
+      await archive(journal);
+      const other = (await createUser(ctx.prisma)).id;
+      const theirs = (await createHabit(ctx.prisma, other)).id;
 
-      await expect(service.create(USER_ID, body)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(prisma.habit.count).toHaveBeenCalledWith({
-        where: {
-          id: { in: [STRETCH, WATER] },
-          userId: USER_ID,
-          archivedAt: null,
-        },
-      });
-      expect(prisma.routine.create).not.toHaveBeenCalled();
+      await expect(
+        morning([{ habitId: water }, { habitId: journal }]),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        morning([{ habitId: water }, { habitId: theirs }]),
+      ).rejects.toThrow(BadRequestException);
+      expect(await ctx.prisma.orm.Routine.first()).toBeNull();
     });
   });
 
   describe('update', () => {
-    const water = habit(WATER, 'Drink Water');
-
     it('404s for a routine the caller does not own', async () => {
+      const { data: created } = await morning([{ habitId: water }]);
+      const other = (await createUser(ctx.prisma)).id;
+
       await expect(
-        service.update('someone-else', ROUTINE_ID, { name: 'x' }),
+        ctx.service.update(other, created.id, { name: 'x' }),
       ).rejects.toThrow(NotFoundException);
-      expect(prisma.routine.update).not.toHaveBeenCalled();
+      const stored = await ctx.prisma.orm.Routine.first({ id: created.id });
+      expect(stored?.name).toBe('Morning Ritual');
     });
 
     it('updates only the supplied fields and keeps the steps', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([step(water, 1, 2)]),
-      );
-      prisma.routine.update.mockResolvedValue({
-        ...routineRow([step(water, 1, 2)]),
+      const { data: created } = await morning([
+        { habitId: water, durationMinutes: 2 },
+      ]);
+
+      const res = await ctx.service.update(userId, created.id, {
         name: 'Renamed',
       });
 
-      const view = await service.update(USER_ID, ROUTINE_ID, {
+      expect(res.statusCode).toBe(200);
+      expect(res.message).toBe('Routine updated successfully');
+      expect(res.data).toMatchObject({
+        name: 'Renamed',
+        description: 'Start slow.',
+        cadence: 'Morning',
+      });
+      expect(await storedSteps(created.id)).toEqual([[water, 1, 2]]);
+    });
+
+    it('moves updatedAt forward', async () => {
+      const { data: created } = await morning([{ habitId: water }]);
+      const earlier = new Date('2026-01-01T00:00:00.000Z');
+      await ctx.prisma.orm.Routine.where({ id: created.id }).update({
+        updatedAt: toDbTimestamp(earlier),
+      });
+
+      const { data: updated } = await ctx.service.update(userId, created.id, {
         name: 'Renamed',
       });
 
-      expect(prisma.routine.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: ROUTINE_ID },
-          data: { name: 'Renamed' },
-        }),
-      );
-      expect(prisma.routineHabit.deleteMany).not.toHaveBeenCalled();
-      expect(view.name).toBe('Renamed');
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(earlier.getTime());
+      expect(updated.createdAt).toEqual(created.createdAt);
     });
 
     it('replaces the whole sequence when steps are supplied', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([step(water, 1, 2)]),
-      );
-      prisma.habit.count.mockResolvedValue(2);
-      prisma.routine.update.mockResolvedValue(routineRow([]));
+      const { data: created } = await morning([
+        { habitId: water, durationMinutes: 2 },
+      ]);
 
-      await service.update(USER_ID, ROUTINE_ID, {
-        steps: [{ habitId: JOURNAL, durationMinutes: 10 }, { habitId: WATER }],
+      const { data: view } = await ctx.service.update(userId, created.id, {
+        steps: [{ habitId: journal, durationMinutes: 10 }, { habitId: water }],
       });
 
-      expect(prisma.$transaction).toHaveBeenCalled();
-      expect(prisma.routineHabit.deleteMany).toHaveBeenCalledWith({
-        where: { routineId: ROUTINE_ID },
-      });
-      expect(prisma.routineHabit.createMany).toHaveBeenCalledWith({
-        data: [
-          {
-            routineId: ROUTINE_ID,
-            habitId: JOURNAL,
-            order: 1,
-            durationMinutes: 10,
-          },
-          {
-            routineId: ROUTINE_ID,
-            habitId: WATER,
-            order: 2,
-            durationMinutes: 5,
-          },
-        ],
-      });
+      expect(view.steps.map((s) => s.habitId)).toEqual([journal, water]);
+      expect(await storedSteps(created.id)).toEqual([
+        [journal, 1, 10],
+        [water, 2, 5],
+      ]);
     });
 
     it('rejects invalid steps before changing anything', async () => {
-      prisma.routine.findFirst.mockResolvedValue(
-        routineRow([step(water, 1, 2)]),
-      );
+      const { data: created } = await morning([
+        { habitId: water, durationMinutes: 2 },
+      ]);
 
       await expect(
-        service.update(USER_ID, ROUTINE_ID, {
-          steps: [{ habitId: WATER }, { habitId: WATER }],
+        ctx.service.update(userId, created.id, {
+          name: 'Renamed',
+          steps: [{ habitId: stretch }, { habitId: stretch }],
         }),
       ).rejects.toThrow(BadRequestException);
-      expect(prisma.routineHabit.deleteMany).not.toHaveBeenCalled();
-      expect(prisma.routine.update).not.toHaveBeenCalled();
+      expect(await storedSteps(created.id)).toEqual([[water, 1, 2]]);
+      const stored = await ctx.prisma.orm.Routine.first({ id: created.id });
+      expect(stored?.name).toBe('Morning Ritual');
     });
   });
 
   describe('remove', () => {
-    it('deletes an owned routine', async () => {
-      prisma.routine.findFirst.mockResolvedValue(routineRow([]));
+    it('deletes an owned routine and its steps, but not the habits', async () => {
+      const { data: created } = await morning([{ habitId: water }]);
 
-      await expect(service.remove(USER_ID, ROUTINE_ID)).resolves.toEqual({
-        code: 200,
-        message: `Deleted successfully the routine with id: ${ROUTINE_ID}`,
+      await expect(ctx.service.remove(userId, created.id)).resolves.toEqual({
+        statusCode: 200,
+        message: `Deleted successfully the routine with id: ${created.id}`,
+        data: null,
       });
-      expect(prisma.routine.delete).toHaveBeenCalledWith({
-        where: { id: ROUTINE_ID, userId: USER_ID },
-      });
+      expect(await ctx.prisma.orm.Routine.first({ id: created.id })).toBeNull();
+      expect(await storedSteps(created.id)).toEqual([]);
+      expect(await ctx.prisma.orm.Habit.first({ id: water })).not.toBeNull();
     });
 
     it('404s for a routine the caller does not own', async () => {
-      await expect(service.remove('someone-else', ROUTINE_ID)).rejects.toThrow(
+      const { data: created } = await morning([{ habitId: water }]);
+      const other = (await createUser(ctx.prisma)).id;
+
+      await expect(ctx.service.remove(other, created.id)).rejects.toThrow(
         NotFoundException,
       );
-      expect(prisma.routine.delete).not.toHaveBeenCalled();
+      expect(
+        await ctx.prisma.orm.Routine.first({ id: created.id }),
+      ).not.toBeNull();
     });
   });
 });

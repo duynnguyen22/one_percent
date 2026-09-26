@@ -1,7 +1,12 @@
-import { User } from 'generated/prisma/client';
+import type { Scalars } from '@prisma/orm-postgres/family-contract/types';
+import type { Models } from 'generated/prisma8/contract';
+import type { FromDb } from 'src/utils/temporal';
 import { ApiProperty } from '@nestjs/swagger';
 
-export type SafeUser = Omit<User, 'passwordHash'>;
+export type SafeUser = Omit<
+  FromDb<Scalars<Models.public_User>>,
+  'passwordHash'
+>;
 
 export class AuthResponse {
   @ApiProperty()

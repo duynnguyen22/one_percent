@@ -20,6 +20,7 @@ import { omit } from 'lodash';
 import { comparePassword, hashingPassword } from 'src/utils';
 import { randomInt } from 'node:crypto';
 import { EmailService } from 'src/email/email.service';
+import { fromDb, toDbTimestamp } from 'src/utils/temporal';
 import dayjs from 'dayjs';
 
 /** How long an emailed code stays usable. */
@@ -55,9 +56,7 @@ export class AuthService {
   ) {}
 
   async login(email: string, pwd: string): Promise<AuthResponse> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.prisma.orm.User.first({ email });
 
     if (!user) {
       throw new NotFoundException(`No user found for email: ${email}`);
@@ -70,62 +69,49 @@ export class AuthService {
     }
 
     return {
-      user: omit(user, ['passwordHash']),
+      user: omit(fromDb(user), ['passwordHash']),
       accessToken: this.jwtService.sign({ userId: user.id }),
     };
   }
 
   async register(email: string, pwd: string): Promise<AuthResponse> {
-    const existedUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const existedUser = await this.prisma.orm.User.first({ email });
     if (existedUser) {
       throw new ConflictException('Email already exists');
     }
 
     const hash = await hashingPassword(pwd);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        passwordHash: hash,
-      },
+    const user = await this.prisma.orm.User.create({
+      email,
+      passwordHash: hash,
     });
 
     const accessToken = await this.jwtService.signAsync({ userId: user.id });
 
     return {
-      user: omit(user, ['passwordHash']),
+      user: omit(fromDb(user), ['passwordHash']),
       accessToken,
     };
   }
 
   async validateUser(userId: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.prisma.orm.User.first({ id: userId });
     if (user) {
-      const { passwordHash, ...result } = user;
+      const { passwordHash, ...result } = fromDb(user);
       return result;
     }
     return null;
   }
 
   async getProfile(userId: string): Promise<SafeUser> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      omit: {
-        passwordHash: true,
-      },
-    });
+    const user = await this.prisma.orm.User.first({ id: userId });
 
     if (!user) {
       throw new NotFoundException(`User not found with ID: ${userId}`);
     }
 
-    return user;
+    return omit(fromDb(user), ['passwordHash']);
   }
 
   /**
@@ -133,16 +119,17 @@ export class AuthService {
    * and a failing SMTP host are both indistinguishable from success.
    */
   async forgotPassword(email: string): Promise<MessageResponse> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.orm.User.first({ email });
 
     if (!user) {
       return { message: GENERIC_FORGOT_MESSAGE };
     }
 
-    const latest = await this.prisma.passwordResetCode.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const latest = fromDb(
+      await this.prisma.orm.PasswordResetCode.where({ userId: user.id })
+        .orderBy((c) => c.createdAt.desc())
+        .first(),
+    );
 
     const withinCooldown =
       latest !== null &&
@@ -153,20 +140,19 @@ export class AuthService {
     }
 
     // A new request retires every code the user might still be holding.
-    await this.prisma.passwordResetCode.updateMany({
-      where: { userId: user.id, consumedAt: null },
-      data: { consumedAt: dayjs().toDate() },
+    await this.unconsumedCodes(user.id).updateAndCount({
+      consumedAt: toDbTimestamp(dayjs().toDate()),
     });
 
     // randomInt, not Math.random: this value guards an account.
     const code = randomInt(100000, 1000000).toString();
 
-    await this.prisma.passwordResetCode.create({
-      data: {
-        userId: user.id,
-        codeHash: await hashingPassword(code),
-        expiresAt: dayjs().add(CODE_TTL_MINUTES, 'minute').toDate(),
-      },
+    await this.prisma.orm.PasswordResetCode.create({
+      userId: user.id,
+      codeHash: await hashingPassword(code),
+      expiresAt: toDbTimestamp(
+        dayjs().add(CODE_TTL_MINUTES, 'minute').toDate(),
+      ),
     });
 
     await this.emailService.sendPasswordResetCode(email, code);
@@ -182,16 +168,17 @@ export class AuthService {
     email: string,
     code: string,
   ): Promise<VerifyResetCodeResponse> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.orm.User.first({ email });
 
     if (!user) {
       throw new BadRequestException(INVALID_CODE_MESSAGE);
     }
 
-    const resetCode = await this.prisma.passwordResetCode.findFirst({
-      where: { userId: user.id, consumedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const resetCode = fromDb(
+      await this.unconsumedCodes(user.id)
+        .orderBy((c) => c.createdAt.desc())
+        .first(),
+    );
 
     // `!isBefore` rather than `isAfter`: an expiry landing on this exact
     // millisecond is expired, not still live.
@@ -206,18 +193,23 @@ export class AuthService {
     const isCodeValid = await comparePassword(code, resetCode.codeHash);
 
     if (!isCodeValid) {
-      await this.prisma.passwordResetCode.update({
-        where: { id: resetCode.id },
-        data: { attempts: { increment: 1 } },
-      });
+      // Incremented in SQL, not read-then-written: parallel wrong guesses must
+      // each count against MAX_ATTEMPTS.
+      await this.prisma.execute(
+        this.prisma.sql.password_reset_codes
+          .update((f, fns) => ({
+            attempts: fns.raw`${f.attempts} + 1`.returns('pg/int4@1'),
+          }))
+          .where((f, fns) => fns.eq(f.id, resetCode.id))
+          .build(),
+      );
       throw new BadRequestException(INVALID_CODE_MESSAGE);
     }
 
     // Restamped rather than set once, so back-navigation in the app can
     // re-verify an unexpired code instead of stranding the user.
-    await this.prisma.passwordResetCode.update({
-      where: { id: resetCode.id },
-      data: { verifiedAt: dayjs().toDate() },
+    await this.prisma.orm.PasswordResetCode.where({ id: resetCode.id }).update({
+      verifiedAt: toDbTimestamp(dayjs().toDate()),
     });
 
     const resetToken = await this.jwtService.signAsync(
@@ -254,8 +246,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired reset token');
     }
 
-    const resetCode = await this.prisma.passwordResetCode.findUnique({
-      where: { id: payload.prcId },
+    const resetCode = await this.prisma.orm.PasswordResetCode.first({
+      id: payload.prcId,
     });
 
     if (
@@ -271,19 +263,21 @@ export class AuthService {
     // no reason to hold a write transaction open for it.
     const passwordHash = await hashingPassword(newPassword);
 
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: resetCode.userId },
-        data: { passwordHash },
-      }),
-      this.prisma.passwordResetCode.update({
-        where: { id: resetCode.id },
-        data: { consumedAt: dayjs().toDate() },
-      }),
-    ]);
+    await this.prisma.transaction(async (orm) => {
+      await orm.User.where({ id: resetCode.userId }).update({ passwordHash });
+      await orm.PasswordResetCode.where({ id: resetCode.id }).update({
+        consumedAt: toDbTimestamp(dayjs().toDate()),
+      });
+    });
 
     return {
       message: 'Password updated. Sign in with your new password.',
     };
+  }
+
+  private unconsumedCodes(userId: string) {
+    return this.prisma.orm.PasswordResetCode.where({ userId }).where((c) =>
+      c.consumedAt.isNull(),
+    );
   }
 }

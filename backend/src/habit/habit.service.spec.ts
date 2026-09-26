@@ -1,164 +1,173 @@
-import { Test } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { HabitService } from './habit.service';
-import { PrismaService } from 'src/prisma.service';
 import { DecoratedHabit } from './types';
+import {
+  createEntry,
+  createHabit,
+  createUser,
+  useDatabaseService,
+} from '../../test/factories';
 
-describe('HabitService.getHabits', () => {
-  const habitRow = {
-    id: 'bbbbbbbb-0000-4000-8000-000000000001',
-    userId: 'user-1',
-    name: 'Read',
-    color: '#4D6054',
-    createdAt: new Date('2026-01-01T00:00:00.000Z'),
-    archivedAt: null,
-  };
-
-  let service: HabitService;
-  let prisma: { habit: { findMany: jest.Mock } };
+describe('HabitService', () => {
+  const ctx = useDatabaseService(HabitService);
+  let userId: string;
 
   beforeEach(async () => {
-    prisma = { habit: { findMany: jest.fn() } };
-    const moduleRef = await Test.createTestingModule({
-      providers: [HabitService, { provide: PrismaService, useValue: prisma }],
-    }).compile();
-    service = moduleRef.get(HabitService);
+    userId = (await createUser(ctx.prisma)).id;
   });
 
-  it('returns bare rows when no date is supplied', async () => {
-    prisma.habit.findMany.mockResolvedValue([habitRow]);
+  describe('addHabit', () => {
+    it('creates a habit owned by the caller', async () => {
+      const habit = await ctx.service.addHabit(userId, {
+        name: 'Read',
+        color: '#4D6054',
+      });
 
-    const result = await service.getHabits('user-1', undefined);
-
-    expect(result).toEqual([habitRow]);
-    expect(prisma.habit.findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1', archivedAt: null },
+      expect(habit).toMatchObject({
+        userId,
+        name: 'Read',
+        color: '#4D6054',
+        archivedAt: null,
+      });
+      expect(habit.createdAt).toBeInstanceOf(Date);
     });
   });
 
-  it('treats an empty query object as no date', async () => {
-    prisma.habit.findMany.mockResolvedValue([habitRow]);
+  describe('getHabits', () => {
+    it("returns the caller's active habits as bare rows when no date is supplied", async () => {
+      const read = await createHabit(ctx.prisma, userId, { name: 'Read' });
+      await createHabit(ctx.prisma, userId, { archivedAt: new Date() });
+      const other = (await createUser(ctx.prisma)).id;
+      await createHabit(ctx.prisma, other);
 
-    const result = await service.getHabits('user-1', {});
+      const result = await ctx.service.getHabits(userId, undefined);
 
-    expect(result).toEqual([habitRow]);
-  });
+      expect(result).toEqual([
+        {
+          id: read.id,
+          userId,
+          name: 'Read',
+          color: '#4d6054',
+          archivedAt: null,
+          createdAt: expect.any(Date) as Date,
+        },
+      ]);
+    });
 
-  it('decorates against the requested date, not today', async () => {
-    prisma.habit.findMany.mockResolvedValue([
-      {
-        ...habitRow,
-        entries: [
-          { date: new Date('2026-03-10T00:00:00.000Z') },
-          { date: new Date('2026-03-09T00:00:00.000Z') },
-          { date: new Date('2026-03-08T00:00:00.000Z') },
-        ],
-      },
-    ]);
+    it('treats an empty query object as no date', async () => {
+      await createHabit(ctx.prisma, userId);
 
-    const [decorated] = (await service.getHabits('user-1', {
-      date: '2026-03-10',
-    })) as DecoratedHabit[];
+      const [habit] = await ctx.service.getHabits(userId, {});
 
-    expect(decorated.doneToday).toBe(true);
-    expect(decorated.currentStreak).toBe(3);
-    expect(decorated).not.toHaveProperty('entries');
-  });
+      expect(habit).not.toHaveProperty('doneToday');
+    });
 
-  it('reports doneToday false for a day with no entry', async () => {
-    prisma.habit.findMany.mockResolvedValue([
-      {
-        ...habitRow,
-        entries: [{ date: new Date('2026-03-08T00:00:00.000Z') }],
-      },
-    ]);
+    it('decorates against the requested date, not today', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+      for (const day of ['2026-03-10', '2026-03-09', '2026-03-08']) {
+        await createEntry(ctx.prisma, habit.id, day);
+      }
 
-    const [decorated] = (await service.getHabits('user-1', {
-      date: '2026-03-10',
-    })) as DecoratedHabit[];
+      const [decorated] = (await ctx.service.getHabits(userId, {
+        date: '2026-03-10',
+      })) as DecoratedHabit[];
 
-    expect(decorated.doneToday).toBe(false);
-    expect(decorated.currentStreak).toBe(0);
-  });
-});
+      expect(decorated.doneToday).toBe(true);
+      expect(decorated.currentStreak).toBe(3);
+      expect(decorated).not.toHaveProperty('entries');
+    });
 
-describe('HabitService.updateHabits', () => {
-  const archived = {
-    id: 'cccccccc-0000-4000-8000-000000000001',
-    userId: 'user-1',
-    name: 'Read',
-    color: '#4D6054',
-    createdAt: new Date('2026-01-01T00:00:00.000Z'),
-    archivedAt: new Date('2026-02-01T00:00:00.000Z'),
-  };
+    it('reports doneToday false for a day with no entry', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+      await createEntry(ctx.prisma, habit.id, '2026-03-08');
 
-  let service: HabitService;
-  let prisma: { habit: { findFirst: jest.Mock; update: jest.Mock } };
+      const [decorated] = (await ctx.service.getHabits(userId, {
+        date: '2026-03-10',
+      })) as DecoratedHabit[];
 
-  beforeEach(async () => {
-    prisma = {
-      habit: {
-        findFirst: jest.fn().mockResolvedValue(archived),
-        update: jest
-          .fn()
-          .mockImplementation((args: { data: Record<string, unknown> }) => ({
-            ...archived,
-            ...args.data,
-          })),
-      },
-    };
-    const moduleRef = await Test.createTestingModule({
-      providers: [HabitService, { provide: PrismaService, useValue: prisma }],
-    }).compile();
-    service = moduleRef.get(HabitService);
-  });
-
-  /// The `data` payload of the first recorded update, typed so the assertions
-  /// below are not reaching into `any`.
-  const recordedData = (): Record<string, unknown> => {
-    const calls = prisma.habit.update.mock.calls as unknown as Array<
-      [{ data: Record<string, unknown> }]
-    >;
-    return calls[0][0].data;
-  };
-
-  it('a rename leaves archivedAt alone', async () => {
-    await service.updateHabits(archived.id, 'user-1', { name: 'Read daily' });
-
-    expect(prisma.habit.update).toHaveBeenCalledWith({
-      where: { id: archived.id },
-      data: { name: 'Read daily' },
+      expect(decorated.doneToday).toBe(false);
+      expect(decorated.currentStreak).toBe(0);
     });
   });
 
-  it('never writes immutable columns back', async () => {
-    await service.updateHabits(archived.id, 'user-1', { color: '#8A9A5B' });
+  describe('updateHabits', () => {
+    const archivedAt = new Date('2026-02-01T00:00:00.000Z');
 
-    const data = recordedData();
-    expect(data).not.toHaveProperty('id');
-    expect(data).not.toHaveProperty('createdAt');
-    expect(data).not.toHaveProperty('userId');
+    it('a rename leaves archivedAt alone', async () => {
+      const habit = await createHabit(ctx.prisma, userId, { archivedAt });
+
+      const updated = await ctx.service.updateHabits(habit.id, userId, {
+        name: 'Read daily',
+      });
+
+      expect(updated).toMatchObject({ name: 'Read daily', archivedAt });
+    });
+
+    it('never changes immutable columns', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+
+      const updated = await ctx.service.updateHabits(habit.id, userId, {
+        color: '#8A9A5B',
+      });
+
+      expect(updated).toMatchObject({ id: habit.id, userId, color: '#8A9A5B' });
+      expect(updated.createdAt.getTime()).toBe(
+        habit.createdAt.toZonedDateTime('UTC').epochMilliseconds,
+      );
+    });
+
+    it('archived true stamps archivedAt', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+
+      const updated = await ctx.service.updateHabits(habit.id, userId, {
+        archived: true,
+      });
+
+      expect(updated.archivedAt).toBeInstanceOf(Date);
+      expect(updated).not.toHaveProperty('archived');
+    });
+
+    it('archived false clears archivedAt', async () => {
+      const habit = await createHabit(ctx.prisma, userId, { archivedAt });
+
+      const updated = await ctx.service.updateHabits(habit.id, userId, {
+        archived: false,
+      });
+
+      expect(updated.archivedAt).toBeNull();
+    });
+
+    it('rejects a habit the caller does not own', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+      const other = (await createUser(ctx.prisma)).id;
+
+      await expect(
+        ctx.service.updateHabits(habit.id, other, { name: 'Nope' }),
+      ).rejects.toThrow('Habit not found!');
+      const stored = await ctx.prisma.orm.Habit.first({ id: habit.id });
+      expect(stored?.name).toBe(habit.name);
+    });
   });
 
-  it('archived true stamps archivedAt', async () => {
-    await service.updateHabits(archived.id, 'user-1', { archived: true });
+  describe('deleteHabit', () => {
+    it('deletes an owned habit', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
 
-    const data = recordedData();
-    expect(data.archivedAt).toBeInstanceOf(Date);
-    expect(data).not.toHaveProperty('archived');
-  });
+      await expect(ctx.service.deleteHabit(habit.id, userId)).resolves.toEqual({
+        code: 200,
+        message: `Deleted successfully the habit with id: ${habit.id}`,
+      });
+      expect(await ctx.prisma.orm.Habit.first({ id: habit.id })).toBeNull();
+    });
 
-  it('archived false clears archivedAt', async () => {
-    await service.updateHabits(archived.id, 'user-1', { archived: false });
+    it('404s for a habit the caller does not own', async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+      const other = (await createUser(ctx.prisma)).id;
 
-    const data = recordedData();
-    expect(data.archivedAt).toBeNull();
-  });
-
-  it('rejects a habit the caller does not own', async () => {
-    prisma.habit.findFirst.mockResolvedValue(null);
-
-    await expect(
-      service.updateHabits(archived.id, 'someone-else', { name: 'Nope' }),
-    ).rejects.toThrow('Habit not found!');
+      await expect(ctx.service.deleteHabit(habit.id, other)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(await ctx.prisma.orm.Habit.first({ id: habit.id })).not.toBeNull();
+    });
   });
 });

@@ -3,9 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from 'generated/prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import type { ResultType } from '@prisma/orm-postgres/components/runtime';
+import { type Orm, PrismaService } from 'src/prisma.service';
 import { standardizeDate } from 'src/utils/dayjs';
+import {
+  type FromDb,
+  fromDb,
+  toDbDate,
+  toDbTimestamp,
+} from 'src/utils/temporal';
 import { GetRoutinesQueryDto } from './dto/get-routines-query.dto';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
@@ -13,17 +19,24 @@ import { RoutineStepDto } from './dto/routine-step.dto';
 
 const DEFAULT_STEP_MINUTES = 5;
 
-const ROUTINE_INCLUDE = {
-  steps: { include: { habit: true }, orderBy: { order: 'asc' } },
-} satisfies Prisma.RoutineInclude;
+/** Routines with their steps, in order, and each step's habit. */
+const withSteps = (routines: Orm['Routine']) =>
+  routines.include('steps', (steps) =>
+    steps.include('habit').orderBy((step) => step.order.asc()),
+  );
 
-type RoutineWithSteps = Prisma.RoutineGetPayload<{
-  include: typeof ROUTINE_INCLUDE;
-}>;
+type RoutineWithSteps = FromDb<ResultType<ReturnType<typeof withSteps>>>;
+
+const respond = <T>(statusCode: number, message: string, data: T) => ({
+  statusCode,
+  message,
+  data,
+});
 
 /** Array position is the step order (1-based). */
-const toStepRows = (steps: RoutineStepDto[]) =>
+const toStepRows = (routineId: string, steps: RoutineStepDto[]) =>
   steps.map((s, index) => ({
+    routineId,
     habitId: s.habitId,
     order: index + 1,
     durationMinutes: s.durationMinutes ?? DEFAULT_STEP_MINUTES,
@@ -34,74 +47,83 @@ export class RoutineService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(userId: string, query: GetRoutinesQueryDto) {
-    const routines = await this.prisma.routine.findMany({
-      where: { userId },
-      include: ROUTINE_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-    });
-    return this.toViews(routines, query.date);
+    const routines = await withSteps(this.prisma.orm.Routine)
+      .where({ userId })
+      .orderBy((routine) => routine.createdAt.desc())
+      .all();
+    const views = await this.toViews(fromDb(routines), query.date);
+    return respond(200, 'Routines retrieved successfully', views);
   }
 
   async findOne(userId: string, id: string, query: GetRoutinesQueryDto) {
     const routine = await this.findOwned(userId, id);
     const [view] = await this.toViews([routine], query.date);
-    return view;
+    return respond(200, 'Routine retrieved successfully', view);
   }
 
   async create(userId: string, dto: CreateRoutineDto) {
     const { steps, ...fields } = dto;
+    const now = toDbTimestamp(new Date());
 
-    const routine = await this.prisma.$transaction(async (tx) => {
-      await this.assertUsableHabits(tx, userId, steps);
-      return tx.routine.create({
-        data: { ...fields, userId, steps: { create: toStepRows(steps) } },
-        include: ROUTINE_INCLUDE,
+    const routine = await this.prisma.transaction(async (orm) => {
+      await this.assertUsableHabits(orm, userId, steps);
+      const { id } = await orm.Routine.create({
+        ...fields,
+        userId,
+        createdAt: now,
+        updatedAt: now,
       });
+      await orm.RoutineHabit.createAndCount(toStepRows(id, steps));
+      return this.findOwned(userId, id, orm);
     });
 
     const [view] = await this.toViews([routine]);
-    return view;
+    return respond(201, 'Routine created successfully', view);
   }
 
   /** With `steps`, the whole sequence is replaced. */
   async update(userId: string, id: string, dto: UpdateRoutineDto) {
     const { steps, ...fields } = dto;
 
-    const routine = await this.prisma.$transaction(async (tx) => {
-      await this.findOwned(userId, id, tx);
+    const routine = await this.prisma.transaction(async (orm) => {
+      await this.findOwned(userId, id, orm);
 
       if (steps) {
-        await this.assertUsableHabits(tx, userId, steps);
-        await tx.routineHabit.deleteMany({ where: { routineId: id } });
-        await tx.routineHabit.createMany({
-          data: toStepRows(steps).map((row) => ({ routineId: id, ...row })),
-        });
+        await this.assertUsableHabits(orm, userId, steps);
+        await orm.RoutineHabit.where({ routineId: id }).deleteAndCount();
+        await orm.RoutineHabit.createAndCount(toStepRows(id, steps));
       }
 
-      return tx.routine.update({
-        where: { id },
-        data: fields,
-        include: ROUTINE_INCLUDE,
+      await orm.Routine.where({ id }).update({
+        ...fields,
+        updatedAt: toDbTimestamp(new Date()),
       });
+      return this.findOwned(userId, id, orm);
     });
 
     const [view] = await this.toViews([routine]);
-    return view;
+    return respond(200, 'Routine updated successfully', view);
   }
 
   /** Cascades routine_habits only. Habits and their entries are untouched. */
   async remove(userId: string, id: string) {
-    await this.findOwned(userId, id);
-    await this.prisma.routine.delete({ where: { id, userId } });
-    return {
-      code: 200,
-      message: `Deleted successfully the routine with id: ${id}`,
-    };
+    const deleted = await this.prisma.orm.Routine.where({
+      id,
+      userId,
+    }).delete();
+    if (!deleted) {
+      throw new NotFoundException('Routine not found!');
+    }
+    return respond(
+      200,
+      `Deleted successfully the routine with id: ${id}`,
+      null,
+    );
   }
 
   /** Every habit must be unique in the list, owned by the user and active. */
   private async assertUsableHabits(
-    tx: Prisma.TransactionClient,
+    orm: Orm,
     userId: string,
     steps: RoutineStepDto[],
   ) {
@@ -113,9 +135,10 @@ export class RoutineService {
       );
     }
 
-    const owned = await tx.habit.count({
-      where: { id: { in: habitIds }, userId, archivedAt: null },
-    });
+    const { owned } = await orm.Habit.where({ userId })
+      .where((h) => h.id.in(habitIds))
+      .where((h) => h.archivedAt.isNull())
+      .aggregate((a) => ({ owned: a.count() }));
     if (owned !== habitIds.length) {
       throw new BadRequestException(
         'One or more habits are invalid or do not belong to you',
@@ -126,16 +149,13 @@ export class RoutineService {
   private async findOwned(
     userId: string,
     id: string,
-    client: Prisma.TransactionClient = this.prisma,
-  ) {
-    const routine = await client.routine.findFirst({
-      where: { id, userId },
-      include: ROUTINE_INCLUDE,
-    });
+    orm: Orm = this.prisma.orm,
+  ): Promise<RoutineWithSteps> {
+    const routine = await withSteps(orm.Routine).where({ id, userId }).first();
     if (!routine) {
       throw new NotFoundException('Routine not found!');
     }
-    return routine;
+    return fromDb(routine);
   }
 
   /**
@@ -155,10 +175,10 @@ export class RoutineService {
     const habitIds = active.flatMap(({ steps }) => steps.map((s) => s.habitId));
     if (date !== undefined) {
       const found = habitIds.length
-        ? await this.prisma.habitEntry.findMany({
-            where: { habitId: { in: habitIds }, date: standardizeDate(date) },
-            select: { habitId: true },
-          })
+        ? await this.prisma.orm.HabitEntry.where((e) => e.habitId.in(habitIds))
+            .where({ date: toDbDate(standardizeDate(date)) })
+            .select('habitId')
+            .all()
         : [];
       done = new Set(found.map((e) => e.habitId));
     }

@@ -1,0 +1,11 @@
+{
+  // Jest runs CommonJS. Prisma 8 and temporal-polyfill ship ESM only, so
+  // Jest transpiles them (see transformIgnorePatterns in package.json).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "resolvePackageJsonExports": false
+  }
+}

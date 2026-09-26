@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "prisma contract emit && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -18,7 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prisma:generate": "pnpm dlx prisma@7.8.0 generate --config prisma7.config.ts"
+    "prisma:emit": "prisma contract emit",
+    "prisma:update": "prisma db update",
+    "postinstall": "prisma contract emit"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -30,8 +32,6 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.4.4",
     "@nestjs/throttler": "^6.5.0",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
     "@prisma/orm-postgres": "8.0.0-rc.11",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -46,6 +46,7 @@
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "temporal-polyfill": "^1.0.5",
     "uuid": "^14.0.1"
   },
   "devDependencies": {
@@ -62,7 +63,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.20.4",
     "@types/supertest": "^7.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -83,13 +84,19 @@
   "jest": {
     "moduleFileExtensions": [
       "js",
+      "mjs",
       "json",
       "ts"
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j|mj)s$": [
+        "ts-jest",
+        {
+          "tsconfig": "<rootDir>/../tsconfig.spec.json"
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
@@ -100,6 +107,14 @@
       "^src/(.*)$": "<rootDir>/$1",
       "^generated/(.*)$": "<rootDir>/../generated/$1",
       "^(\\.{1,2}/.*)\\.js$": "$1"
-    }
+    },
+    "transformIgnorePatterns": [
+      "^(?!.*/node_modules/(@prisma|@ark|arktype|arkregex|@standard-schema|pathe|uniku|@noble|temporal-polyfill|temporal-spec|temporal-utils)/).*/node_modules/"
+    ],
+    "globalSetup": "<rootDir>/../test/global-setup.ts",
+    "setupFiles": [
+      "<rootDir>/../test/setup-env.ts"
+    ],
+    "maxWorkers": 1
   }
 }
