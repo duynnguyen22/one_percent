@@ -1,42 +1,72 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators';
 import { RoutineService } from './routine.service';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
+import { GetRoutinesQueryDto } from './dto/get-routines-query.dto';
 
-@Controller('routine')
+@Controller('routines')
+@ApiTags('Routine')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class RoutineController {
   constructor(private readonly routineService: RoutineService) {}
 
-  @Post()
-  create(@Body() createRoutineDto: CreateRoutineDto) {
-    return this.routineService.create(createRoutineDto);
-  }
-
   @Get()
-  findAll() {
-    return this.routineService.findAll();
+  async findAll(
+    @CurrentUser('id') userId: string,
+    @Query() query: GetRoutinesQueryDto,
+  ) {
+    return await this.routineService.findAll(userId, query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.routineService.findOne(+id);
+  async findOne(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser('id') userId: string,
+    @Query() query: GetRoutinesQueryDto,
+  ) {
+    return await this.routineService.findOne(userId, id, query);
+  }
+
+  @Post()
+  @ApiCreatedResponse({
+    description: 'The routine has been successfully created.',
+  })
+  async create(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateRoutineDto,
+  ) {
+    return await this.routineService.create(userId, dto);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoutineDto: UpdateRoutineDto) {
-    return this.routineService.update(+id, updateRoutineDto);
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateRoutineDto,
+  ) {
+    return await this.routineService.update(userId, id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.routineService.remove(+id);
+  async remove(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return await this.routineService.remove(userId, id);
   }
 }

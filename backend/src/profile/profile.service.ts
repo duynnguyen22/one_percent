@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
+import { omit } from 'lodash';
 
 @Injectable()
 export class ProfileService {
@@ -21,7 +22,7 @@ export class ProfileService {
 
     return {
       message: 'Profile updated successfully',
-      user: updatedUser,
+      user: omit(updatedUser, ['passwordHash']),
     };
   }
 }

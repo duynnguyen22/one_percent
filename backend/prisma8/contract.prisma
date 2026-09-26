@@ -63,6 +63,7 @@ model Routines {
   name          String
   description   String?
   color         String?
+  cadence       String?
   createdAt     Timestamp(3)    @default(now())
   updatedAt     Timestamp(3)
   routineHabits RoutineHabits[]
@@ -73,11 +74,12 @@ model Routines {
 }
 
 model RoutineHabits {
-  routineId String
-  habitId   String
-  order     Int
-  habit     Habits   @relation(fields: [habitId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_habitId_fkey")
-  routine   Routines @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_routineId_fkey", index: false)
+  routineId       String
+  habitId         String
+  order           Int
+  durationMinutes Int      @default(5)
+  habit           Habits   @relation(fields: [habitId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_habitId_fkey")
+  routine         Routines @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_routineId_fkey", index: false)
 
   @@id([routineId, habitId], map: "routine_habits_pkey")
   @@index([habitId], map: "routine_habits_habitId_idx")
