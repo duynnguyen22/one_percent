@@ -19,8 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:emit": "prisma contract emit",
-    "prisma:update": "prisma db update",
-    "postinstall": "prisma contract emit"
+    "postinstall": "prisma contract emit",
+    "prisma:plan": "prisma contract emit && prisma migration plan",
+    "prisma:migrate": "prisma db migrate --advance-ref db",
+    "prisma:verify": "prisma db verify"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -1,0 +1,700 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.habit_entries",
+    "label": "Create table \"habit_entries\"",
+    "summary": "Creates table \"habit_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "habit_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"habit_entries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"habit_entries\"",
+        "sql": "CREATE TABLE \"public\".\"habit_entries\" (\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"date\" date NOT NULL,\n  \"habitId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  CONSTRAINT \"habit_entries_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"habit_entries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.habits",
+    "label": "Create table \"habits\"",
+    "summary": "Creates table \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"habits\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"habits\"",
+        "sql": "CREATE TABLE \"public\".\"habits\" (\n  \"archivedAt\" timestamp(3),\n  \"color\" text,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  CONSTRAINT \"habits_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"habits\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.password_reset_codes",
+    "label": "Create table \"password_reset_codes\"",
+    "summary": "Creates table \"password_reset_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "password_reset_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"password_reset_codes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"password_reset_codes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"password_reset_codes\"",
+        "sql": "CREATE TABLE \"public\".\"password_reset_codes\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"codeHash\" text NOT NULL,\n  \"consumedAt\" timestamp(3),\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamp(3) NOT NULL,\n  \"id\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  \"verifiedAt\" timestamp(3),\n  CONSTRAINT \"password_reset_codes_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"password_reset_codes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"password_reset_codes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.routine_habits",
+    "label": "Create table \"routine_habits\"",
+    "summary": "Creates table \"routine_habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "routine_habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"routine_habits\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"routine_habits\"",
+        "sql": "CREATE TABLE \"public\".\"routine_habits\" (\n  \"durationMinutes\" int4 DEFAULT 5 NOT NULL,\n  \"habitId\" text NOT NULL,\n  \"order\" int4 NOT NULL,\n  \"routineId\" text NOT NULL,\n  CONSTRAINT \"routine_habits_pkey\" PRIMARY KEY (\"routineId\", \"habitId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"routine_habits\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.routines",
+    "label": "Create table \"routines\"",
+    "summary": "Creates table \"routines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "routines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"routines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"routines\"",
+        "sql": "CREATE TABLE \"public\".\"routines\" (\n  \"cadence\" text,\n  \"color\" text,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamp(3) NOT NULL,\n  \"userId\" text NOT NULL,\n  CONSTRAINT \"routines_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"routines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.users",
+    "label": "Create table \"users\"",
+    "summary": "Creates table \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"users\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"users\"",
+        "sql": "CREATE TABLE \"public\".\"users\" (\n  \"avatarUrl\" text,\n  \"createdAt\" timestamp(3) DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"passwordHash\" text NOT NULL,\n  \"userName\" text,\n  \"userPhone\" text,\n  CONSTRAINT \"users_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"users\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.habit_entries.habit_entries_habitId_date_key",
+    "label": "Create index \"habit_entries_habitId_date_key\" on \"habit_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "habit_entries_habitId_date_key",
+        "table": "habit_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"habit_entries_habitId_date_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_entries_habitId_date_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"habit_entries_habitId_date_key\"",
+        "sql": "CREATE UNIQUE INDEX \"habit_entries_habitId_date_key\" ON \"public\".\"habit_entries\" (\"habitId\", \"date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"habit_entries_habitId_date_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_entries_habitId_date_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.password_reset_codes.password_reset_codes_userId_createdAt_idx",
+    "label": "Create index \"password_reset_codes_userId_createdAt_idx\" on \"password_reset_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "password_reset_codes_userId_createdAt_idx",
+        "table": "password_reset_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"password_reset_codes_userId_createdAt_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"password_reset_codes_userId_createdAt_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"password_reset_codes_userId_createdAt_idx\"",
+        "sql": "CREATE INDEX \"password_reset_codes_userId_createdAt_idx\" ON \"public\".\"password_reset_codes\" (\"userId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"password_reset_codes_userId_createdAt_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"password_reset_codes_userId_createdAt_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.routine_habits.routine_habits_habitId_idx",
+    "label": "Create index \"routine_habits_habitId_idx\" on \"routine_habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "routine_habits_habitId_idx",
+        "table": "routine_habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"routine_habits_habitId_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_habits_habitId_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"routine_habits_habitId_idx\"",
+        "sql": "CREATE INDEX \"routine_habits_habitId_idx\" ON \"public\".\"routine_habits\" (\"habitId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"routine_habits_habitId_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_habits_habitId_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.routines.routines_userId_idx",
+    "label": "Create index \"routines_userId_idx\" on \"routines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "routines_userId_idx",
+        "table": "routines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"routines_userId_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routines_userId_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"routines_userId_idx\"",
+        "sql": "CREATE INDEX \"routines_userId_idx\" ON \"public\".\"routines\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"routines_userId_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routines_userId_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.users.users_email_key",
+    "label": "Create index \"users_email_key\" on \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "users_email_key",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"users_email_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users_email_key\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"users_email_key\"",
+        "sql": "CREATE UNIQUE INDEX \"users_email_key\" ON \"public\".\"users\" (\"email\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"users_email_key\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users_email_key\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.habit_entries.habit_entries_habitId_fkey",
+    "label": "Add foreign key \"habit_entries_habitId_fkey\" on \"habit_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "habit_entries_habitId_fkey",
+        "table": "habit_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"habit_entries_habitId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_entries_habitId_fkey",
+          "public",
+          "\"public\".\"habit_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"habit_entries_habitId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"habit_entries\"\nADD CONSTRAINT \"habit_entries_habitId_fkey\"\nFOREIGN KEY (\"habitId\")\nREFERENCES \"public\".\"habits\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"habit_entries_habitId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_entries_habitId_fkey",
+          "public",
+          "\"public\".\"habit_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.habits.habits_userId_fkey",
+    "label": "Add foreign key \"habits_userId_fkey\" on \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "habits_userId_fkey",
+        "table": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"habits_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habits_userId_fkey",
+          "public",
+          "\"public\".\"habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"habits_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"habits\"\nADD CONSTRAINT \"habits_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"habits_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habits_userId_fkey",
+          "public",
+          "\"public\".\"habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.password_reset_codes.password_reset_codes_userId_fkey",
+    "label": "Add foreign key \"password_reset_codes_userId_fkey\" on \"password_reset_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "password_reset_codes_userId_fkey",
+        "table": "password_reset_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"password_reset_codes_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "password_reset_codes_userId_fkey",
+          "public",
+          "\"public\".\"password_reset_codes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"password_reset_codes_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"password_reset_codes\"\nADD CONSTRAINT \"password_reset_codes_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"password_reset_codes_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "password_reset_codes_userId_fkey",
+          "public",
+          "\"public\".\"password_reset_codes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.routine_habits.routine_habits_habitId_fkey",
+    "label": "Add foreign key \"routine_habits_habitId_fkey\" on \"routine_habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "routine_habits_habitId_fkey",
+        "table": "routine_habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"routine_habits_habitId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_habits_habitId_fkey",
+          "public",
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"routine_habits_habitId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"routine_habits\"\nADD CONSTRAINT \"routine_habits_habitId_fkey\"\nFOREIGN KEY (\"habitId\")\nREFERENCES \"public\".\"habits\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"routine_habits_habitId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_habits_habitId_fkey",
+          "public",
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.routine_habits.routine_habits_routineId_fkey",
+    "label": "Add foreign key \"routine_habits_routineId_fkey\" on \"routine_habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "routine_habits_routineId_fkey",
+        "table": "routine_habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"routine_habits_routineId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_habits_routineId_fkey",
+          "public",
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"routine_habits_routineId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"routine_habits\"\nADD CONSTRAINT \"routine_habits_routineId_fkey\"\nFOREIGN KEY (\"routineId\")\nREFERENCES \"public\".\"routines\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"routine_habits_routineId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_habits_routineId_fkey",
+          "public",
+          "\"public\".\"routine_habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.routines.routines_userId_fkey",
+    "label": "Add foreign key \"routines_userId_fkey\" on \"routines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "routines_userId_fkey",
+        "table": "routines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"routines_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routines_userId_fkey",
+          "public",
+          "\"public\".\"routines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"routines_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"routines\"\nADD CONSTRAINT \"routines_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"routines_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routines_userId_fkey",
+          "public",
+          "\"public\".\"routines\""
+        ]
+      }
+    ]
+  }
+]
