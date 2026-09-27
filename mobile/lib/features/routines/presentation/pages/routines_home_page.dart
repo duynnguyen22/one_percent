@@ -6,6 +6,8 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
 import '../providers/routines_provider.dart';
 
@@ -16,287 +18,353 @@ class RoutinesHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final routines = ref.watch(routinesNotifierProvider);
+    final routines = ref.watch(routinesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Top App Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.containerMargin,
-                  vertical: 12,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () => ref.refresh(routinesProvider.future),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            slivers: [
+              // Top App Bar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.containerMargin,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.eco_rounded,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.eco_rounded,
-                            color: AppColors.primary,
-                            size: 22,
+                          const SizedBox(width: 10),
+                          Text(
+                            'Bloom',
+                            style: AppTypography.headlineMedium.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Bloom',
-                          style: AppTypography.headlineMedium.copyWith(
-                            color: AppColors.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.tune_rounded, color: AppColors.primary),
-                      onPressed: () {},
-                      tooltip: 'Filter Routines',
-                    ),
-                  ],
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.tune_rounded, color: AppColors.primary),
+                        onPressed: () {},
+                        tooltip: 'Filter Routines',
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Header Title & Intro
-            SliverToBoxAdapter(
-              child: Padding(
+              // Header Title & Intro
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.containerMargin,
+                    vertical: 8,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your Routines',
+                        style: AppTypography.headlineLargeMobile.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Small steps, done consistently.',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Mindful Helper Banner: Guided Rituals
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainerLow,
+                          borderRadius: AppSpacing.borderRadiusCard,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.ambientShadow,
+                              blurRadius: 16,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primaryFixed,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.onPrimaryFixed,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Guided Rituals',
+                                    style: AppTypography.labelLarge.copyWith(
+                                      color: AppColors.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Press Start to be guided through your habits step-by-step with zero friction. Each completed step automatically marks your daily habit done on Today.',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Routines List
+              SliverPadding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.containerMargin,
                   vertical: 8,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your Routines',
-                      style: AppTypography.headlineLargeMobile.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Small steps, done consistently.',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                sliver: _routineList(ref, routines),
+              ),
 
-                    // Mindful Helper Banner: Guided Rituals
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerLow,
+              // Create Routine Button & Ritual Wisdom Card
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.containerMargin,
+                    0,
+                    AppSpacing.containerMargin,
+                    100, // Space for bottom dock
+                  ),
+                  child: Column(
+                    children: [
+                      // Create Routine Action Card
+                      Material(
+                        color: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
                         borderRadius: AppSpacing.borderRadiusCard,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.ambientShadow,
-                            blurRadius: 16,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryFixed,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.auto_awesome_rounded,
-                              color: AppColors.onPrimaryFixed,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        child: InkWell(
+                          onTap: () {
+                            context.pushNamed(RouteNames.createRoutine);
+                          },
+                          borderRadius: AppSpacing.borderRadiusCard,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.surfaceContainerLowest,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.add_rounded,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
                                 Text(
-                                  'Guided Rituals',
+                                  '+ Create Routine',
                                   style: AppTypography.labelLarge.copyWith(
                                     color: AppColors.onSurface,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Press Start to be guided through your habits step-by-step with zero friction. Each completed step automatically marks your daily habit done on Today.',
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.onSurfaceVariant,
-                                    height: 1.4,
-                                  ),
-                                ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Routines List
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerMargin,
-                vertical: 8,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final routine = routines[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _RoutineCard(routine: routine),
-                    );
-                  },
-                  childCount: routines.length,
-                ),
-              ),
-            ),
-
-            // Create Routine Button & Ritual Wisdom Card
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.containerMargin,
-                  0,
-                  AppSpacing.containerMargin,
-                  100, // Space for bottom dock
-                ),
-                child: Column(
-                  children: [
-                    // Create Routine Action Card
-                    Material(
-                      color: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
-                      borderRadius: AppSpacing.borderRadiusCard,
-                      child: InkWell(
-                        onTap: () {
-                          context.pushNamed(RouteNames.createRoutine);
-                        },
-                        borderRadius: AppSpacing.borderRadiusCard,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 32,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.surfaceContainerLowest,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.add_rounded,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '+ Create Routine',
-                                style: AppTypography.labelLarge.copyWith(
-                                  color: AppColors.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Ritual Wisdom Placeholder Card
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerLowest,
-                        borderRadius: AppSpacing.borderRadiusCard,
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.ambientShadow,
-                            blurRadius: 12,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceContainer,
-                              borderRadius: BorderRadius.circular(16),
+                      // Ritual Wisdom Placeholder Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainerLowest,
+                          borderRadius: AppSpacing.borderRadiusCard,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.ambientShadow,
+                              blurRadius: 12,
+                              offset: Offset(0, 2),
                             ),
-                            child: const Icon(
-                              Icons.format_quote_rounded,
-                              color: AppColors.primary,
-                              size: 28,
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceContainer,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.format_quote_rounded,
+                                color: AppColors.primary,
+                                size: 28,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Ritual Wisdom',
-                                  style: AppTypography.labelMedium.copyWith(
-                                    color: AppColors.onSurface,
-                                    fontWeight: FontWeight.w700,
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Ritual Wisdom',
+                                    style: AppTypography.labelMedium.copyWith(
+                                      color: AppColors.onSurface,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '"We do not rise to the level of our goals. We fall to the level of our systems."',
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: AppColors.onSurfaceVariant,
-                                    fontStyle: FontStyle.italic,
-                                    height: 1.3,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '"We do not rise to the level of our goals. We fall to the level of our systems."',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                      fontStyle: FontStyle.italic,
+                                      height: 1.3,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Bottom clearance for floating bottom navigation dock
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 110),
-            ),
-          ],
+              // Bottom clearance for floating bottom navigation dock
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 110),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// Previous data stays on screen during a pull-to-refresh.
+  Widget _routineList(WidgetRef ref, AsyncValue<List<Routine>> routines) {
+    if (routines.hasValue) {
+      final list = routines.requireValue;
+      if (list.isEmpty) {
+        return const SliverToBoxAdapter(child: _EmptyRoutines());
+      }
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _RoutineCard(routine: list[index]),
+          ),
+          childCount: list.length,
+        ),
+      );
+    }
+    if (routines.error case final error?) {
+      return SliverToBoxAdapter(
+        child: AppError(
+          title: 'Could not load routines',
+          message: error is Failure ? error.message : '$error',
+          onRetry: () => ref.read(routinesProvider.notifier).refresh(),
+        ),
+      );
+    }
+    return const SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: AppLoading(),
+      ),
+    );
+  }
+}
+
+class _EmptyRoutines extends StatelessWidget {
+  const _EmptyRoutines();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: AppSpacing.borderRadiusCard,
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.spa_outlined, color: AppColors.primary, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            'No routines yet',
+            style: AppTypography.labelLarge.copyWith(
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Weave a few of your habits into a guided sequence.',
+            textAlign: TextAlign.center,
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -515,12 +583,16 @@ class _RoutineCard extends StatelessWidget {
 
                     // Start Action Button (Always fixed right)
                     FilledButton.icon(
-                      onPressed: () {
-                        context.pushNamed(
-                          RouteNames.routineExecution,
-                          pathParameters: {'routineId': routine.id},
-                        );
-                      },
+                      // Steps on archived habits are hidden, which can leave
+                      // nothing to play.
+                      onPressed: routine.steps.isEmpty
+                          ? null
+                          : () {
+                              context.pushNamed(
+                                RouteNames.routineExecution,
+                                pathParameters: {'routineId': routine.id},
+                              );
+                            },
                       style: FilledButton.styleFrom(
                         backgroundColor: accentColor,
                         foregroundColor: AppColors.onPrimary,

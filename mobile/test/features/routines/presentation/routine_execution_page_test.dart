@@ -4,6 +4,7 @@ import 'package:mobile/features/routines/domain/entities/routine.dart';
 import 'package:mobile/features/routines/presentation/pages/routine_execution_page.dart';
 
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/routine_doubles.dart';
 
 void main() {
   group('RoutineExecutionPage', () {
@@ -13,7 +14,7 @@ void main() {
       await pumpApp(
         tester,
         RoutineExecutionPage(routine: routine),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles(routines: [routine]).overrides,
       );
 
       expect(find.textContaining('MORNING RITUAL', findRichText: true), findsOneWidget);
@@ -41,7 +42,7 @@ void main() {
       await pumpApp(
         tester,
         RoutineExecutionPage(routine: routine),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles(routines: [routine]).overrides,
       );
 
       await tester.scrollUntilVisible(

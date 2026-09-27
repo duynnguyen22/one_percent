@@ -50,6 +50,12 @@ import '../features/profile/data/datasources/profile_remote_datasource.dart';
 import '../features/profile/data/repositories/profile_repository_impl.dart';
 import '../features/profile/domain/repositories/profile_repository.dart';
 import '../features/profile/domain/usecases/update_profile.dart';
+import '../features/routines/data/datasources/routine_remote_datasource.dart';
+import '../features/routines/data/repositories/routine_repository_impl.dart';
+import '../features/routines/domain/repositories/routine_repository.dart';
+import '../features/routines/domain/usecases/delete_routine.dart';
+import '../features/routines/domain/usecases/get_routines.dart';
+import '../features/routines/domain/usecases/save_routine.dart';
 
 
 // ---------------------------------------------------------------------------
@@ -227,6 +233,33 @@ final setEntryUseCaseProvider = Provider<SetEntry>(
 
 final getEntriesUseCaseProvider = Provider<GetEntries>(
   (ref) => GetEntries(ref.watch(entryRepositoryProvider)),
+);
+
+// ---------------------------------------------------------------------------
+// Feature: routines
+// ---------------------------------------------------------------------------
+
+final routineRemoteDataSourceProvider = Provider<RoutineRemoteDataSource>(
+  (ref) => RoutineRemoteDataSourceImpl(ref.watch(apiClientProvider)),
+);
+
+final routineRepositoryProvider = Provider<RoutineRepository>(
+  (ref) => RoutineRepositoryImpl(
+    remoteDataSource: ref.watch(routineRemoteDataSourceProvider),
+    networkInfo: ref.watch(networkInfoProvider),
+  ),
+);
+
+final getRoutinesUseCaseProvider = Provider<GetRoutines>(
+  (ref) => GetRoutines(ref.watch(routineRepositoryProvider)),
+);
+
+final saveRoutineUseCaseProvider = Provider<SaveRoutine>(
+  (ref) => SaveRoutine(ref.watch(routineRepositoryProvider)),
+);
+
+final deleteRoutineUseCaseProvider = Provider<DeleteRoutine>(
+  (ref) => DeleteRoutine(ref.watch(routineRepositoryProvider)),
 );
 
 // ---------------------------------------------------------------------------

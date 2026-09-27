@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/features/routines/domain/entities/routine.dart';
 import 'package:mobile/features/routines/presentation/pages/routines_home_page.dart';
 
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/routine_doubles.dart';
 
 void main() {
   group('RoutinesHomePage', () {
     testWidgets('renders header, title and guided rituals banner', (tester) async {
-      await pumpApp(tester, const RoutinesHomePage(), overrides: signedOutOverrides());
+      await pumpApp(tester, const RoutinesHomePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(find.text('Your Routines'), findsOneWidget);
       expect(find.text('Small steps, done consistently.'), findsOneWidget);
@@ -19,7 +21,7 @@ void main() {
     });
 
     testWidgets('renders routine cards including featured Morning Ritual and Focus Block', (tester) async {
-      await pumpApp(tester, const RoutinesHomePage(), overrides: signedOutOverrides());
+      await pumpApp(tester, const RoutinesHomePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(find.text('Morning Ritual'), findsOneWidget);
       expect(find.text('Focus Block'), findsOneWidget);
@@ -43,7 +45,7 @@ void main() {
     });
 
     testWidgets('renders Create Routine button and Ritual Wisdom card after scrolling', (tester) async {
-      await pumpApp(tester, const RoutinesHomePage(), overrides: signedOutOverrides());
+      await pumpApp(tester, const RoutinesHomePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       await tester.scrollUntilVisible(
         find.text('+ Create Routine'),

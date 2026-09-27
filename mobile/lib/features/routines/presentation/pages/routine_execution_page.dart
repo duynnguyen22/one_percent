@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
+import '../providers/routines_provider.dart';
 import 'routine_completed_page.dart';
 
 /// Routine Execution Player (Stitch Screens 5 & 6 - 3c3e8b254cf84f48bf9d146472f04843 & ccd38dc4317d43768539f0d34c1bd475).
@@ -30,10 +32,17 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
   bool _isPaused = false;
   bool _isSoundEnabled = true;
 
+  /// Indexes of steps finished with "Done", as opposed to skipped.
+  final Set<int> _logged = {};
+
+  bool get _hasSteps => widget.routine.steps.isNotEmpty;
+
   @override
   void initState() {
     super.initState();
-    _currentStepIndex = widget.initialStepIndex.clamp(0, widget.routine.steps.length - 1);
+    if (!_hasSteps) return;
+    _currentStepIndex =
+        widget.initialStepIndex.clamp(0, widget.routine.steps.length - 1);
     _resetTimerForCurrentStep();
   }
 
@@ -54,7 +63,24 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
     setState(() => _isSoundEnabled = !_isSoundEnabled);
   }
 
+  /// Checks the current step's habit off on Today, then moves on without
+  /// waiting: the player should not stall on a round trip.
   void _onDoneAndNext() {
+    final step = _currentStep;
+    _logged.add(_currentStepIndex);
+    if (!step.isCompleted) {
+      // Read now: the page may be gone by the time the request finishes.
+      final notifier = ref.read(routinesProvider.notifier);
+      notifier.completeStep(widget.routine.id, step.habitId).then((failure) {
+        if (failure != null) {
+          AppToast.error('Could not log ${step.title}: ${failure.message}');
+        }
+      });
+    }
+    _advance();
+  }
+
+  void _advance() {
     if (_hasNextStep) {
       setState(() {
         _currentStepIndex++;
@@ -71,9 +97,7 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
     }
   }
 
-  void _onSkip() {
-    _onDoneAndNext();
-  }
+  void _onSkip() => _advance();
 
   String _formatTime(int totalSeconds) {
     final minutes = totalSeconds ~/ 60;
@@ -83,6 +107,18 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_hasSteps) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(backgroundColor: AppColors.surface, elevation: 0),
+        body: const AppError(
+          title: 'No active habits in this routine',
+          message: 'Its habits were archived. Edit the routine to add some.',
+          icon: Icons.spa_outlined,
+        ),
+      );
+    }
+
     final accentColor = Color(
       int.parse(widget.routine.accentColorHex.replaceAll('#', '0xFF')),
     );
@@ -101,7 +137,7 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
           child: Column(
             children: [
               // Top Step Logged Toast Banner (When on step 2+)
-              if (_currentStepIndex > 0) ...[
+              if (_logged.contains(_currentStepIndex - 1)) ...[
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

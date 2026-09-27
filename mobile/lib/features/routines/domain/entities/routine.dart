@@ -26,7 +26,13 @@ class RoutineStep {
   final String mindfulIntention;
   final String portionGoal;
   final List<String> subSteps;
+
+  /// Whether the step's habit is checked off for today.
   final bool isCompleted;
+
+  /// Each step is a habit, and a habit appears at most once per routine, so
+  /// the step is keyed by its habit's id.
+  String get habitId => id;
 
   RoutineStep copyWith({
     String? id,
@@ -69,6 +75,7 @@ class Routine {
     this.energyLevel = 'Low energy',
     this.isFeatured = false,
     this.presetTag = '',
+    this.completedToday = false,
   });
 
   final String id;
@@ -80,6 +87,9 @@ class Routine {
   final String energyLevel;
   final bool isFeatured;
   final String presetTag;
+
+  /// Every step's habit is checked off for today.
+  final bool completedToday;
 
   int get totalMinutes => steps.fold(0, (sum, step) => sum + step.durationMinutes);
   int get stepCount => steps.length;
@@ -94,6 +104,7 @@ class Routine {
     String? energyLevel,
     bool? isFeatured,
     String? presetTag,
+    bool? completedToday,
   }) {
     return Routine(
       id: id ?? this.id,
@@ -105,6 +116,7 @@ class Routine {
       energyLevel: energyLevel ?? this.energyLevel,
       isFeatured: isFeatured ?? this.isFeatured,
       presetTag: presetTag ?? this.presetTag,
+      completedToday: completedToday ?? this.completedToday,
     );
   }
 

@@ -1,5 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/result.dart';
+import '../../../../core/utils/date_utils.dart';
+import '../../../../injection/dependency_injection.dart';
+import '../../../habits/presentation/providers/daily_habits_provider.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/routine_draft.dart';
 
 /// State of the active routine player session.
 class RoutineExecutionState {
@@ -44,37 +51,132 @@ class RoutineExecutionState {
   }
 }
 
-/// State notifier managing all available routines.
-class RoutinesNotifier extends Notifier<List<Routine>> {
+/// The user's routines, and every mutation the routine screens perform.
+///
+/// Mutations return a `Failure?` rather than pushing an `AsyncError`, so a
+/// failed save can show a message while the list stays on screen.
+class RoutinesNotifier extends AsyncNotifier<List<Routine>> {
   @override
-  List<Routine> build() => Routine.defaults;
+  Future<List<Routine>> build() => _load();
 
-  void addRoutine(Routine routine) {
-    state = [...state, routine];
+  Future<List<Routine>> _load() async {
+    final result = await ref.read(getRoutinesUseCaseProvider)();
+    return switch (result) {
+      Success(:final data) => data,
+      ResultError(:final failure) => throw failure,
+    };
   }
 
-  void updateRoutine(Routine updated) {
-    state = [
-      for (final r in state)
-        if (r.id == updated.id) updated else r,
-    ];
+  /// Re-reads the routines from the server.
+  Future<void> refresh() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(_load);
   }
 
-  void deleteRoutine(String id) {
-    state = state.where((r) => r.id != id).toList();
-  }
+  /// Creates a routine, or replaces [routineId]'s name, look and steps.
+  Future<Failure?> save(RoutineDraft draft, {String? routineId}) async {
+    final result =
+        await ref.read(saveRoutineUseCaseProvider)(draft, routineId: routineId);
 
-  Routine? findById(String id) {
-    try {
-      return state.firstWhere((r) => r.id == id);
-    } catch (_) {
-      return null;
+    switch (result) {
+      case ResultError(:final failure):
+        return failure;
+      case Success(:final data) when routineId != null:
+        final current = state.value;
+        if (current != null) {
+          state = AsyncValue.data([
+            for (final r in current) r.id == routineId ? data : r,
+          ]);
+        }
+      case Success():
+        // Reload so the new routine lands in the server's order.
+        await refresh();
     }
+    return null;
+  }
+
+  /// Deletes the routine. The list updates first and rolls back on failure.
+  Future<Failure?> remove(String routineId) async {
+    // The list may still be loading; the delete goes ahead regardless.
+    final current = state.value;
+    if (current != null) {
+      state = AsyncValue.data([
+        for (final r in current)
+          if (r.id != routineId) r,
+      ]);
+    }
+
+    final result = await ref.read(deleteRoutineUseCaseProvider)(routineId);
+    if (result case ResultError(:final failure)) {
+      if (current != null) state = AsyncValue.data(current);
+      return failure;
+    }
+    return null;
+  }
+
+  /// Checks a step's habit off for today, as the player does on "Done".
+  ///
+  /// A habit already done today is left alone: the check-off is idempotent on
+  /// the server, but there is no reason to spend the round trip.
+  Future<Failure?> completeStep(String routineId, String habitId) async {
+    // A routine not loaded yet still gets its check-off; only a step known
+    // to be done is skipped.
+    final step =
+        _find(routineId)?.steps.where((s) => s.habitId == habitId).firstOrNull;
+    if (step?.isCompleted ?? false) return null;
+
+    final result = await ref.read(setEntryUseCaseProvider)(
+      habitId: habitId,
+      date: AppDateUtils.today,
+      completed: true,
+    );
+    if (result case ResultError(:final failure)) return failure;
+
+    _markHabitDone(habitId);
+    // Today and Insights read the same check-offs, so they are stale now.
+    ref.invalidate(dailyHabitsProvider);
+    ref.read(habitsRevisionProvider.notifier).bump();
+    return null;
+  }
+
+  Routine? _find(String routineId) =>
+      state.value?.where((r) => r.id == routineId).firstOrNull;
+
+  /// A habit can sit in several routines, so every routine holding it updates.
+  void _markHabitDone(String habitId) {
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncValue.data([
+      for (final routine in current)
+        () {
+          final steps = [
+            for (final s in routine.steps)
+              s.habitId == habitId ? s.copyWith(isCompleted: true) : s,
+          ];
+          return routine.copyWith(
+            steps: steps,
+            completedToday: steps.isNotEmpty && steps.every((s) => s.isCompleted),
+          );
+        }(),
+    ]);
   }
 }
 
-final routinesNotifierProvider =
-    NotifierProvider<RoutinesNotifier, List<Routine>>(RoutinesNotifier.new);
+final routinesProvider =
+    AsyncNotifierProvider<RoutinesNotifier, List<Routine>>(
+  RoutinesNotifier.new,
+  // The screens offer an explicit Retry; see `dailyHabitsProvider`.
+  retry: (_, _) => null,
+);
+
+/// One routine by id, following the list's loading and error states. Data is
+/// null when the routine does not exist (or was just deleted).
+final routineByIdProvider =
+    Provider.family<AsyncValue<Routine?>, String>((ref, routineId) {
+  return ref.watch(routinesProvider).whenData(
+        (list) => list.where((r) => r.id == routineId).firstOrNull,
+      );
+});
 
 /// Execution session notifier for step navigation, timer & sound.
 class RoutineExecutionNotifier extends Notifier<RoutineExecutionState?> {

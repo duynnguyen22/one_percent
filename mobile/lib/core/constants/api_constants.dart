@@ -47,6 +47,10 @@ abstract final class ApiConstants {
   static String entry(String habitId, String date) =>
       '/habits/$habitId/entries/$date';
 
+  // Routines — backend/src/routine/routine.controller.ts
+  static const String routines = '/routines';
+  static String routine(String id) => '/routines/$id';
+
   // Profile — backend/src/profile/profile.controller.ts
   static const String profile = '/profile';
 

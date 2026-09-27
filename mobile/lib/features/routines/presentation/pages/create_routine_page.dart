@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/routine_draft.dart';
 import '../providers/routines_provider.dart';
+import '../widgets/cadence_picker.dart';
 import '../widgets/select_habits_modal.dart';
 
 /// Create Routine Screen (Stitch Screen 3 - 04149fd7c3f54e26a2ce66cfae468647).
@@ -19,10 +22,8 @@ class CreateRoutinePage extends ConsumerStatefulWidget {
 }
 
 class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
-  final _nameController = TextEditingController(text: 'Morning Ritual');
-  final _descriptionController = TextEditingController(
-    text: 'Start the day with intention and grounded focus.',
-  );
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
 
   static const List<String> _accentPalette = [
     '#4D6054', // Sage Green
@@ -33,40 +34,12 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
 
   String _selectedAccentHex = '#4D6054';
 
-  List<RoutineStep> _steps = [
-    const RoutineStep(
-      id: 'cr-1',
-      title: 'Drink Water',
-      subtitle: 'Awaken',
-      durationMinutes: 2,
-      category: 'Hydration',
-      icon: Icons.water_drop_outlined,
-    ),
-    const RoutineStep(
-      id: 'cr-2',
-      title: 'Stretch',
-      subtitle: 'Open Body',
-      durationMinutes: 5,
-      category: 'Movement',
-      icon: Icons.self_improvement_rounded,
-    ),
-    const RoutineStep(
-      id: 'cr-3',
-      title: 'Meditate',
-      subtitle: 'Center',
-      durationMinutes: 10,
-      category: 'Mindfulness',
-      icon: Icons.spa_outlined,
-    ),
-    const RoutineStep(
-      id: 'cr-4',
-      title: 'Journal',
-      subtitle: 'Anchor',
-      durationMinutes: 5,
-      category: 'Reflection',
-      icon: Icons.edit_note_rounded,
-    ),
-  ];
+  String _cadence = CadencePicker.options.first;
+
+  /// Picked habits, in play order. Each step's id is its habit's id.
+  List<RoutineStep> _steps = [];
+
+  bool _isSaving = false;
 
   int get _totalMinutes => _steps.fold(0, (sum, step) => sum + step.durationMinutes);
 
@@ -77,20 +50,37 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
     super.dispose();
   }
 
-  void _saveRoutine() {
+  Future<void> _saveRoutine() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      AppToast.error('Give your routine a name.');
+      return;
+    }
 
-    final newRoutine = Routine(
-      id: 'routine-${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      cadence: 'Morning',
-      description: _descriptionController.text.trim(),
-      accentColorHex: _selectedAccentHex,
-      steps: _steps,
-    );
+    setState(() => _isSaving = true);
+    final failure = await ref.read(routinesProvider.notifier).save(
+          RoutineDraft(
+            name: name,
+            description: _descriptionController.text.trim(),
+            color: _selectedAccentHex,
+            cadence: _cadence,
+            steps: [
+              for (final step in _steps)
+                RoutineStepDraft(
+                  habitId: step.habitId,
+                  durationMinutes: step.durationMinutes,
+                ),
+            ],
+          ),
+        );
+    if (!mounted) return;
+    setState(() => _isSaving = false);
 
-    ref.read(routinesNotifierProvider.notifier).addRoutine(newRoutine);
+    if (failure != null) {
+      AppToast.error(failure.message);
+      return;
+    }
+    AppToast.success('Routine "$name" created');
     context.pop();
   }
 
@@ -201,6 +191,23 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                         hintText: 'Enter routine name...',
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Cadence
+                  Text(
+                    'CADENCE',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CadencePicker(
+                    value: _cadence,
+                    accentColor: accentColor,
+                    onChanged: (cadence) => setState(() => _cadence = cadence),
                   ),
                   const SizedBox(height: 16),
 
@@ -399,7 +406,8 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                     initialSelectedIds: _steps.map((s) => s.id).toSet(),
                     onHabitsSelected: (selected) {
                       setState(() {
-                        _steps = [..._steps, ...selected];
+                        _steps =
+                            SelectHabitsModal.mergeSelection(_steps, selected);
                       });
                     },
                   );
@@ -432,7 +440,7 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
               width: double.infinity,
               height: AppSpacing.buttonHeight,
               child: FilledButton.icon(
-                onPressed: _steps.isEmpty ? null : _saveRoutine,
+                onPressed: _steps.isEmpty || _isSaving ? null : _saveRoutine,
                 style: FilledButton.styleFrom(
                   backgroundColor: accentColor,
                   foregroundColor: AppColors.onPrimary,
@@ -440,7 +448,15 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                     borderRadius: AppSpacing.borderRadiusPill,
                   ),
                 ),
-                icon: const Icon(Icons.check_rounded, size: 20),
+                icon: _isSaving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.check_rounded, size: 20),
                 label: Text(
                   'Create Routine',
                   style: AppTypography.labelLarge.copyWith(

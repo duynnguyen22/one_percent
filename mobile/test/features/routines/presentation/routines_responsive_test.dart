@@ -10,6 +10,7 @@ import 'package:mobile/features/routines/presentation/pages/routines_home_page.d
 import 'package:mobile/features/routines/presentation/widgets/select_habits_modal.dart';
 
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/routine_doubles.dart';
 
 void main() {
   const smallScreenSize = Size(320, 568); // Compact 4-inch phone
@@ -22,7 +23,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, const RoutinesHomePage(), overrides: signedOutOverrides());
+      await pumpApp(tester, const RoutinesHomePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Your Routines'), findsOneWidget);
@@ -33,7 +34,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineDetailPage(routine: routine), overrides: signedOutOverrides());
+      await pumpApp(tester, RoutineDetailPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Morning Ritual'), findsOneWidget);
@@ -44,7 +45,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, const CreateRoutinePage(), overrides: signedOutOverrides());
+      await pumpApp(tester, const CreateRoutinePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Habit Creation'), findsOneWidget);
@@ -55,7 +56,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, EditRoutinePage(routine: routine), overrides: signedOutOverrides());
+      await pumpApp(tester, EditRoutinePage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('EDITING SEQUENCE'), findsOneWidget);
@@ -66,7 +67,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineExecutionPage(routine: routine), overrides: signedOutOverrides());
+      await pumpApp(tester, RoutineExecutionPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('DRINK WATER'), findsOneWidget);
@@ -88,7 +89,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineCompletedPage(routine: routine), overrides: signedOutOverrides());
+      await pumpApp(tester, RoutineCompletedPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
 
       expect(tester.takeException(), isNull);
       expect(find.text('Morning Ritual Complete'), findsOneWidget);
@@ -105,7 +106,7 @@ void main() {
           initialSelectedIds: const {'sh-1'},
           onHabitsSelected: (_) {},
         ),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
       );
 
       expect(tester.takeException(), isNull);

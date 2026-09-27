@@ -12,6 +12,10 @@ import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/features/auth/data/models/user_model.dart';
 import 'package:mobile/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:mobile/features/profile/domain/repositories/profile_repository.dart';
+import 'package:mobile/features/routines/data/datasources/routine_remote_datasource.dart';
+import 'package:mobile/features/routines/data/models/routine_model.dart';
+import 'package:mobile/features/routines/domain/entities/routine_draft.dart';
+import 'package:mobile/features/routines/domain/repositories/routine_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Shared test doubles.
@@ -38,6 +42,11 @@ class MockProfileRemoteDataSource extends Mock
     implements ProfileRemoteDataSource {}
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
+
+class MockRoutineRemoteDataSource extends Mock
+    implements RoutineRemoteDataSource {}
+
+class MockRoutineRepository extends Mock implements RoutineRepository {}
 
 /// A representative user, so tests do not each invent their own.
 UserModel buildUserModel({
@@ -107,8 +116,63 @@ HabitEntryModel buildHabitEntryModel({
   );
 }
 
+/// A representative routine of two habit steps, parsed the way the API
+/// sends it.
+RoutineModel buildRoutineModel({
+  String id = 'rrrrrrrr-0000-4000-8000-000000000001',
+  String name = 'Morning Ritual',
+  bool firstStepDone = false,
+}) {
+  return RoutineModel.fromJson({
+    'id': id,
+    'name': name,
+    'description': 'Start grounded.',
+    'color': '#4D6054',
+    'cadence': 'Morning',
+    'completedToday': false,
+    'steps': [
+      {
+        'habitId': 'bbbbbbbb-0000-4000-8000-000000000001',
+        'name': 'Drink Water',
+        'color': null,
+        'order': 1,
+        'durationMinutes': 5,
+        'doneToday': firstStepDone,
+      },
+      {
+        'habitId': 'bbbbbbbb-0000-4000-8000-000000000002',
+        'name': 'Stretch',
+        'color': null,
+        'order': 2,
+        'durationMinutes': 10,
+        'doneToday': false,
+      },
+    ],
+  });
+}
+
+/// A valid draft, so each test only spells out what it varies.
+RoutineDraft buildRoutineDraft({
+  String name = 'Morning Ritual',
+  List<RoutineStepDraft> steps = const [
+    RoutineStepDraft(
+      habitId: 'bbbbbbbb-0000-4000-8000-000000000001',
+      durationMinutes: 5,
+    ),
+  ],
+}) {
+  return RoutineDraft(
+    name: name,
+    description: 'Start grounded.',
+    color: '#4D6054',
+    cadence: 'Morning',
+    steps: steps,
+  );
+}
+
 void registerFallbacks() {
   registerFallbackValue(buildUserModel());
+  registerFallbackValue(buildRoutineDraft());
   registerFallbackValue(buildHabitModel());
   registerFallbackValue(DateTime(2026, 1, 1));
 }

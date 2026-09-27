@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/routine_draft.dart';
 import '../providers/routines_provider.dart';
+import '../widgets/cadence_picker.dart';
 import '../widgets/select_habits_modal.dart';
 
 /// Edit Routine Screen (Stitch Screen 4 - fa04d39476994b879ba44b87df557d1d).
@@ -27,7 +30,9 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
   late final TextEditingController _nameController;
   late final TextEditingController _intentionController;
   late String _selectedAccentHex;
+  late String _cadence;
   late List<RoutineStep> _steps;
+  bool _isBusy = false;
 
   static const List<String> _accentPalette = [
     '#4D6054', // Sage Green
@@ -45,6 +50,7 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
     _nameController = TextEditingController(text: widget.routine.name);
     _intentionController = TextEditingController(text: widget.routine.description);
     _selectedAccentHex = widget.routine.accentColorHex;
+    _cadence = widget.routine.cadence;
     _steps = List.from(widget.routine.steps);
   }
 
@@ -57,22 +63,73 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
 
   int get _totalMinutes => _steps.fold(0, (sum, step) => sum + step.durationMinutes);
 
-  void _saveChanges() {
-    final updated = widget.routine.copyWith(
-      name: _nameController.text.trim(),
-      description: _intentionController.text.trim(),
-      accentColorHex: _selectedAccentHex,
-      steps: _steps,
-    );
+  Future<void> _saveChanges() async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+    final failure = await ref.read(routinesProvider.notifier).save(
+          RoutineDraft(
+            name: _nameController.text.trim(),
+            description: _intentionController.text.trim(),
+            color: _selectedAccentHex,
+            cadence: _cadence,
+            steps: [
+              for (final step in _steps)
+                RoutineStepDraft(
+                  habitId: step.habitId,
+                  durationMinutes: step.durationMinutes,
+                ),
+            ],
+          ),
+          routineId: widget.routine.id,
+        );
+    if (!mounted) return;
+    setState(() => _isBusy = false);
 
-    ref.read(routinesNotifierProvider.notifier).updateRoutine(updated);
+    if (failure != null) {
+      AppToast.error(failure.message);
+      return;
+    }
+    AppToast.success('Routine saved');
     context.pop();
   }
 
-  void _deleteRoutine() {
-    ref.read(routinesNotifierProvider.notifier).deleteRoutine(widget.routine.id);
-    context.pop(); // Pop edit
-    context.pop(); // Pop detail if stacked
+  Future<void> _deleteRoutine() async {
+    if (_isBusy) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this routine?'),
+        content: const Text(
+          'Your habits and their history stay on Today.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isBusy = true);
+    final failure =
+        await ref.read(routinesProvider.notifier).remove(widget.routine.id);
+    if (!mounted) return;
+    setState(() => _isBusy = false);
+
+    if (failure != null) {
+      AppToast.error(failure.message);
+      return;
+    }
+    AppToast.success('Routine deleted');
+    // Past the detail page too: the routine it shows no longer exists.
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -250,6 +307,22 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                       ),
                       decoration: const InputDecoration(border: InputBorder.none),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Cadence
+                  Text(
+                    'CADENCE',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CadencePicker(
+                    value: _cadence,
+                    accentColor: accentColor,
+                    onChanged: (cadence) => setState(() => _cadence = cadence),
                   ),
                   const SizedBox(height: 16),
 
@@ -454,7 +527,8 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                     initialSelectedIds: _steps.map((s) => s.id).toSet(),
                     onHabitsSelected: (selected) {
                       setState(() {
-                        _steps = [..._steps, ...selected];
+                        _steps =
+                            SelectHabitsModal.mergeSelection(_steps, selected);
                       });
                     },
                   );
@@ -569,7 +643,7 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
               width: double.infinity,
               height: AppSpacing.buttonHeight,
               child: FilledButton.icon(
-                onPressed: _saveChanges,
+                onPressed: _steps.isEmpty || _isBusy ? null : _saveChanges,
                 style: FilledButton.styleFrom(
                   backgroundColor: accentColor,
                   foregroundColor: AppColors.onPrimary,

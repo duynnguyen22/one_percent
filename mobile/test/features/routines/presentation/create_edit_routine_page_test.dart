@@ -5,6 +5,7 @@ import 'package:mobile/features/routines/presentation/pages/create_routine_page.
 import 'package:mobile/features/routines/presentation/pages/edit_routine_page.dart';
 
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/routine_doubles.dart';
 
 void main() {
   group('CreateRoutinePage', () {
@@ -12,7 +13,7 @@ void main() {
       await pumpApp(
         tester,
         const CreateRoutinePage(),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles().overrides,
       );
 
       expect(find.text('Habit Creation'), findsOneWidget);
@@ -37,7 +38,7 @@ void main() {
       await pumpApp(
         tester,
         const CreateRoutinePage(),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles().overrides,
       );
 
       await tester.scrollUntilVisible(
@@ -64,7 +65,7 @@ void main() {
       await pumpApp(
         tester,
         EditRoutinePage(routine: routine),
-        overrides: signedOutOverrides(),
+        overrides: RoutineDoubles().overrides,
       );
 
       expect(find.text('EDITING SEQUENCE'), findsOneWidget);
