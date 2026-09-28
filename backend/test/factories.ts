@@ -42,13 +42,19 @@ export const createUser = (
 export const createHabit = (
   prisma: PrismaService,
   userId: string,
-  fields: { name?: string; color?: string; archivedAt?: Date } = {},
+  fields: {
+    name?: string;
+    color?: string;
+    archivedAt?: Date;
+    createdAt?: Date;
+  } = {},
 ) =>
   prisma.orm.Habit.create({
     userId,
     name: fields.name ?? `Habit ${++seq}`,
     color: fields.color ?? '#4d6054',
     archivedAt: fields.archivedAt ? toDbTimestamp(fields.archivedAt) : null,
+    ...(fields.createdAt && { createdAt: toDbTimestamp(fields.createdAt) }),
   });
 
 export const createEntry = (

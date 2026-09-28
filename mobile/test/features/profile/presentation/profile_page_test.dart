@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/errors/result.dart';
@@ -117,4 +117,47 @@ void main() {
 
     expect(find.byKey(const Key('edit_profile_badge_button')), findsOneWidget);
   });
+
+  testWidgets('renders and handles logout confirmation dialog', (tester) async {
+    final mockAuthRepo = buildSignedInRepository(buildUserModel());
+    when(mockAuthRepo.logout).thenAnswer((_) async => const Success(null));
+
+    await pumpApp(
+      tester,
+      const ProfilePage(),
+      overrides: overrides(
+        auth: [authRepositoryProvider.overrideWithValue(mockAuthRepo)],
+      ),
+    );
+
+    final logoutButton = find.widgetWithText(ElevatedButton, 'Log Out');
+    await tester.ensureVisible(logoutButton);
+    await tester.tap(logoutButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out of Bloom?'), findsOneWidget);
+    expect(
+      find.text(
+        'Are you sure you want to sign out? Your habit streaks and daily reflections will remain securely saved.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('logout_dialog_confirm_button')), findsOneWidget);
+    expect(find.byKey(const Key('logout_dialog_cancel_button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('logout_dialog_cancel_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out of Bloom?'), findsNothing);
+
+    await tester.tap(logoutButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('logout_dialog_confirm_button')));
+    await tester.pumpAndSettle();
+
+    verify(mockAuthRepo.logout).called(1);
+    expect(find.text('Log out of Bloom?'), findsNothing);
+  });
 }
+

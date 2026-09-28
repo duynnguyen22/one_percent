@@ -19,54 +19,14 @@ class ProfilePage extends ConsumerWidget {
   void _confirmLogout(BuildContext context, WidgetRef ref) {
     showDialog<void>(
       context: context,
+      barrierColor: AppColors.onSurface.withValues(alpha: 0.4),
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.borderRadiusCard,
-          ),
-          title: Text(
-            'Log out',
-            style: AppTypography.headlineSmall.copyWith(
-              color: AppColors.onSurface,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to log out of your account?',
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.onError,
-                elevation: 0,
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                ref.read(authNotifierProvider.notifier).logout();
-              },
-              child: Text(
-                'Log out',
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.onError,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        return _LogoutConfirmationDialog(
+          onConfirm: () {
+            Navigator.of(dialogContext).pop();
+            ref.read(authNotifierProvider.notifier).logout();
+          },
+          onCancel: () => Navigator.of(dialogContext).pop(),
         );
       },
     );
@@ -117,7 +77,7 @@ class ProfilePage extends ConsumerWidget {
                             ? Image.network(
                                 user.avatarUrl!.trim(),
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Center(
+                                errorBuilder: (_, _, _) => Center(
                                   child: Text(
                                     displayName.isEmpty
                                         ? '\u{1F331}'
@@ -317,6 +277,7 @@ class ProfilePage extends ConsumerWidget {
                     foregroundColor: AppColors.error,
                     elevation: 0,
                     shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                   ),
                   onPressed: () => _confirmLogout(context, ref),
                   icon: const Icon(Icons.logout_rounded, size: 20),
@@ -451,3 +412,126 @@ class _SettingsItem extends StatelessWidget {
     );
   }
 }
+
+class _LogoutConfirmationDialog extends StatelessWidget {
+  const _LogoutConfirmationDialog({
+    required this.onConfirm,
+    required this.onCancel,
+  });
+
+  final VoidCallback onConfirm;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.35),
+            width: 1,
+          ),
+          boxShadow: AppSpacing.ambientShadow,
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.errorContainer.withValues(alpha: 0.45),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.15),
+                  width: 1.5,
+                ),
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: AppColors.error,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Log out of Bloom?',
+              textAlign: TextAlign.center,
+              style: AppTypography.headlineSmall.copyWith(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Are you sure you want to sign out? Your habit streaks and daily reflections will remain securely saved.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                key: const Key('logout_dialog_confirm_button'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: AppColors.onError,
+                  elevation: 0,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                ),
+                onPressed: onConfirm,
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: Text(
+                  'Log out',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.onError,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                key: const Key('logout_dialog_cancel_button'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.onSurface,
+                  backgroundColor:
+                      AppColors.surfaceContainerLow.withValues(alpha: 0.5),
+                  side: BorderSide(
+                    color: AppColors.outlineVariant.withValues(alpha: 0.4),
+                  ),
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                ),
+                onPressed: onCancel,
+                child: Text(
+                  'Cancel',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

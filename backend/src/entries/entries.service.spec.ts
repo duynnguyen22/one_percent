@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EntriesService } from './entries.service';
 import { today } from 'src/utils/dayjs';
 import {
@@ -17,7 +17,11 @@ describe('EntriesService', () => {
 
   beforeEach(async () => {
     userId = (await createUser(ctx.prisma)).id;
-    habitId = (await createHabit(ctx.prisma, userId)).id;
+    habitId = (
+      await createHabit(ctx.prisma, userId, {
+        createdAt: new Date('2026-03-01T12:00:00.000Z'),
+      })
+    ).id;
   });
 
   const storedDays = async () =>
@@ -51,6 +55,39 @@ describe('EntriesService', () => {
 
       expect(again.id).toBe(first.id);
       expect(await storedDays()).toEqual(['2026-03-10']);
+    });
+
+    it('refuses a day after tomorrow', async () => {
+      const future = new Date(today().getTime() + 2 * 24 * 60 * 60 * 1000);
+
+      await expect(
+        ctx.service.checkOff(userId, habitId, {
+          date: future.toISOString().slice(0, 10),
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(await storedDays()).toEqual([]);
+    });
+
+    it('accepts tomorrow, since the client may be a day ahead', async () => {
+      const tomorrow = new Date(today().getTime() + 24 * 60 * 60 * 1000);
+      const key = tomorrow.toISOString().slice(0, 10);
+
+      await ctx.service.checkOff(userId, habitId, { date: key });
+
+      expect(await storedDays()).toEqual([key]);
+    });
+
+    it('accepts the day before the habit was created', async () => {
+      await ctx.service.checkOff(userId, habitId, { date: '2026-02-28' });
+
+      expect(await storedDays()).toEqual(['2026-02-28']);
+    });
+
+    it('refuses a day well before the habit was created', async () => {
+      await expect(
+        ctx.service.checkOff(userId, habitId, { date: '2026-02-20' }),
+      ).rejects.toThrow('Cannot check off a day before the habit existed');
+      expect(await storedDays()).toEqual([]);
     });
 
     it('refuses an archived habit', async () => {

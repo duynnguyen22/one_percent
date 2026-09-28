@@ -88,6 +88,18 @@ describe('HabitService', () => {
       expect(decorated.doneToday).toBe(false);
       expect(decorated.currentStreak).toBe(0);
     });
+
+    it("keeps yesterday's streak before today is checked", async () => {
+      const habit = await createHabit(ctx.prisma, userId);
+      await createEntry(ctx.prisma, habit.id, '2026-03-09');
+
+      const [decorated] = (await ctx.service.getHabits(userId, {
+        date: '2026-03-10',
+      })) as DecoratedHabit[];
+
+      expect(decorated.doneToday).toBe(false);
+      expect(decorated.currentStreak).toBe(1);
+    });
   });
 
   describe('updateHabits', () => {

@@ -1,15 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { type Orm, PrismaService } from 'src/prisma.service';
 import { CreateEntryDto } from './dto/create-entry';
 import { standardizeDate, today } from 'src/utils/dayjs';
 import { fromDb, toDbDate } from 'src/utils/temporal';
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class EntriesService {
   constructor(private prisma: PrismaService) {}
 
   async checkOff(userId: string, habitId: string, dto: CreateEntryDto) {
-    const date = toDbDate(dto.date ? standardizeDate(dto.date) : today());
+    const day = dto.date ? standardizeDate(dto.date) : today();
 
     const habit = await this.prisma.orm.Habit.where({ id: habitId, userId })
       .where((h) => h.archivedAt.isNull())
@@ -18,6 +24,20 @@ export class EntriesService {
     if (!habit) {
       throw new NotFoundException();
     }
+
+    // One day of slack each way: the client sends its local day and the
+    // server only knows its own, so the two can legitimately differ by one.
+    if (day.getTime() > today().getTime() + ONE_DAY_MS) {
+      throw new BadRequestException('Cannot check off a future day');
+    }
+    const createdDay = standardizeDate(fromDb(habit).createdAt);
+    if (day.getTime() < createdDay.getTime() - ONE_DAY_MS) {
+      throw new BadRequestException(
+        'Cannot check off a day before the habit existed',
+      );
+    }
+
+    const date = toDbDate(day);
 
     // Checking off a day twice returns the existing entry. (habitId, date) is
     // a unique index, not a constraint, so the ORM's types only offer the
