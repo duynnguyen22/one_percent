@@ -28,18 +28,18 @@ class RoutineLoader extends ConsumerWidget {
     return switch (routine) {
       AsyncData(value: final routine?) => builder(routine),
       AsyncData() => _Frame(
-          child: AppError(
-            title: 'Routine not found',
-            message: 'It may have been deleted.',
-            icon: Icons.search_off_rounded,
-          ),
+        child: AppError(
+          title: 'Routine not found',
+          message: 'It may have been deleted.',
+          icon: Icons.search_off_rounded,
         ),
+      ),
       AsyncError(:final error) => _Frame(
-          child: AppError(
-            message: error is Failure ? error.message : '$error',
-            onRetry: () => ref.read(routinesProvider.notifier).refresh(),
-          ),
+        child: AppError(
+          message: error is Failure ? error.message : '$error',
+          onRetry: () => ref.read(routinesProvider.notifier).refresh(),
         ),
+      ),
       _ => const _Frame(child: AppLoading()),
     };
   }

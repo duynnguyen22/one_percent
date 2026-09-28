@@ -10,15 +10,13 @@ import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_draft.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/cadence_picker.dart';
+import '../widgets/routine_field_decoration.dart';
 import '../widgets/select_habits_modal.dart';
 
 /// Edit Routine Screen (Stitch Screen 4 - fa04d39476994b879ba44b87df557d1d).
 /// Allows reordering, adjusting duration, editing intention, and deleting routines.
 class EditRoutinePage extends ConsumerStatefulWidget {
-  const EditRoutinePage({
-    super.key,
-    required this.routine,
-  });
+  const EditRoutinePage({super.key, required this.routine});
 
   final Routine routine;
 
@@ -48,7 +46,9 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.routine.name);
-    _intentionController = TextEditingController(text: widget.routine.description);
+    _intentionController = TextEditingController(
+      text: widget.routine.description,
+    );
     _selectedAccentHex = widget.routine.accentColorHex;
     _cadence = widget.routine.cadence;
     _steps = List.from(widget.routine.steps);
@@ -61,12 +61,15 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
     super.dispose();
   }
 
-  int get _totalMinutes => _steps.fold(0, (sum, step) => sum + step.durationMinutes);
+  int get _totalMinutes =>
+      _steps.fold(0, (sum, step) => sum + step.durationMinutes);
 
   Future<void> _saveChanges() async {
     if (_isBusy) return;
     setState(() => _isBusy = true);
-    final failure = await ref.read(routinesProvider.notifier).save(
+    final failure = await ref
+        .read(routinesProvider.notifier)
+        .save(
           RoutineDraft(
             name: _nameController.text.trim(),
             description: _intentionController.text.trim(),
@@ -99,9 +102,7 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete this routine?'),
-        content: const Text(
-          'Your habits and their history stay on Today.',
-        ),
+        content: const Text('Your habits and their history stay on Today.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -118,8 +119,9 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _isBusy = true);
-    final failure =
-        await ref.read(routinesProvider.notifier).remove(widget.routine.id);
+    final failure = await ref
+        .read(routinesProvider.notifier)
+        .remove(widget.routine.id);
     if (!mounted) return;
     setState(() => _isBusy = false);
 
@@ -145,7 +147,10 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.onSurface),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -218,8 +223,13 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                 TextButton(
                   onPressed: _saveChanges,
                   style: TextButton.styleFrom(
-                    backgroundColor: AppColors.primaryFixed.withValues(alpha: 0.4),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    backgroundColor: AppColors.primaryFixed.withValues(
+                      alpha: 0.4,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     shape: const RoundedRectangleBorder(
                       borderRadius: AppSpacing.borderRadiusPill,
                     ),
@@ -258,9 +268,11 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerLowest,
-                      borderRadius: AppSpacing.borderRadiusCard,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 2,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -271,7 +283,7 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                               fontWeight: FontWeight.w600,
                               fontSize: 18,
                             ),
-                            decoration: const InputDecoration(border: InputBorder.none),
+                            decoration: routineFieldDecoration(),
                           ),
                         ),
                         const Icon(
@@ -296,16 +308,18 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerLowest,
-                      borderRadius: AppSpacing.borderRadiusCard,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     child: TextField(
                       controller: _intentionController,
                       maxLines: 2,
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.onSurface,
                       ),
-                      decoration: const InputDecoration(border: InputBorder.none),
+                      decoration: routineFieldDecoration(),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -351,7 +365,9 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                             color: col,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? AppColors.surface : Colors.transparent,
+                              color: isSelected
+                                  ? AppColors.surface
+                                  : Colors.transparent,
                               width: 2,
                             ),
                           ),
@@ -427,7 +443,10 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         const Icon(
@@ -469,17 +488,24 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
 
                         // Duration Dropdown Selector
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceContainerLow,
                             borderRadius: AppSpacing.borderRadiusPill,
                           ),
                           child: DropdownButton<int>(
-                            value: _durationOptions.contains(step.durationMinutes)
+                            value:
+                                _durationOptions.contains(step.durationMinutes)
                                 ? step.durationMinutes
                                 : 5,
                             underline: const SizedBox.shrink(),
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 16,
+                            ),
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.onSurface,
                               fontWeight: FontWeight.w600,
@@ -493,7 +519,9 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                             onChanged: (newDuration) {
                               if (newDuration != null) {
                                 setState(() {
-                                  _steps[index] = step.copyWith(durationMinutes: newDuration);
+                                  _steps[index] = step.copyWith(
+                                    durationMinutes: newDuration,
+                                  );
                                 });
                               }
                             },
@@ -503,7 +531,11 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
 
                         // Delete Step
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.outline),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: AppColors.outline,
+                          ),
                           onPressed: () {
                             setState(() => _steps.removeAt(index));
                           },
@@ -527,8 +559,10 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                     initialSelectedIds: _steps.map((s) => s.id).toSet(),
                     onHabitsSelected: (selected) {
                       setState(() {
-                        _steps =
-                            SelectHabitsModal.mergeSelection(_steps, selected);
+                        _steps = SelectHabitsModal.mergeSelection(
+                          _steps,
+                          selected,
+                        );
                       });
                     },
                   );
@@ -539,8 +573,11 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.add_circle_outline_rounded,
-                          size: 18, color: AppColors.onSurface),
+                      const Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 18,
+                        color: AppColors.onSurface,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Add Another Habit',
@@ -573,7 +610,11 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.timelapse_rounded, size: 18, color: accentColor),
+                            Icon(
+                              Icons.timelapse_rounded,
+                              size: 18,
+                              color: accentColor,
+                            ),
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
@@ -667,8 +708,11 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
             Center(
               child: TextButton.icon(
                 onPressed: _deleteRoutine,
-                icon: const Icon(Icons.delete_outline_rounded,
-                    size: 18, color: AppColors.secondary),
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 18,
+                  color: AppColors.secondary,
+                ),
                 label: Text(
                   'Delete Routine',
                   style: AppTypography.labelMedium.copyWith(

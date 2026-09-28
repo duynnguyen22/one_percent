@@ -191,7 +191,9 @@ class _SelectHabitsModalState extends ConsumerState<SelectHabitsModal> {
                 width: double.infinity,
                 height: AppSpacing.buttonHeight,
                 child: FilledButton.icon(
-                  onPressed: habitsAsync.hasValue ? () => _confirm(habits) : null,
+                  onPressed: habitsAsync.hasValue
+                      ? () => _confirm(habits)
+                      : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.onPrimary,
@@ -273,8 +275,8 @@ class _HabitTile extends StatelessWidget {
     final detail = habit.doneToday
         ? 'Done today'
         : habit.currentStreak > 0
-            ? '${habit.currentStreak}-day streak'
-            : 'Not yet today';
+        ? '${habit.currentStreak}-day streak'
+        : 'Not yet today';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),

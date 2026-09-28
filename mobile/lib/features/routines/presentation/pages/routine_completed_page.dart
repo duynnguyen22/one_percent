@@ -11,10 +11,7 @@ import '../../domain/entities/routine.dart';
 /// Calm Routine Completed Screen (Stitch Screen 7 - 3ef548383cfc42fdaa0dc035266f6d70).
 /// Celebrates completion, updates streaks, and provides mindful closure.
 class RoutineCompletedPage extends ConsumerWidget {
-  const RoutineCompletedPage({
-    super.key,
-    required this.routine,
-  });
+  const RoutineCompletedPage({super.key, required this.routine});
 
   final Routine routine;
 
@@ -46,7 +43,11 @@ class RoutineCompletedPage extends ConsumerWidget {
                       color: accentColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.eco_rounded, color: accentColor, size: 20),
+                    child: Icon(
+                      Icons.eco_rounded,
+                      color: accentColor,
+                      size: 20,
+                    ),
                   ),
                   Container(
                     width: 36,
@@ -111,7 +112,10 @@ class RoutineCompletedPage extends ConsumerWidget {
                       Positioned(
                         bottom: 0,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: accentColor,
                             borderRadius: AppSpacing.borderRadiusPill,
@@ -126,7 +130,11 @@ class RoutineCompletedPage extends ConsumerWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.check, size: 12, color: Colors.white),
+                              const Icon(
+                                Icons.check,
+                                size: 12,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '+1.0%',
@@ -224,7 +232,10 @@ class RoutineCompletedPage extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceContainer,
                             borderRadius: AppSpacing.borderRadiusPill,
@@ -246,7 +257,10 @@ class RoutineCompletedPage extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceContainerLowest,
                             borderRadius: AppSpacing.borderRadiusCard,
@@ -257,7 +271,9 @@ class RoutineCompletedPage extends ConsumerWidget {
                                 width: 22,
                                 height: 22,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryFixed.withValues(alpha: 0.6),
+                                  color: AppColors.primaryFixed.withValues(
+                                    alpha: 0.6,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -294,7 +310,10 @@ class RoutineCompletedPage extends ConsumerWidget {
                     // Auto-marked banner
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryFixed.withValues(alpha: 0.4),
                         borderRadius: AppSpacing.borderRadiusPill,
@@ -378,10 +397,7 @@ class RoutineCompletedPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      accentColor.withValues(alpha: 0.85),
-                      accentColor,
-                    ],
+                    colors: [accentColor.withValues(alpha: 0.85), accentColor],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -425,7 +441,7 @@ class RoutineCompletedPage extends ConsumerWidget {
                 width: double.infinity,
                 height: AppSpacing.buttonHeight,
                 child: FilledButton(
-                  onPressed: () => context.goNamed(RouteNames.today),
+                  onPressed: () => context.goNamed(RouteNames.routines),
                   style: FilledButton.styleFrom(
                     backgroundColor: accentColor,
                     foregroundColor: AppColors.onPrimary,
@@ -443,36 +459,6 @@ class RoutineCompletedPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Back to Routines Secondary Button
-              SizedBox(
-                width: double.infinity,
-                height: AppSpacing.buttonHeight,
-                child: OutlinedButton(
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.goNamed(RouteNames.routines);
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.onSurface,
-                    side: const BorderSide(color: AppColors.outlineVariant),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppSpacing.borderRadiusPill,
-                    ),
-                  ),
-                  child: Text(
-                    'Back to Routines',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
 
               // View Today's Progress Link
               TextButton(

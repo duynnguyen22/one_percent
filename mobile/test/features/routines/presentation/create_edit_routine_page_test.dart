@@ -23,8 +23,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('ROUTINE NAME'), findsOneWidget);
-      expect(find.text('ACCENT COLOR'), findsOneWidget);
-      expect(find.text('INTENTION / DESCRIPTION'), findsOneWidget);
+      expect(find.text('THEME ACCENT'), findsOneWidget);
+      expect(find.text('INTENTION & TONE'), findsOneWidget);
 
       await tester.scrollUntilVisible(
         find.text('+ Add Habit'),

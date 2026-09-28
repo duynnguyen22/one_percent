@@ -26,8 +26,9 @@ class RoutineExecutionState {
   final bool isSoundEnabled;
   final bool isCompleted;
 
-  RoutineStep? get currentStep =>
-      currentStepIndex < routine.steps.length ? routine.steps[currentStepIndex] : null;
+  RoutineStep? get currentStep => currentStepIndex < routine.steps.length
+      ? routine.steps[currentStepIndex]
+      : null;
 
   int get totalSteps => routine.steps.length;
   bool get hasNextStep => currentStepIndex < totalSteps - 1;
@@ -75,8 +76,10 @@ class RoutinesNotifier extends AsyncNotifier<List<Routine>> {
 
   /// Creates a routine, or replaces [routineId]'s name, look and steps.
   Future<Failure?> save(RoutineDraft draft, {String? routineId}) async {
-    final result =
-        await ref.read(saveRoutineUseCaseProvider)(draft, routineId: routineId);
+    final result = await ref.read(saveRoutineUseCaseProvider)(
+      draft,
+      routineId: routineId,
+    );
 
     switch (result) {
       case ResultError(:final failure):
@@ -121,8 +124,9 @@ class RoutinesNotifier extends AsyncNotifier<List<Routine>> {
   Future<Failure?> completeStep(String routineId, String habitId) async {
     // A routine not loaded yet still gets its check-off; only a step known
     // to be done is skipped.
-    final step =
-        _find(routineId)?.steps.where((s) => s.habitId == habitId).firstOrNull;
+    final step = _find(
+      routineId,
+    )?.steps.where((s) => s.habitId == habitId).firstOrNull;
     if (step?.isCompleted ?? false) return null;
 
     final result = await ref.read(setEntryUseCaseProvider)(
@@ -155,15 +159,15 @@ class RoutinesNotifier extends AsyncNotifier<List<Routine>> {
           ];
           return routine.copyWith(
             steps: steps,
-            completedToday: steps.isNotEmpty && steps.every((s) => s.isCompleted),
+            completedToday:
+                steps.isNotEmpty && steps.every((s) => s.isCompleted),
           );
         }(),
     ]);
   }
 }
 
-final routinesProvider =
-    AsyncNotifierProvider<RoutinesNotifier, List<Routine>>(
+final routinesProvider = AsyncNotifierProvider<RoutinesNotifier, List<Routine>>(
   RoutinesNotifier.new,
   // The screens offer an explicit Retry; see `dailyHabitsProvider`.
   retry: (_, _) => null,
@@ -171,11 +175,13 @@ final routinesProvider =
 
 /// One routine by id, following the list's loading and error states. Data is
 /// null when the routine does not exist (or was just deleted).
-final routineByIdProvider =
-    Provider.family<AsyncValue<Routine?>, String>((ref, routineId) {
-  return ref.watch(routinesProvider).whenData(
-        (list) => list.where((r) => r.id == routineId).firstOrNull,
-      );
+final routineByIdProvider = Provider.family<AsyncValue<Routine?>, String>((
+  ref,
+  routineId,
+) {
+  return ref
+      .watch(routinesProvider)
+      .whenData((list) => list.where((r) => r.id == routineId).firstOrNull);
 });
 
 /// Execution session notifier for step navigation, timer & sound.
@@ -203,7 +209,8 @@ class RoutineExecutionNotifier extends Notifier<RoutineExecutionState?> {
   }
 
   void tick() {
-    if (state == null || state!.isPaused || state!.secondsRemaining <= 0) return;
+    if (state == null || state!.isPaused || state!.secondsRemaining <= 0)
+      return;
     state = state!.copyWith(secondsRemaining: state!.secondsRemaining - 1);
   }
 
@@ -229,5 +236,5 @@ class RoutineExecutionNotifier extends Notifier<RoutineExecutionState?> {
 
 final routineExecutionProvider =
     NotifierProvider<RoutineExecutionNotifier, RoutineExecutionState?>(
-  RoutineExecutionNotifier.new,
-);
+      RoutineExecutionNotifier.new,
+    );

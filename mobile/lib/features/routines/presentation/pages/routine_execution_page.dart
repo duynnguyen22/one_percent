@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
 import '../providers/routines_provider.dart';
-import 'routine_completed_page.dart';
 
 /// Routine Execution Player (Stitch Screens 5 & 6 - 3c3e8b254cf84f48bf9d146472f04843 & ccd38dc4317d43768539f0d34c1bd475).
 /// Guided step-by-step player with timer, breathing cadence, and auto-sync notice.
@@ -23,12 +25,14 @@ class RoutineExecutionPage extends ConsumerStatefulWidget {
   final int initialStepIndex;
 
   @override
-  ConsumerState<RoutineExecutionPage> createState() => _RoutineExecutionPageState();
+  ConsumerState<RoutineExecutionPage> createState() =>
+      _RoutineExecutionPageState();
 }
 
 class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
   late int _currentStepIndex;
   late int _secondsRemaining;
+  Timer? _ticker;
   bool _isPaused = false;
   bool _isSoundEnabled = true;
 
@@ -41,15 +45,32 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
   void initState() {
     super.initState();
     if (!_hasSteps) return;
-    _currentStepIndex =
-        widget.initialStepIndex.clamp(0, widget.routine.steps.length - 1);
+    _currentStepIndex = widget.initialStepIndex.clamp(
+      0,
+      widget.routine.steps.length - 1,
+    );
     _resetTimerForCurrentStep();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
   }
 
   void _resetTimerForCurrentStep() {
-    final step = _currentStep;
-    _secondsRemaining = (step.durationMinutes * 60) - 3; // e.g. 1:57 or 4:33
-    if (_secondsRemaining < 0) _secondsRemaining = step.durationMinutes * 60;
+    _secondsRemaining = _currentStep.durationMinutes * 60;
+  }
+
+  void _tick() {
+    if (_isPaused || _secondsRemaining <= 0) return;
+    setState(() => _secondsRemaining--);
+  }
+
+  double get _progress {
+    final total = _currentStep.durationMinutes * 60;
+    return total == 0 ? 0 : _secondsRemaining / total;
   }
 
   RoutineStep get _currentStep => widget.routine.steps[_currentStepIndex];
@@ -88,11 +109,11 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
         _isPaused = false;
       });
     } else {
-      // Completed all steps!
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => RoutineCompletedPage(routine: widget.routine),
-        ),
+      // Completed all steps! Go through the router: a raw Navigator route
+      // would sit outside go_router and survive every later `goNamed`.
+      context.pushReplacementNamed(
+        RouteNames.routineCompleted,
+        pathParameters: {'routineId': widget.routine.id},
       );
     }
   }
@@ -140,7 +161,10 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
               if (_logged.contains(_currentStepIndex - 1)) ...[
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primaryFixed.withValues(alpha: 0.6),
                     borderRadius: AppSpacing.borderRadiusPill,
@@ -218,9 +242,13 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                     ),
                     child: IconButton(
                       icon: Icon(
-                        _isSoundEnabled ? Icons.graphic_eq_rounded : Icons.volume_off_rounded,
+                        _isSoundEnabled
+                            ? Icons.graphic_eq_rounded
+                            : Icons.volume_off_rounded,
                         size: 20,
-                        color: _isSoundEnabled ? accentColor : AppColors.outline,
+                        color: _isSoundEnabled
+                            ? accentColor
+                            : AppColors.outline,
                       ),
                       onPressed: _toggleSound,
                       padding: EdgeInsets.zero,
@@ -243,7 +271,9 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                       width: isActive ? 24 : 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: isActive ? accentColor : AppColors.surfaceContainerHigh,
+                        color: isActive
+                            ? accentColor
+                            : AppColors.surfaceContainerHigh,
                         borderRadius: AppSpacing.borderRadiusPill,
                       ),
                     );
@@ -289,7 +319,10 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                     ),
                     Flexible(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainerLow,
                           borderRadius: AppSpacing.borderRadiusPill,
@@ -297,8 +330,11 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.notifications_active_outlined,
-                                size: 14, color: AppColors.onSurfaceVariant),
+                            const Icon(
+                              Icons.notifications_active_outlined,
+                              size: 14,
+                              color: AppColors.onSurfaceVariant,
+                            ),
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
@@ -331,10 +367,12 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                         width: 190,
                         height: 190,
                         child: CircularProgressIndicator(
-                          value: 0.75,
+                          value: _progress,
                           strokeWidth: 6,
                           backgroundColor: AppColors.surfaceContainerLow,
-                          valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            accentColor,
+                          ),
                         ),
                       ),
                       Column(
@@ -348,7 +386,11 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                                 color: accentColor.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(step.icon, size: 18, color: accentColor),
+                              child: Icon(
+                                step.icon,
+                                size: 18,
+                                color: accentColor,
+                              ),
                             ),
                             const SizedBox(height: 6),
                           ],
@@ -453,7 +495,11 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                           color: accentColor.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.eco_outlined, color: accentColor, size: 20),
+                        child: Icon(
+                          Icons.eco_outlined,
+                          color: accentColor,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -539,7 +585,10 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryFixed.withValues(alpha: 0.5),
                           borderRadius: AppSpacing.borderRadiusPill,
@@ -557,54 +606,40 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                 ),
               ],
 
-              // Step 2+ Specific Guided Sequence Substeps Card
-              if (_currentStepIndex > 0) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerLow,
-                    borderRadius: AppSpacing.borderRadiusCard,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'GUIDED SEQUENCE',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.outline,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                        ),
+              // The routine's own steps, so the user sees where they are.
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLow,
+                  borderRadius: AppSpacing.borderRadiusCard,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'YOUR SEQUENCE',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.outline,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
                       ),
-                      const SizedBox(height: 12),
-                      _SubStepItem(
-                        number: '1',
-                        title: 'Cat-Cow spinal rolls',
-                        badge: 'Active · 1m',
-                        isActive: true,
-                        accentColor: accentColor,
-                      ),
-                      const SizedBox(height: 8),
-                      _SubStepItem(
-                        number: '2',
-                        title: 'Standing chest opener',
-                        badge: '2 min',
-                        isActive: false,
-                        accentColor: accentColor,
-                      ),
-                      const SizedBox(height: 8),
-                      _SubStepItem(
-                        number: '3',
-                        title: 'Slow forward bend & hip release',
-                        badge: '2 min',
-                        isActive: false,
+                    ),
+                    for (final (i, step) in widget.routine.steps.indexed) ...[
+                      SizedBox(height: i == 0 ? 12 : 8),
+                      _SequenceStepItem(
+                        key: ValueKey('sequence-step-${step.habitId}'),
+                        number: '${i + 1}',
+                        title: step.title,
+                        durationMinutes: step.durationMinutes,
+                        isActive: i == _currentStepIndex,
+                        isDone: _logged.contains(i) || step.isCompleted,
                         accentColor: accentColor,
                       ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
+              ),
               const SizedBox(height: 24),
 
               // Done & Next Primary Button
@@ -646,7 +681,9 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                       child: TextButton.icon(
                         onPressed: _togglePause,
                         icon: Icon(
-                          _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                          _isPaused
+                              ? Icons.play_arrow_rounded
+                              : Icons.pause_rounded,
                           size: 18,
                           color: AppColors.onSurface,
                         ),
@@ -727,23 +764,32 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
   }
 }
 
-class _SubStepItem extends StatelessWidget {
-  const _SubStepItem({
+class _SequenceStepItem extends StatelessWidget {
+  const _SequenceStepItem({
+    super.key,
     required this.number,
     required this.title,
-    required this.badge,
+    required this.durationMinutes,
     required this.isActive,
+    required this.isDone,
     required this.accentColor,
   });
 
   final String number;
   final String title;
-  final String badge;
+  final int durationMinutes;
   final bool isActive;
+  final bool isDone;
   final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
+    final badge = isActive
+        ? 'Active · ${durationMinutes}m'
+        : isDone
+        ? 'Done'
+        : '$durationMinutes min';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -760,29 +806,41 @@ class _SubStepItem extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Text(
-              number,
-              style: AppTypography.labelSmall.copyWith(
-                color: isActive ? AppColors.onPrimary : AppColors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-              ),
-            ),
+            child: isDone && !isActive
+                ? Icon(Icons.check_rounded, size: 14, color: accentColor)
+                : Text(
+                    number,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: isActive
+                          ? AppColors.onPrimary
+                          : AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.labelMedium.copyWith(
-                color: AppColors.onSurface,
+                color: isDone && !isActive
+                    ? AppColors.onSurfaceVariant
+                    : AppColors.onSurface,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                decoration: isDone && !isActive
+                    ? TextDecoration.lineThrough
+                    : null,
               ),
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             badge,
             style: AppTypography.labelSmall.copyWith(
-              color: isActive ? accentColor : AppColors.outline,
+              color: isActive || isDone ? accentColor : AppColors.outline,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

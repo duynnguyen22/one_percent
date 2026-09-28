@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobile/app/router/route_names.dart';
+import 'package:mobile/app/theme/theme.dart';
 import 'package:mobile/features/routines/domain/entities/routine.dart';
 import 'package:mobile/features/routines/presentation/pages/routine_completed_page.dart';
 
@@ -64,6 +68,70 @@ void main() {
       expect(find.text('Done'), findsOneWidget);
       expect(find.text('Back to Routines'), findsOneWidget);
       expect(find.text('View Today\'s Progress ->'), findsOneWidget);
+    });
+    group('navigation', () {
+      Future<void> pumpInRouter(WidgetTester tester) async {
+        final router = GoRouter(
+          initialLocation: '/routines/completed',
+          routes: [
+            GoRoute(
+              path: '/today',
+              name: RouteNames.today,
+              builder: (context, state) => const Text('TODAY STUB'),
+            ),
+            GoRoute(
+              path: '/routines',
+              name: RouteNames.routines,
+              builder: (context, state) => const Text('ROUTINES STUB'),
+              routes: [
+                GoRoute(
+                  path: 'completed',
+                  builder: (context, state) => RoutineCompletedPage(routine: routine),
+                ),
+              ],
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: signedOutOverrides(),
+            child: MaterialApp.router(
+              theme: AppTheme.lightTheme,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('Done goes back to the routine list', (tester) async {
+        await pumpInRouter(tester);
+        await tester.scrollUntilVisible(
+          find.text('Done'),
+          300,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.tap(find.text('Done'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('ROUTINES STUB'), findsOneWidget);
+        expect(find.byType(RoutineCompletedPage), findsNothing);
+      });
+
+      testWidgets("View Today's Progress goes to Today", (tester) async {
+        await pumpInRouter(tester);
+        await tester.scrollUntilVisible(
+          find.text('View Today\'s Progress ->'),
+          300,
+          scrollable: find.byType(Scrollable),
+        );
+        await tester.tap(find.text('View Today\'s Progress ->'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('TODAY STUB'), findsOneWidget);
+        expect(find.byType(RoutineCompletedPage), findsNothing);
+      });
     });
   });
 }

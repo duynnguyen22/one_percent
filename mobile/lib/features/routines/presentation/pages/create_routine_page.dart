@@ -10,6 +10,7 @@ import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_draft.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/cadence_picker.dart';
+import '../widgets/routine_field_decoration.dart';
 import '../widgets/select_habits_modal.dart';
 
 /// Create Routine Screen (Stitch Screen 3 - 04149fd7c3f54e26a2ce66cfae468647).
@@ -27,8 +28,9 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
 
   static const List<String> _accentPalette = [
     '#4D6054', // Sage Green
-    '#4C5F69', // Sky Slate
     '#7C5454', // Dusty Rose
+    '#4C5F69', // Sky Slate
+    '#E4E2DD', // Sand
     '#66796C', // Warm Olive
   ];
 
@@ -41,7 +43,8 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
 
   bool _isSaving = false;
 
-  int get _totalMinutes => _steps.fold(0, (sum, step) => sum + step.durationMinutes);
+  int get _totalMinutes =>
+      _steps.fold(0, (sum, step) => sum + step.durationMinutes);
 
   @override
   void dispose() {
@@ -58,7 +61,9 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
     }
 
     setState(() => _isSaving = true);
-    final failure = await ref.read(routinesProvider.notifier).save(
+    final failure = await ref
+        .read(routinesProvider.notifier)
+        .save(
           RoutineDraft(
             name: name,
             description: _descriptionController.text.trim(),
@@ -97,7 +102,10 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.onSurface),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -170,25 +178,67 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                     style: AppTypography.labelSmall.copyWith(
                       color: AppColors.onSurfaceVariant,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerLowest,
-                      borderRadius: AppSpacing.borderRadiusPill,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _nameController,
+                            style: AppTypography.headlineMedium.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                            decoration: routineFieldDecoration(
+                              hint: 'Enter routine name...',
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: AppColors.outline,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Intention & Tone
+                  Text(
+                    'INTENTION & TONE',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLowest,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     child: TextField(
-                      controller: _nameController,
-                      style: AppTypography.bodyLarge.copyWith(
+                      controller: _descriptionController,
+                      maxLines: 2,
+                      style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.onSurface,
-                        fontWeight: FontWeight.w500,
                       ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Enter routine name...',
+                      decoration: routineFieldDecoration(
+                        hint: 'Describe the intention and tone...',
                       ),
                     ),
                   ),
@@ -200,7 +250,6 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                     style: AppTypography.labelSmall.copyWith(
                       color: AppColors.onSurfaceVariant,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -211,13 +260,12 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Accent Color
+                  // Theme Accent
                   Text(
-                    'ACCENT COLOR',
+                    'THEME ACCENT',
                     style: AppTypography.labelSmall.copyWith(
                       color: AppColors.onSurfaceVariant,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -231,61 +279,30 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                       return GestureDetector(
                         onTap: () => setState(() => _selectedAccentHex = hex),
                         child: Container(
-                          width: 38,
-                          height: 38,
+                          width: 36,
+                          height: 36,
                           decoration: BoxDecoration(
                             color: col,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? AppColors.surface : Colors.transparent,
+                              color: isSelected
+                                  ? AppColors.surface
+                                  : Colors.transparent,
                               width: 2,
                             ),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: col.withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : null,
                           ),
                           child: isSelected
-                              ? const Icon(Icons.check, size: 20, color: Colors.white)
+                              ? Icon(
+                                  Icons.check,
+                                  size: 18,
+                                  color: col.computeLuminance() > 0.5
+                                      ? AppColors.onSurface
+                                      : Colors.white,
+                                )
                               : null,
                         ),
                       );
                     }).toList(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Intention / Description
-                  Text(
-                    'INTENTION / DESCRIPTION',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: AppSpacing.borderRadiusCard,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: TextField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.onSurface,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Describe the intention and tone...',
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -338,7 +355,10 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                       color: AppColors.surfaceContainerLow,
                       borderRadius: AppSpacing.borderRadiusCard,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         const Icon(
@@ -406,8 +426,10 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                     initialSelectedIds: _steps.map((s) => s.id).toSet(),
                     onHabitsSelected: (selected) {
                       setState(() {
-                        _steps =
-                            SelectHabitsModal.mergeSelection(_steps, selected);
+                        _steps = SelectHabitsModal.mergeSelection(
+                          _steps,
+                          selected,
+                        );
                       });
                     },
                   );
@@ -418,8 +440,11 @@ class _CreateRoutinePageState extends ConsumerState<CreateRoutinePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.add_circle_outline_rounded,
-                          size: 18, color: AppColors.primary),
+                      const Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '+ Add Habit',

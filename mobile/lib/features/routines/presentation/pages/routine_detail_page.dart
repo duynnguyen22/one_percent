@@ -11,10 +11,7 @@ import '../../domain/entities/routine.dart';
 /// Routine Detail Preview Screen (Stitch Screen 1 - 37104ba5aca94716b3fdb55355df2b81).
 /// Displays a comprehensive sequence roadmap, energy profile, and cadence guide.
 class RoutineDetailPage extends ConsumerWidget {
-  const RoutineDetailPage({
-    super.key,
-    required this.routine,
-  });
+  const RoutineDetailPage({super.key, required this.routine});
 
   final Routine routine;
 
@@ -31,7 +28,10 @@ class RoutineDetailPage extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.onSurface),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.onSurface,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -122,7 +122,10 @@ class RoutineDetailPage extends ConsumerWidget {
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.onSurfaceVariant,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -264,12 +267,16 @@ class RoutineDetailPage extends ConsumerWidget {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: index == 0 ? accentColor : AppColors.surfaceContainer,
+                                color: index == 0
+                                    ? accentColor
+                                    : AppColors.surfaceContainer,
                                 shape: BoxShape.circle,
                                 boxShadow: index == 0
                                     ? [
                                         BoxShadow(
-                                          color: accentColor.withValues(alpha: 0.3),
+                                          color: accentColor.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
                                         ),
@@ -291,8 +298,12 @@ class RoutineDetailPage extends ConsumerWidget {
                               Expanded(
                                 child: Container(
                                   width: 2,
-                                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
-                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                  color: AppColors.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                 ),
                               ),
                           ],
@@ -304,7 +315,9 @@ class RoutineDetailPage extends ConsumerWidget {
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Container(
-                              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                              padding: const EdgeInsets.all(
+                                AppSpacing.cardPadding,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceContainerLow,
                                 borderRadius: AppSpacing.borderRadiusCard,
@@ -320,15 +333,17 @@ class RoutineDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           step.subtitle,
-                                          style: AppTypography.labelSmall.copyWith(
-                                            color: accentColor,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                          style: AppTypography.labelSmall
+                                              .copyWith(
+                                                color: accentColor,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -340,7 +355,8 @@ class RoutineDetailPage extends ConsumerWidget {
                                         ),
                                         decoration: BoxDecoration(
                                           color: AppColors.surfaceContainer,
-                                          borderRadius: AppSpacing.borderRadiusPill,
+                                          borderRadius:
+                                              AppSpacing.borderRadiusPill,
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -353,10 +369,12 @@ class RoutineDetailPage extends ConsumerWidget {
                                             const SizedBox(width: 4),
                                             Text(
                                               '${step.durationMinutes} min',
-                                              style: AppTypography.labelSmall.copyWith(
-                                                color: AppColors.onSurfaceVariant,
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                              style: AppTypography.labelSmall
+                                                  .copyWith(
+                                                    color: AppColors
+                                                        .onSurfaceVariant,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -366,11 +384,12 @@ class RoutineDetailPage extends ConsumerWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     step.title,
-                                    style: AppTypography.headlineMedium.copyWith(
-                                      color: AppColors.onSurface,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18,
-                                    ),
+                                    style: AppTypography.headlineMedium
+                                        .copyWith(
+                                          color: AppColors.onSurface,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 18,
+                                        ),
                                   ),
                                   if (step.description.isNotEmpty) ...[
                                     const SizedBox(height: 6),
@@ -395,13 +414,18 @@ class RoutineDetailPage extends ConsumerWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(step.icon, size: 13, color: AppColors.tertiary),
+                                        Icon(
+                                          step.icon,
+                                          size: 13,
+                                          color: AppColors.tertiary,
+                                        ),
                                         const SizedBox(width: 4),
                                         Text(
                                           step.category,
-                                          style: AppTypography.labelSmall.copyWith(
-                                            color: AppColors.tertiary,
-                                          ),
+                                          style: AppTypography.labelSmall
+                                              .copyWith(
+                                                color: AppColors.tertiary,
+                                              ),
                                         ),
                                       ],
                                     ),

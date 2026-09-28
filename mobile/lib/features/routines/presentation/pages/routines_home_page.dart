@@ -48,7 +48,9 @@ class RoutinesHomePage extends ConsumerWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                              color: AppColors.primaryContainer.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -68,7 +70,10 @@ class RoutinesHomePage extends ConsumerWidget {
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.tune_rounded, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.tune_rounded,
+                          color: AppColors.primary,
+                        ),
                         onPressed: () {},
                         tooltip: 'Filter Routines',
                       ),
@@ -186,7 +191,9 @@ class RoutinesHomePage extends ConsumerWidget {
                     children: [
                       // Create Routine Action Card
                       Material(
-                        color: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
+                        color: AppColors.surfaceContainerLow.withValues(
+                          alpha: 0.8,
+                        ),
                         borderRadius: AppSpacing.borderRadiusCard,
                         child: InkWell(
                           onTap: () {
@@ -194,7 +201,10 @@ class RoutinesHomePage extends ConsumerWidget {
                           },
                           borderRadius: AppSpacing.borderRadiusCard,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 18,
+                              horizontal: 20,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -213,7 +223,7 @@ class RoutinesHomePage extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  '+ Create Routine',
+                                  'Create Routine',
                                   style: AppTypography.labelLarge.copyWith(
                                     color: AppColors.onSurface,
                                     fontWeight: FontWeight.w600,
@@ -288,9 +298,7 @@ class RoutinesHomePage extends ConsumerWidget {
               ),
 
               // Bottom clearance for floating bottom navigation dock
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 110),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 110)),
             ],
           ),
         ),
@@ -419,7 +427,10 @@ class _RoutineCard extends StatelessWidget {
                         runSpacing: 4,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: accentColor.withValues(alpha: 0.12),
                               borderRadius: AppSpacing.borderRadiusPill,
@@ -493,7 +504,10 @@ class _RoutineCard extends StatelessWidget {
                   runSpacing: 6,
                   children: routine.steps.map((step) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceContainer,
                         borderRadius: AppSpacing.borderRadiusPill,
@@ -561,7 +575,9 @@ class _RoutineCard extends StatelessWidget {
                                     style: AppTypography.labelSmall.copyWith(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
-                                      color: i == 0 ? accentColor : AppColors.onSurfaceVariant,
+                                      color: i == 0
+                                          ? accentColor
+                                          : AppColors.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -596,7 +612,10 @@ class _RoutineCard extends StatelessWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor: accentColor,
                         foregroundColor: AppColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: AppSpacing.borderRadiusPill,
                         ),
