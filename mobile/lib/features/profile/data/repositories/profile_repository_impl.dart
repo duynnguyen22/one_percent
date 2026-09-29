@@ -39,6 +39,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
     });
   }
 
+  @override
+  Future<Result<User>> uploadAvatar(String filePath) {
+    return _guard(() async {
+      final updatedUser = await _remote.uploadAvatar(filePath);
+      await _authLocal.cacheUser(updatedUser);
+      return updatedUser;
+    });
+  }
+
   /// Checks connectivity, runs [call], and converts anything thrown into a
   /// [Failure].
   Future<Result<T>> _guard<T>(Future<T> Function() call) async {

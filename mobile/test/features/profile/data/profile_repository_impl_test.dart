@@ -72,4 +72,27 @@ void main() {
       expect(result.failureOrNull, isA<ServerFailure>());
     });
   });
+
+  group('uploadAvatar', () {
+    test('uploads and caches the updated user', () async {
+      when(() => remote.uploadAvatar('/tmp/me.jpg'))
+          .thenAnswer((_) async => user);
+
+      final result = await repository.uploadAvatar('/tmp/me.jpg');
+
+      expect(result.dataOrNull, user);
+      verify(() => local.cacheUser(user)).called(1);
+    });
+
+    test('maps a rejected upload onto ValidationFailure', () async {
+      when(() => remote.uploadAvatar(any())).thenThrow(
+        const ValidationException('Avatar must be a JPEG, PNG or WebP image'),
+      );
+
+      final result = await repository.uploadAvatar('/tmp/me.txt');
+
+      expect(result.failureOrNull, isA<ValidationFailure>());
+      verifyNever(() => local.cacheUser(any()));
+    });
+  });
 }

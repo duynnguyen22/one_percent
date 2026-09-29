@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/api_constants.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -75,7 +76,7 @@ class ProfilePage extends ConsumerWidget {
                         child: (user?.avatarUrl != null &&
                                 user!.avatarUrl!.trim().isNotEmpty)
                             ? Image.network(
-                                user.avatarUrl!.trim(),
+                                ApiConstants.mediaUrl(user.avatarUrl!.trim()),
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, _, _) => Center(
                                   child: Text(

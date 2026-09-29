@@ -50,6 +50,7 @@ import '../features/profile/data/datasources/profile_remote_datasource.dart';
 import '../features/profile/data/repositories/profile_repository_impl.dart';
 import '../features/profile/domain/repositories/profile_repository.dart';
 import '../features/profile/domain/usecases/update_profile.dart';
+import '../features/profile/domain/usecases/upload_avatar.dart';
 import '../features/routines/data/datasources/routine_remote_datasource.dart';
 import '../features/routines/data/repositories/routine_repository_impl.dart';
 import '../features/routines/domain/repositories/routine_repository.dart';
@@ -280,4 +281,8 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 
 final updateProfileUseCaseProvider = Provider<UpdateProfile>(
   (ref) => UpdateProfile(ref.watch(profileRepositoryProvider)),
+);
+
+final uploadAvatarUseCaseProvider = Provider<UploadAvatar>(
+  (ref) => UploadAvatar(ref.watch(profileRepositoryProvider)),
 );

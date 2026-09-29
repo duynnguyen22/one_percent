@@ -10,4 +10,8 @@ abstract interface class ProfileRepository {
     String? userPhone,
     String? avatarUrl,
   });
+
+  /// Uploads the image at [filePath] as the user's avatar and synchronises
+  /// local session caches.
+  Future<Result<User>> uploadAvatar(String filePath);
 }

@@ -13,6 +13,10 @@ abstract interface class ProfileRemoteDataSource {
     String? userPhone,
     String? avatarUrl,
   });
+
+  /// `POST /profile/avatar` — uploads the image at [filePath] as the user's
+  /// avatar and returns the user with the new `avatarUrl`.
+  Future<UserModel> uploadAvatar(String filePath);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -33,6 +37,17 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         if (userPhone != null) 'userPhone': userPhone,
         if (avatarUrl != null) 'avatarUrl': avatarUrl,
       },
+    );
+
+    final userData = response['user'] as Map<String, dynamic>;
+    return UserModel.fromJson(userData);
+  }
+
+  @override
+  Future<UserModel> uploadAvatar(String filePath) async {
+    final response = await _client.upload<Map<String, dynamic>>(
+      ApiConstants.profileAvatar,
+      filePath: filePath,
     );
 
     final userData = response['user'] as Map<String, dynamic>;

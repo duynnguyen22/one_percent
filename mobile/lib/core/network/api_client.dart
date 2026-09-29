@@ -52,6 +52,24 @@ class ApiClient {
   Future<T> put<T>(String path, {Object? data}) =>
       _send<T>(() => _dio.put<T>(path, data: data), 'PUT', path);
 
+  /// Sends the file at [filePath] as `multipart/form-data` under [field].
+  Future<T> upload<T>(
+    String path, {
+    required String filePath,
+    String field = 'file',
+  }) =>
+      _send<T>(
+        () async => _dio.post<T>(
+          path,
+          data: FormData.fromMap({
+            field: await MultipartFile.fromFile(filePath),
+          }),
+          options: Options(sendTimeout: ApiConstants.uploadSendTimeout),
+        ),
+        'POST',
+        path,
+      );
+
   Future<T> delete<T>(String path, {Object? data}) =>
       _send<T>(() => _dio.delete<T>(path, data: data), 'DELETE', path);
 

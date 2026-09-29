@@ -28,6 +28,9 @@ abstract final class ApiConstants {
   static const Duration receiveTimeout = Duration(seconds: 15);
   static const Duration sendTimeout = Duration(seconds: 15);
 
+  /// File uploads push far more bytes than JSON requests.
+  static const Duration uploadSendTimeout = Duration(seconds: 60);
+
   // Auth — backend/src/auth/auth.controller.ts
   static const String login = '/auth/login';
   static const String register = '/auth/register';
@@ -53,6 +56,19 @@ abstract final class ApiConstants {
 
   // Profile — backend/src/profile/profile.controller.ts
   static const String profile = '/profile';
+  static const String profileAvatar = '/profile/avatar';
+
+  /// Turns a media path stored by the backend (e.g. `/uploads/avatars/x.jpg`)
+  /// into a URL this device can load. Absolute URLs pass through unchanged.
+  ///
+  /// The backend stores paths rather than full URLs because the host differs
+  /// per device — `10.0.2.2` on the Android emulator, `localhost` on iOS.
+  static String mediaUrl(String pathOrUrl) {
+    if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+      return pathOrUrl;
+    }
+    return '$baseUrl$pathOrUrl';
+  }
 
   // Headers
   static const String authorizationHeader = 'Authorization';

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/result.dart';
@@ -31,17 +32,31 @@ class ProfileEditNotifier extends Notifier<ProfileEditState> {
   @override
   ProfileEditState build() => const ProfileEditState();
 
+  /// Saves the text fields and, when [avatarFilePath] is given, uploads it as
+  /// the new avatar first. Stops at the first failure.
   Future<Failure?> updateProfile({
     String? userName,
     String? userPhone,
-    String? avatarUrl,
+    String? avatarFilePath,
   }) async {
     state = state.copyWith(isSubmitting: true);
+
+    if (avatarFilePath != null) {
+      final upload =
+          await ref.read(uploadAvatarUseCaseProvider)(avatarFilePath);
+      switch (upload) {
+        case Success(:final data):
+          // Shown right away, even if the text fields then fail to save.
+          ref.read(authNotifierProvider.notifier).updateUser(data);
+        case ResultError(:final failure):
+          state = state.copyWith(isSubmitting: false, failure: failure);
+          return failure;
+      }
+    }
 
     final result = await ref.read(updateProfileUseCaseProvider)(
       userName: userName,
       userPhone: userPhone,
-      avatarUrl: avatarUrl,
     );
 
     switch (result) {
@@ -60,3 +75,6 @@ final profileEditProvider =
     NotifierProvider<ProfileEditNotifier, ProfileEditState>(
   ProfileEditNotifier.new,
 );
+
+/// The platform photo picker, behind a provider so tests can stub it.
+final imagePickerProvider = Provider<ImagePicker>((ref) => ImagePicker());

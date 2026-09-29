@@ -78,4 +78,30 @@ void main() {
       expect(user.avatarUrl, isNull);
     });
   });
+
+  group('uploadAvatar', () {
+    test('uploads the file to POST /profile/avatar and parses the user',
+        () async {
+      when(
+        () => client.upload<Map<String, dynamic>>(
+          ApiConstants.profileAvatar,
+          filePath: '/tmp/me.jpg',
+        ),
+      ).thenAnswer(
+        (_) async => {
+          'message': 'Avatar updated successfully',
+          'user': {
+            'id': '11111111-1111-4111-8111-111111111111',
+            'email': 'jane@example.com',
+            'avatarUrl': '/uploads/avatars/abc.jpg',
+            'createdAt': '2026-01-01T00:00:00.000Z',
+          },
+        },
+      );
+
+      final user = await dataSource.uploadAvatar('/tmp/me.jpg');
+
+      expect(user.avatarUrl, '/uploads/avatars/abc.jpg');
+    });
+  });
 }
