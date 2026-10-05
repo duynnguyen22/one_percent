@@ -213,7 +213,9 @@ class _OfflinePageState extends ConsumerState<OfflinePage>
 
                         // Action Buttons Stack
                         AppButton(
-                          label: _isChecking ? 'Checking connection...' : 'Try Reconnecting',
+                          label: _isChecking
+                              ? 'Checking connection...'
+                              : 'Try Reconnecting',
                           icon: Icons.refresh_rounded,
                           isLoading: _isChecking,
                           onPressed: _handleReconnect,
@@ -283,10 +285,7 @@ class _OfflinePageState extends ConsumerState<OfflinePage>
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.85),
         border: const Border(
-          bottom: BorderSide(
-            color: Color(0x0A000000),
-            width: 1,
-          ),
+          bottom: BorderSide(color: Color(0x0A000000), width: 1),
         ),
       ),
       child: Row(
@@ -569,11 +568,7 @@ class _OfflinePageState extends ConsumerState<OfflinePage>
             color: AppColors.primaryFixed,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 14,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, size: 14, color: AppColors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(

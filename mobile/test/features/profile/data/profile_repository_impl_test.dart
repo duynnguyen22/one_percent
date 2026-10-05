@@ -34,24 +34,28 @@ void main() {
   });
 
   group('updateProfile', () {
-    test('updates remote and caches updated user in local storage on success',
-        () async {
-      when(() => remote.updateProfile(
+    test(
+      'updates remote and caches updated user in local storage on success',
+      () async {
+        when(
+          () => remote.updateProfile(
             userName: 'Jane',
             userPhone: '123456',
             avatarUrl: 'https://img.com/pic.jpg',
-          )).thenAnswer((_) async => user);
+          ),
+        ).thenAnswer((_) async => user);
 
-      final result = await repository.updateProfile(
-        userName: 'Jane',
-        userPhone: '123456',
-        avatarUrl: 'https://img.com/pic.jpg',
-      );
+        final result = await repository.updateProfile(
+          userName: 'Jane',
+          userPhone: '123456',
+          avatarUrl: 'https://img.com/pic.jpg',
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.dataOrNull, user);
-      verify(() => local.cacheUser(user)).called(1);
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.dataOrNull, user);
+        verify(() => local.cacheUser(user)).called(1);
+      },
+    );
 
     test('short-circuits when offline with NetworkFailure', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
@@ -64,8 +68,9 @@ void main() {
     });
 
     test('maps AppException onto Failure', () async {
-      when(() => remote.updateProfile(userName: 'Jane'))
-          .thenThrow(const ServerException('Internal server error', statusCode: 500));
+      when(() => remote.updateProfile(userName: 'Jane')).thenThrow(
+        const ServerException('Internal server error', statusCode: 500),
+      );
 
       final result = await repository.updateProfile(userName: 'Jane');
 
@@ -75,8 +80,9 @@ void main() {
 
   group('uploadAvatar', () {
     test('uploads and caches the updated user', () async {
-      when(() => remote.uploadAvatar('/tmp/me.jpg'))
-          .thenAnswer((_) async => user);
+      when(
+        () => remote.uploadAvatar('/tmp/me.jpg'),
+      ).thenAnswer((_) async => user);
 
       final result = await repository.uploadAvatar('/tmp/me.jpg');
 

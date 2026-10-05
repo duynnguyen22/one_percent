@@ -12,24 +12,27 @@ void main() {
   late RoutineRemoteDataSourceImpl dataSource;
 
   Map<String, dynamic> row({String id = 'routine-1'}) => {
-        'id': id,
-        'name': 'Morning Ritual',
-        'description': null,
-        'color': '#4D6054',
-        'cadence': 'Morning',
-        'steps': [
-          {
-            'habitId': 'habit-1',
-            'name': 'Read',
-            'color': null,
-            'order': 1,
-            'durationMinutes': 5,
-          },
-        ],
-      };
+    'id': id,
+    'name': 'Morning Ritual',
+    'description': null,
+    'color': '#4D6054',
+    'cadence': 'Morning',
+    'steps': [
+      {
+        'habitId': 'habit-1',
+        'name': 'Read',
+        'color': null,
+        'order': 1,
+        'durationMinutes': 5,
+      },
+    ],
+  };
 
-  Map<String, dynamic> envelope(Object? data) =>
-      {'statusCode': 200, 'message': 'ok', 'data': data};
+  Map<String, dynamic> envelope(Object? data) => {
+    'statusCode': 200,
+    'message': 'ok',
+    'data': data,
+  };
 
   const draft = RoutineDraft(
     name: 'Morning Ritual',
@@ -59,33 +62,41 @@ void main() {
   });
 
   test('getRoutines unwraps the envelope and sends the day', () async {
-    when(() => client.get<Map<String, dynamic>>(
-          ApiConstants.routines,
-          queryParameters: {'date': '2026-09-27'},
-        )).thenAnswer((_) async => envelope([row(), row(id: 'routine-2')]));
+    when(
+      () => client.get<Map<String, dynamic>>(
+        ApiConstants.routines,
+        queryParameters: {'date': '2026-09-27'},
+      ),
+    ).thenAnswer((_) async => envelope([row(), row(id: 'routine-2')]));
 
     final routines = await dataSource.getRoutines(date: DateTime(2026, 9, 27));
 
     expect(routines.map((r) => r.id), ['routine-1', 'routine-2']);
   });
 
-  test('createRoutine posts the draft and parses the created routine',
-      () async {
-    when(() => client.post<Map<String, dynamic>>(
+  test(
+    'createRoutine posts the draft and parses the created routine',
+    () async {
+      when(
+        () => client.post<Map<String, dynamic>>(
           ApiConstants.routines,
           data: draftBody,
-        )).thenAnswer((_) async => envelope(row()));
+        ),
+      ).thenAnswer((_) async => envelope(row()));
 
-    final routine = await dataSource.createRoutine(draft);
+      final routine = await dataSource.createRoutine(draft);
 
-    expect(routine.id, 'routine-1');
-  });
+      expect(routine.id, 'routine-1');
+    },
+  );
 
   test('updateRoutine patches the whole draft onto the routine', () async {
-    when(() => client.patch<Map<String, dynamic>>(
-          ApiConstants.routine('routine-1'),
-          data: draftBody,
-        )).thenAnswer((_) async => envelope(row()));
+    when(
+      () => client.patch<Map<String, dynamic>>(
+        ApiConstants.routine('routine-1'),
+        data: draftBody,
+      ),
+    ).thenAnswer((_) async => envelope(row()));
 
     final routine = await dataSource.updateRoutine('routine-1', draft);
 
@@ -100,29 +111,39 @@ void main() {
       cadence: '  ',
       steps: [RoutineStepDraft(habitId: 'habit-1', durationMinutes: 5)],
     );
-    when(() => client.post<Map<String, dynamic>>(
-          ApiConstants.routines,
-          data: any(named: 'data'),
-        )).thenAnswer((_) async => envelope(row()));
+    when(
+      () => client.post<Map<String, dynamic>>(
+        ApiConstants.routines,
+        data: any(named: 'data'),
+      ),
+    ).thenAnswer((_) async => envelope(row()));
 
     await dataSource.createRoutine(blank);
 
-    final body = verify(() => client.post<Map<String, dynamic>>(
-          ApiConstants.routines,
-          data: captureAny(named: 'data'),
-        )).captured.single as Map<String, dynamic>;
+    final body =
+        verify(
+              () => client.post<Map<String, dynamic>>(
+                ApiConstants.routines,
+                data: captureAny(named: 'data'),
+              ),
+            ).captured.single
+            as Map<String, dynamic>;
     expect(body.containsKey('cadence'), isFalse);
   });
 
   test('deleteRoutine calls DELETE /routines/:id', () async {
-    when(() => client.delete<Map<String, dynamic>>(
-          ApiConstants.routine('routine-1'),
-        )).thenAnswer((_) async => envelope(null));
+    when(
+      () => client.delete<Map<String, dynamic>>(
+        ApiConstants.routine('routine-1'),
+      ),
+    ).thenAnswer((_) async => envelope(null));
 
     await dataSource.deleteRoutine('routine-1');
 
-    verify(() => client.delete<Map<String, dynamic>>(
-          ApiConstants.routine('routine-1'),
-        )).called(1);
+    verify(
+      () => client.delete<Map<String, dynamic>>(
+        ApiConstants.routine('routine-1'),
+      ),
+    ).called(1);
   });
 }

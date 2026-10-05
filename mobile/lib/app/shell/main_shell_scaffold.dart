@@ -10,10 +10,7 @@ import '../theme/routine_icon.dart';
 /// App shell housing the primary tabs (Today, Habits, Insights, Profile)
 /// with a floating frosted-glass bottom navigation bar.
 class MainShellScaffold extends StatelessWidget {
-  const MainShellScaffold({
-    required this.navigationShell,
-    super.key,
-  });
+  const MainShellScaffold({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
@@ -31,9 +28,7 @@ class MainShellScaffold extends StatelessWidget {
       body: Stack(
         children: [
           // Current branch page content
-          Positioned.fill(
-            child: navigationShell,
-          ),
+          Positioned.fill(child: navigationShell),
 
           // Floating Frosted Glass Bottom Navigation Bar
           Positioned(
@@ -114,11 +109,12 @@ class _FloatingBottomNavBar extends StatelessWidget {
               _NavItem(
                 index: 2,
                 currentIndex: currentIndex,
-                customIconBuilder: (context, isSelected, color) => RoutineNavIcon(
-                  isSelected: isSelected,
-                  color: color,
-                  size: 24,
-                ),
+                customIconBuilder: (context, isSelected, color) =>
+                    RoutineNavIcon(
+                      isSelected: isSelected,
+                      color: color,
+                      size: 24,
+                    ),
                 label: 'Routines',
                 onTap: onTap,
               ),
@@ -156,15 +152,16 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.onTap,
   }) : assert(
-          customIconBuilder != null || (icon != null && activeIcon != null),
-          'Either customIconBuilder or both icon and activeIcon must be provided.',
-        );
+         customIconBuilder != null || (icon != null && activeIcon != null),
+         'Either customIconBuilder or both icon and activeIcon must be provided.',
+       );
 
   final int index;
   final int currentIndex;
   final IconData? icon;
   final IconData? activeIcon;
-  final Widget Function(BuildContext context, bool isSelected, Color color)? customIconBuilder;
+  final Widget Function(BuildContext context, bool isSelected, Color color)?
+  customIconBuilder;
   final String label;
   final ValueChanged<int> onTap;
 
@@ -176,11 +173,7 @@ class _NavItem extends StatelessWidget {
 
     final Widget iconWidget = customIconBuilder != null
         ? customIconBuilder!(context, _isSelected, color)
-        : Icon(
-            _isSelected ? activeIcon : icon,
-            color: color,
-            size: 24,
-          );
+        : Icon(_isSelected ? activeIcon : icon, color: color, size: 24);
 
     return Expanded(
       child: Material(
@@ -214,7 +207,9 @@ class _NavItem extends StatelessWidget {
                     maxLines: 1,
                     style: AppTypography.labelSmall.copyWith(
                       color: color,
-                      fontWeight: _isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: _isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),

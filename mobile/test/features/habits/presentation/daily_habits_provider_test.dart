@@ -60,8 +60,9 @@ void main() {
   });
 
   test('a load failure surfaces as an AsyncError', () async {
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const ResultError(ServerFailure('boom')));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const ResultError(ServerFailure('boom')));
     final container = buildContainer();
 
     await expectLater(
@@ -72,15 +73,18 @@ void main() {
 
   group('toggle', () {
     test('flips the habit and bumps the streak', () async {
-      when(() => entries.checkOff(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenAnswer((_) async => Success(buildHabitEntryModel()));
+      when(
+        () => entries.checkOff(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => Success(buildHabitEntryModel()));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
-      final failure =
-          await container.read(dailyHabitsProvider.notifier).toggle('habit-1');
+      final failure = await container
+          .read(dailyHabitsProvider.notifier)
+          .toggle('habit-1');
 
       expect(failure, isNull);
       final updated = container.read(dailyHabitsProvider).requireValue;
@@ -89,10 +93,12 @@ void main() {
     });
 
     test('un-checking decrements the streak', () async {
-      when(() => entries.deleteEntry(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenAnswer((_) async => const Success(null));
+      when(
+        () => entries.deleteEntry(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => const Success(null));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
@@ -104,15 +110,18 @@ void main() {
     });
 
     test('rolls back and reports the failure when the request fails', () async {
-      when(() => entries.checkOff(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenAnswer((_) async => const ResultError(ServerFailure('nope')));
+      when(
+        () => entries.checkOff(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => const ResultError(ServerFailure('nope')));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
-      final failure =
-          await container.read(dailyHabitsProvider.notifier).toggle('habit-1');
+      final failure = await container
+          .read(dailyHabitsProvider.notifier)
+          .toggle('habit-1');
 
       expect(failure, isA<ServerFailure>());
       final restored = container.read(dailyHabitsProvider).requireValue;
@@ -123,10 +132,12 @@ void main() {
 
   group('mutations', () {
     test('create reloads the list', () async {
-      when(() => habits.createHabit(
-            name: any(named: 'name'),
-            color: any(named: 'color'),
-          )).thenAnswer((_) async => Success(buildHabitModel()));
+      when(
+        () => habits.createHabit(
+          name: any(named: 'name'),
+          color: any(named: 'color'),
+        ),
+      ).thenAnswer((_) async => Success(buildHabitModel()));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
@@ -142,16 +153,18 @@ void main() {
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
-      final failure =
-          await container.read(dailyHabitsProvider.notifier).create(name: '  ');
+      final failure = await container
+          .read(dailyHabitsProvider.notifier)
+          .create(name: '  ');
 
       expect(failure, isA<ValidationFailure>());
       verify(() => habits.getHabitsForDate(any())).called(1);
     });
 
     test('remove drops the habit from the list immediately', () async {
-      when(() => habits.deleteHabit(any()))
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => habits.deleteHabit(any()),
+      ).thenAnswer((_) async => const Success(null));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
@@ -162,12 +175,14 @@ void main() {
     });
 
     test('archive drops the habit from the active list', () async {
-      when(() => habits.updateHabit(
-            habitId: any(named: 'habitId'),
-            name: any(named: 'name'),
-            color: any(named: 'color'),
-            archived: any(named: 'archived'),
-          )).thenAnswer((_) async => Success(buildHabitModel()));
+      when(
+        () => habits.updateHabit(
+          habitId: any(named: 'habitId'),
+          name: any(named: 'name'),
+          color: any(named: 'color'),
+          archived: any(named: 'archived'),
+        ),
+      ).thenAnswer((_) async => Success(buildHabitModel()));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
@@ -178,13 +193,15 @@ void main() {
     });
 
     test('a failed remove puts the habit back', () async {
-      when(() => habits.deleteHabit(any()))
-          .thenAnswer((_) async => const ResultError(NetworkFailure()));
+      when(
+        () => habits.deleteHabit(any()),
+      ).thenAnswer((_) async => const ResultError(NetworkFailure()));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 
-      final failure =
-          await container.read(dailyHabitsProvider.notifier).remove('habit-1');
+      final failure = await container
+          .read(dailyHabitsProvider.notifier)
+          .remove('habit-1');
 
       expect(failure, isA<NetworkFailure>());
       expect(container.read(dailyHabitsProvider).requireValue, hasLength(2));
@@ -201,8 +218,9 @@ void main() {
     });
 
     test('an empty list reads as zero, not an error', () async {
-      when(() => habits.getHabitsForDate(any()))
-          .thenAnswer((_) async => const Success(<DailyHabit>[]));
+      when(
+        () => habits.getHabitsForDate(any()),
+      ).thenAnswer((_) async => const Success(<DailyHabit>[]));
       final container = buildContainer();
       await container.read(dailyHabitsProvider.future);
 

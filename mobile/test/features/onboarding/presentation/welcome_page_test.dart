@@ -6,23 +6,36 @@ import '../../../helpers/pump_app.dart';
 void main() {
   group('WelcomePage', () {
     testWidgets('renders the brand and its promise', (tester) async {
-      await pumpApp(tester, const WelcomePage(), overrides: signedOutOverrides());
+      await pumpApp(
+        tester,
+        const WelcomePage(),
+        overrides: signedOutOverrides(),
+      );
 
       expect(find.text('THE 1% RULE'), findsOneWidget);
       expect(find.text('Est. 2026'), findsOneWidget);
       expect(find.text('Bloom'), findsOneWidget);
       expect(
-        find.textContaining('Small habits, remarkable compounding.',
-            findRichText: true),
+        find.textContaining(
+          'Small habits, remarkable compounding.',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
     });
 
     testWidgets('renders the three pillars', (tester) async {
-      await pumpApp(tester, const WelcomePage(), overrides: signedOutOverrides());
+      await pumpApp(
+        tester,
+        const WelcomePage(),
+        overrides: signedOutOverrides(),
+      );
 
       expect(find.text('Daily Rituals'), findsOneWidget);
-      expect(find.text('Gentle morning & evening micro-actions'), findsOneWidget);
+      expect(
+        find.text('Gentle morning & evening micro-actions'),
+        findsOneWidget,
+      );
       expect(find.text('Consistency over Perfection'), findsOneWidget);
       expect(
         find.text('Track momentum without guilt or streaks pressure'),
@@ -36,7 +49,11 @@ void main() {
     });
 
     testWidgets('offers both ways in', (tester) async {
-      await pumpApp(tester, const WelcomePage(), overrides: signedOutOverrides());
+      await pumpApp(
+        tester,
+        const WelcomePage(),
+        overrides: signedOutOverrides(),
+      );
 
       expect(find.text('Begin Your Journey'), findsOneWidget);
       expect(

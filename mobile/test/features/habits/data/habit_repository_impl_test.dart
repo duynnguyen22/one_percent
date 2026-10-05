@@ -33,8 +33,9 @@ void main() {
         doneToday: true,
         currentStreak: 4,
       );
-      when(() => remote.getHabitsForDate(any()))
-          .thenAnswer((_) async => [daily]);
+      when(
+        () => remote.getHabitsForDate(any()),
+      ).thenAnswer((_) async => [daily]);
 
       final result = await repository.getHabitsForDate(DateTime(2026, 3, 10));
 
@@ -77,13 +78,17 @@ void main() {
     });
 
     test('keeps the field messages from a validation failure', () async {
-      when(() => remote.createHabit(
-            name: any(named: 'name'),
-            color: any(named: 'color'),
-          )).thenThrow(const ValidationException(
-        'name should not be empty',
-        errors: ['name should not be empty'],
-      ));
+      when(
+        () => remote.createHabit(
+          name: any(named: 'name'),
+          color: any(named: 'color'),
+        ),
+      ).thenThrow(
+        const ValidationException(
+          'name should not be empty',
+          errors: ['name should not be empty'],
+        ),
+      );
 
       final result = await repository.createHabit(name: '');
 
@@ -102,22 +107,27 @@ void main() {
 
   group('mutations', () {
     test('createHabit forwards the name and colour', () async {
-      when(() => remote.createHabit(name: 'Read', color: '#4D6054'))
-          .thenAnswer((_) async => habit);
+      when(
+        () => remote.createHabit(name: 'Read', color: '#4D6054'),
+      ).thenAnswer((_) async => habit);
 
-      final result =
-          await repository.createHabit(name: 'Read', color: '#4D6054');
+      final result = await repository.createHabit(
+        name: 'Read',
+        color: '#4D6054',
+      );
 
       expect(result.dataOrNull, habit);
     });
 
     test('updateHabit forwards only the fields it is given', () async {
-      when(() => remote.updateHabit(
-            habitId: habit.id,
-            name: 'Read daily',
-            color: null,
-            archived: null,
-          )).thenAnswer((_) async => habit);
+      when(
+        () => remote.updateHabit(
+          habitId: habit.id,
+          name: 'Read daily',
+          color: null,
+          archived: null,
+        ),
+      ).thenAnswer((_) async => habit);
 
       final result = await repository.updateHabit(
         habitId: habit.id,

@@ -49,8 +49,9 @@ class MyHabitsPage extends ConsumerWidget {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color:
-                                AppColors.primaryContainer.withValues(alpha: 0.15),
+                            color: AppColors.primaryContainer.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -73,9 +74,14 @@ class MyHabitsPage extends ConsumerWidget {
                       onTap: () => context.pushNamed(RouteNames.routines),
                       borderRadius: AppSpacing.borderRadiusPill,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                          color: AppColors.primaryContainer.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: AppSpacing.borderRadiusPill,
                         ),
                         child: Row(
@@ -132,46 +138,46 @@ class MyHabitsPage extends ConsumerWidget {
 
             switch (habitsAsync) {
               AsyncError(:final error) => SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: AppError(
-                      message: error is Failure
-                          ? error.message
-                          : 'Could not load your habits.',
-                      onRetry: () =>
-                          ref.read(dailyHabitsProvider.notifier).refresh(),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: AppError(
+                    message: error is Failure
+                        ? error.message
+                        : 'Could not load your habits.',
+                    onRetry: () =>
+                        ref.read(dailyHabitsProvider.notifier).refresh(),
                   ),
                 ),
+              ),
               AsyncData(:final value) => SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerMargin,
-                    vertical: 8,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: value.length + 2,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppSpacing.stackGap),
-                    itemBuilder: (context, index) {
-                      if (index < value.length) {
-                        return _HabitRow(habit: value[index]);
-                      }
-                      if (index == value.length) {
-                        return value.isEmpty
-                            ? const _EmptyHabits()
-                            : const _AddHabitCard();
-                      }
-                      // Trailing spacer clears the floating nav dock.
-                      return const SizedBox(height: 110);
-                    },
-                  ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.containerMargin,
+                  vertical: 8,
                 ),
+                sliver: SliverList.separated(
+                  itemCount: value.length + 2,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.stackGap),
+                  itemBuilder: (context, index) {
+                    if (index < value.length) {
+                      return _HabitRow(habit: value[index]);
+                    }
+                    if (index == value.length) {
+                      return value.isEmpty
+                          ? const _EmptyHabits()
+                          : const _AddHabitCard();
+                    }
+                    // Trailing spacer clears the floating nav dock.
+                    return const SizedBox(height: 110);
+                  },
+                ),
+              ),
               _ => const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: AppLoading(),
-                  ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: AppLoading(),
                 ),
+              ),
             },
           ],
         ),
@@ -223,16 +229,19 @@ class _HabitRow extends ConsumerWidget {
                   habit.currentStreak == 0
                       ? 'No streak yet'
                       : '${habit.currentStreak} day streak',
-                  style: AppTypography.labelSmall
-                      .copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           PopupMenuButton<String>(
             key: ValueKey('habit-menu-${habit.id}'),
-            icon: const Icon(Icons.more_horiz_rounded,
-                color: AppColors.onSurfaceVariant),
+            icon: const Icon(
+              Icons.more_horiz_rounded,
+              color: AppColors.onSurfaceVariant,
+            ),
             onSelected: (action) => _onAction(context, ref, action),
             itemBuilder: (context) => const [
               PopupMenuItem(value: 'rename', child: Text('Rename')),
@@ -411,15 +420,17 @@ class _EmptyHabits extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           'Nothing planted yet',
-          style:
-              AppTypography.headlineSmall.copyWith(color: AppColors.onSurface),
+          style: AppTypography.headlineSmall.copyWith(
+            color: AppColors.onSurface,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
           'Add your first habit and it will appear here.',
           textAlign: TextAlign.center,
-          style: AppTypography.bodyMedium
-              .copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 20),
         const _AddHabitCard(),
@@ -427,7 +438,6 @@ class _EmptyHabits extends StatelessWidget {
     );
   }
 }
-
 
 /// Rename prompt.
 ///
@@ -444,8 +454,9 @@ class _RenameDialog extends StatefulWidget {
 }
 
 class _RenameDialogState extends State<_RenameDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialName);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
 
   @override
   void dispose() {

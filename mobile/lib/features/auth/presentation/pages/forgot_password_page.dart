@@ -31,10 +31,7 @@ enum _Step {
 /// Verifying the code hands off to [ResetPasswordPage] with the short-lived
 /// reset token.
 class ForgotPasswordPage extends ConsumerStatefulWidget {
-  const ForgotPasswordPage({
-    super.key,
-    this.email = '',
-  });
+  const ForgotPasswordPage({super.key, this.email = ''});
 
   /// Address to send the verification OTP to, if the caller knows one.
   final String email;
@@ -151,7 +148,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
           _controllers[i].text = digits[i];
         }
       }
-      final nextIndex = digits.length < _otpLength ? digits.length : _otpLength - 1;
+      final nextIndex = digits.length < _otpLength
+          ? digits.length
+          : _otpLength - 1;
       _focusNodes[nextIndex].requestFocus();
       return;
     }
@@ -191,8 +190,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
     setState(() => _isSending = true);
 
     final email = _email;
-    final result =
-        await ref.read(requestPasswordResetUseCaseProvider)(email: email);
+    final result = await ref.read(requestPasswordResetUseCaseProvider)(
+      email: email,
+    );
 
     if (!mounted) return;
     setState(() => _isSending = false);
@@ -208,9 +208,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
 
     // A failure leaves the user where they are — on the email step that means
     // the field is still there to correct.
-    AppToast.error(
-      result.failureOrNull?.message ?? 'Could not send the code.',
-    );
+    AppToast.error(result.failureOrNull?.message ?? 'Could not send the code.');
   }
 
   Future<void> _handleVerifyCode() async {
@@ -329,7 +327,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
                                 height: 96,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surfaceContainerLowest, // #FFFFFF
+                                  color: AppColors
+                                      .surfaceContainerLowest, // #FFFFFF
                                   borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
                                     color: AppColors.surfaceContainer,
@@ -369,7 +368,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
                                 decoration: BoxDecoration(
                                   border: Border(
                                     top: BorderSide(
-                                      color: AppColors.surfaceContainer.withValues(alpha: 0.6),
+                                      color: AppColors.surfaceContainer
+                                          .withValues(alpha: 0.6),
                                       width: 1,
                                     ),
                                   ),

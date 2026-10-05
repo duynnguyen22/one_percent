@@ -14,9 +14,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required ProfileRemoteDataSource remoteDataSource,
     required AuthLocalDataSource authLocalDataSource,
     required NetworkInfo networkInfo,
-  })  : _remote = remoteDataSource,
-        _authLocal = authLocalDataSource,
-        _networkInfo = networkInfo;
+  }) : _remote = remoteDataSource,
+       _authLocal = authLocalDataSource,
+       _networkInfo = networkInfo;
 
   final ProfileRemoteDataSource _remote;
   final AuthLocalDataSource _authLocal;
@@ -59,19 +59,27 @@ class ProfileRepositoryImpl implements ProfileRepository {
     } on AppException catch (exception) {
       return ResultError(_toFailure(exception));
     } on Object catch (error, stackTrace) {
-      Logger.error('Profile request failed', error: error, stackTrace: stackTrace);
+      Logger.error(
+        'Profile request failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return const ResultError(UnexpectedFailure());
     }
   }
 
   Failure _toFailure(AppException exception) => switch (exception) {
-        NetworkException() => NetworkFailure(exception.message),
-        UnauthorizedException() => AuthFailure(exception.message),
-        ValidationException(:final errors) =>
-          ValidationFailure(exception.message, errors: errors),
-        NotFoundException() => NotFoundFailure(exception.message),
-        CacheException() => CacheFailure(exception.message),
-        ServerException(:final statusCode) =>
-          ServerFailure(exception.message, statusCode: statusCode),
-      };
+    NetworkException() => NetworkFailure(exception.message),
+    UnauthorizedException() => AuthFailure(exception.message),
+    ValidationException(:final errors) => ValidationFailure(
+      exception.message,
+      errors: errors,
+    ),
+    NotFoundException() => NotFoundFailure(exception.message),
+    CacheException() => CacheFailure(exception.message),
+    ServerException(:final statusCode) => ServerFailure(
+      exception.message,
+      statusCode: statusCode,
+    ),
+  };
 }

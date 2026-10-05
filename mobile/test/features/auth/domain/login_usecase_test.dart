@@ -13,10 +13,18 @@ void main() {
 
   setUp(() {
     repository = MockAuthRepository();
-    when(() => repository.login(email: any(named: 'email'), password: any(named: 'password')))
-        .thenAnswer((_) async => Success(user));
-    when(() => repository.register(email: any(named: 'email'), password: any(named: 'password')))
-        .thenAnswer((_) async => Success(user));
+    when(
+      () => repository.login(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) async => Success(user));
+    when(
+      () => repository.register(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) async => Success(user));
   });
 
   group('Login', () {
@@ -27,8 +35,12 @@ void main() {
       );
 
       expect(result.dataOrNull, user);
-      verify(() => repository.login(email: 'alex.bloom@example.com', password: 'secret'))
-          .called(1);
+      verify(
+        () => repository.login(
+          email: 'alex.bloom@example.com',
+          password: 'secret',
+        ),
+      ).called(1);
     });
 
     test('rejects a malformed email without calling the repository', () async {
@@ -37,16 +49,25 @@ void main() {
       expect(result.failureOrNull, isA<ValidationFailure>());
       expect(result.failureOrNull?.message, 'Enter a valid email address');
       verifyNever(
-        () => repository.login(email: any(named: 'email'), password: any(named: 'password')),
+        () => repository.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
       );
     });
 
     test('rejects a short password without calling the repository', () async {
-      final result = await Login(repository)(email: 'alex@example.com', password: 'no');
+      final result = await Login(repository)(
+        email: 'alex@example.com',
+        password: 'no',
+      );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
       verifyNever(
-        () => repository.login(email: any(named: 'email'), password: any(named: 'password')),
+        () => repository.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
       );
     });
   });
@@ -60,8 +81,10 @@ void main() {
       );
 
       expect(result.dataOrNull, user);
-      verify(() => repository.register(email: 'alex@example.com', password: 'secret'))
-          .called(1);
+      verify(
+        () =>
+            repository.register(email: 'alex@example.com', password: 'secret'),
+      ).called(1);
     });
 
     test('rejects a confirmation that does not match', () async {
@@ -73,7 +96,10 @@ void main() {
 
       expect(result.failureOrNull?.message, 'Passwords do not match');
       verifyNever(
-        () => repository.register(email: any(named: 'email'), password: any(named: 'password')),
+        () => repository.register(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
       );
     });
 

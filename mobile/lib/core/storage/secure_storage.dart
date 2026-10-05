@@ -10,16 +10,20 @@ import '../errors/exceptions.dart';
 /// Preferences go to [LocalStorage] instead.
 class SecureStorage {
   SecureStorage({FlutterSecureStorage? storage})
-      : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-              iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-            );
+    : _storage =
+          storage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(encryptedSharedPreferences: true),
+            iOptions: IOSOptions(
+              accessibility: KeychainAccessibility.first_unlock,
+            ),
+          );
 
   final FlutterSecureStorage _storage;
 
   /// Persists the bearer token issued by `POST /auth/login`.
-  Future<void> saveAccessToken(String token) => _write(AppConstants.accessTokenKey, token);
+  Future<void> saveAccessToken(String token) =>
+      _write(AppConstants.accessTokenKey, token);
 
   /// The stored bearer token, or `null` when signed out.
   Future<String?> readAccessToken() => _read(AppConstants.accessTokenKey);

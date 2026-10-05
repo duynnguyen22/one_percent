@@ -31,13 +31,14 @@ void main() {
   });
 
   List<Override> overrides({User? user}) => [
-        ...(user != null ? signedInOverrides(user) : signedOutOverrides()),
-        profileRepositoryProvider.overrideWithValue(profileRepo),
-        imagePickerProvider.overrideWithValue(imagePicker),
-      ];
+    ...(user != null ? signedInOverrides(user) : signedOutOverrides()),
+    profileRepositoryProvider.overrideWithValue(profileRepo),
+    imagePickerProvider.overrideWithValue(imagePicker),
+  ];
 
-  testWidgets('renders all fields and pre-populates existing user details',
-      (tester) async {
+  testWidgets('renders all fields and pre-populates existing user details', (
+    tester,
+  ) async {
     final user = buildUserModel(
       userName: 'Alex Smith',
       userPhone: '+1987654321',
@@ -60,17 +61,20 @@ void main() {
     expect(find.text('Save Changes'), findsOneWidget);
   });
 
-  testWidgets('submitting calls updateProfile on profile repository',
-      (tester) async {
+  testWidgets('submitting calls updateProfile on profile repository', (
+    tester,
+  ) async {
     final user = buildUserModel(userName: 'Old Name', userPhone: '111');
 
     final updatedUser = buildUserModel(userName: 'New Name', userPhone: '222');
 
-    when(() => profileRepo.updateProfile(
-          userName: any(named: 'userName'),
-          userPhone: any(named: 'userPhone'),
-          avatarUrl: any(named: 'avatarUrl'),
-        )).thenAnswer((_) async => Success(updatedUser));
+    when(
+      () => profileRepo.updateProfile(
+        userName: any(named: 'userName'),
+        userPhone: any(named: 'userPhone'),
+        avatarUrl: any(named: 'avatarUrl'),
+      ),
+    ).thenAnswer((_) async => Success(updatedUser));
 
     await pumpRoutedApp(
       tester,
@@ -86,16 +90,16 @@ void main() {
     await tester.tap(find.text('Save Changes'));
     await tester.pumpAndSettle();
 
-    verify(() => profileRepo.updateProfile(
-          userName: 'New Name',
-          userPhone: '222',
-        )).called(1);
+    verify(
+      () => profileRepo.updateProfile(userName: 'New Name', userPhone: '222'),
+    ).called(1);
     verifyNever(() => profileRepo.uploadAvatar(any()));
     await clearToasts(tester);
   });
 
-  testWidgets('uploads a picked photo before saving the text fields',
-      (tester) async {
+  testWidgets('uploads a picked photo before saving the text fields', (
+    tester,
+  ) async {
     final user = buildUserModel(userName: 'Alex', userPhone: '111');
     final withAvatar = buildUserModel(
       userName: 'Alex',
@@ -103,19 +107,24 @@ void main() {
       avatarUrl: '/uploads/avatars/new.jpg',
     );
 
-    when(() => imagePicker.pickImage(
-          source: any(named: 'source'),
-          maxWidth: any(named: 'maxWidth'),
-          maxHeight: any(named: 'maxHeight'),
-          imageQuality: any(named: 'imageQuality'),
-        )).thenAnswer((_) async => XFile('/tmp/picked.jpg'));
-    when(() => profileRepo.uploadAvatar(any()))
-        .thenAnswer((_) async => Success(withAvatar));
-    when(() => profileRepo.updateProfile(
-          userName: any(named: 'userName'),
-          userPhone: any(named: 'userPhone'),
-          avatarUrl: any(named: 'avatarUrl'),
-        )).thenAnswer((_) async => Success(withAvatar));
+    when(
+      () => imagePicker.pickImage(
+        source: any(named: 'source'),
+        maxWidth: any(named: 'maxWidth'),
+        maxHeight: any(named: 'maxHeight'),
+        imageQuality: any(named: 'imageQuality'),
+      ),
+    ).thenAnswer((_) async => XFile('/tmp/picked.jpg'));
+    when(
+      () => profileRepo.uploadAvatar(any()),
+    ).thenAnswer((_) async => Success(withAvatar));
+    when(
+      () => profileRepo.updateProfile(
+        userName: any(named: 'userName'),
+        userPhone: any(named: 'userPhone'),
+        avatarUrl: any(named: 'avatarUrl'),
+      ),
+    ).thenAnswer((_) async => Success(withAvatar));
 
     await pumpRoutedApp(
       tester,
@@ -129,12 +138,14 @@ void main() {
     await tester.tap(find.text('Choose from library'));
     await tester.pumpAndSettle();
 
-    verify(() => imagePicker.pickImage(
-          source: ImageSource.gallery,
-          maxWidth: any(named: 'maxWidth'),
-          maxHeight: any(named: 'maxHeight'),
-          imageQuality: any(named: 'imageQuality'),
-        )).called(1);
+    verify(
+      () => imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: any(named: 'maxWidth'),
+        maxHeight: any(named: 'maxHeight'),
+        imageQuality: any(named: 'imageQuality'),
+      ),
+    ).called(1);
     expect(find.text('New photo selected'), findsOneWidget);
 
     await tester.tap(find.text('Save Changes'));
@@ -147,14 +158,17 @@ void main() {
     await clearToasts(tester);
   });
 
-  testWidgets('shows the upload error and skips the profile update',
-      (tester) async {
-    when(() => imagePicker.pickImage(
-          source: any(named: 'source'),
-          maxWidth: any(named: 'maxWidth'),
-          maxHeight: any(named: 'maxHeight'),
-          imageQuality: any(named: 'imageQuality'),
-        )).thenAnswer((_) async => XFile('/tmp/picked.jpg'));
+  testWidgets('shows the upload error and skips the profile update', (
+    tester,
+  ) async {
+    when(
+      () => imagePicker.pickImage(
+        source: any(named: 'source'),
+        maxWidth: any(named: 'maxWidth'),
+        maxHeight: any(named: 'maxHeight'),
+        imageQuality: any(named: 'imageQuality'),
+      ),
+    ).thenAnswer((_) async => XFile('/tmp/picked.jpg'));
     when(() => profileRepo.uploadAvatar(any())).thenAnswer(
       (_) async => const ResultError(
         ValidationFailure('Avatar must be a JPEG, PNG or WebP image'),
@@ -178,20 +192,24 @@ void main() {
       find.text('Avatar must be a JPEG, PNG or WebP image'),
       findsOneWidget,
     );
-    verifyNever(() => profileRepo.updateProfile(
-          userName: any(named: 'userName'),
-          userPhone: any(named: 'userPhone'),
-          avatarUrl: any(named: 'avatarUrl'),
-        ));
+    verifyNever(
+      () => profileRepo.updateProfile(
+        userName: any(named: 'userName'),
+        userPhone: any(named: 'userPhone'),
+        avatarUrl: any(named: 'avatarUrl'),
+      ),
+    );
     await clearToasts(tester);
   });
 
   testWidgets('shows error when update fails', (tester) async {
-    when(() => profileRepo.updateProfile(
-          userName: any(named: 'userName'),
-          userPhone: any(named: 'userPhone'),
-          avatarUrl: any(named: 'avatarUrl'),
-        )).thenAnswer(
+    when(
+      () => profileRepo.updateProfile(
+        userName: any(named: 'userName'),
+        userPhone: any(named: 'userPhone'),
+        avatarUrl: any(named: 'avatarUrl'),
+      ),
+    ).thenAnswer(
       (_) async => const ResultError(ServerFailure('Update failed')),
     );
 

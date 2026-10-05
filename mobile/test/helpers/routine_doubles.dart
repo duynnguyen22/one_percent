@@ -19,15 +19,18 @@ class RoutineDoubles {
     List<DailyHabit>? habits,
   }) {
     registerFallbacks();
-    when(() => this.routines.getRoutines(date: any(named: 'date')))
-        .thenAnswer((_) async => Success(routines));
-    when(() => this.habits.getHabitsForDate(any())).thenAnswer(
-      (_) async => Success(habits ?? const []),
-    );
-    when(() => entries.checkOff(
-          habitId: any(named: 'habitId'),
-          date: any(named: 'date'),
-        )).thenAnswer((_) async => Success(buildHabitEntryModel()));
+    when(
+      () => this.routines.getRoutines(date: any(named: 'date')),
+    ).thenAnswer((_) async => Success(routines));
+    when(
+      () => this.habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => Success(habits ?? const []));
+    when(
+      () => entries.checkOff(
+        habitId: any(named: 'habitId'),
+        date: any(named: 'date'),
+      ),
+    ).thenAnswer((_) async => Success(buildHabitEntryModel()));
   }
 
   final routines = MockRoutineRepository();
@@ -35,9 +38,9 @@ class RoutineDoubles {
   final entries = MockEntryRepository();
 
   List<Override> get overrides => [
-        ...signedOutOverrides(),
-        routineRepositoryProvider.overrideWithValue(routines),
-        habitRepositoryProvider.overrideWithValue(habits),
-        entryRepositoryProvider.overrideWithValue(entries),
-      ];
+    ...signedOutOverrides(),
+    routineRepositoryProvider.overrideWithValue(routines),
+    habitRepositoryProvider.overrideWithValue(habits),
+    entryRepositoryProvider.overrideWithValue(entries),
+  ];
 }

@@ -22,7 +22,8 @@ class Register {
     if (emailError != null) return ResultError(ValidationFailure(emailError));
 
     final passwordError = Validators.password(password);
-    if (passwordError != null) return ResultError(ValidationFailure(passwordError));
+    if (passwordError != null)
+      return ResultError(ValidationFailure(passwordError));
 
     if (confirmPassword != null) {
       final mismatch = Validators.confirmPassword(confirmPassword, password);

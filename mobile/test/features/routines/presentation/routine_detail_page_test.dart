@@ -24,31 +24,37 @@ void main() {
       expect(find.text('Low energy'), findsOneWidget);
     });
 
-    testWidgets('renders sequence roadmap steps and incremental momentum card', (tester) async {
-      await pumpApp(
-        tester,
-        RoutineDetailPage(routine: routine),
-        overrides: signedOutOverrides(),
-      );
+    testWidgets(
+      'renders sequence roadmap steps and incremental momentum card',
+      (tester) async {
+        await pumpApp(
+          tester,
+          RoutineDetailPage(routine: routine),
+          overrides: signedOutOverrides(),
+        );
 
-      expect(find.text('SEQUENCE ROADMAP'), findsOneWidget);
-      expect(find.text('Self-Paced'), findsOneWidget);
-      expect(find.text('01'), findsOneWidget);
-      expect(find.text('Drink Water'), findsOneWidget);
-      expect(find.text('Awaken'), findsOneWidget);
-      expect(find.text('Hydration'), findsOneWidget);
+        expect(find.text('SEQUENCE ROADMAP'), findsOneWidget);
+        expect(find.text('Self-Paced'), findsOneWidget);
+        expect(find.text('01'), findsOneWidget);
+        expect(find.text('Drink Water'), findsOneWidget);
+        expect(find.text('Awaken'), findsOneWidget);
+        expect(find.text('Hydration'), findsOneWidget);
 
-      await tester.scrollUntilVisible(
-        find.text('Incremental Momentum'),
-        300,
-        scrollable: find.byType(Scrollable),
-      );
-      expect(find.text('Incremental Momentum'), findsOneWidget);
-      expect(
-        find.textContaining('completing just Step 01 still counts toward your streak', findRichText: true),
-        findsOneWidget,
-      );
-    });
+        await tester.scrollUntilVisible(
+          find.text('Incremental Momentum'),
+          300,
+          scrollable: find.byType(Scrollable),
+        );
+        expect(find.text('Incremental Momentum'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'completing just Step 01 still counts toward your streak',
+            findRichText: true,
+          ),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('renders Start Routine button', (tester) async {
       await pumpApp(

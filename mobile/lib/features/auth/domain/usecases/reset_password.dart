@@ -24,7 +24,8 @@ class ResetPassword {
     }
 
     final passwordError = Validators.password(newPassword);
-    if (passwordError != null) return ResultError(ValidationFailure(passwordError));
+    if (passwordError != null)
+      return ResultError(ValidationFailure(passwordError));
 
     if (confirmPassword != null) {
       final mismatch = Validators.confirmPassword(confirmPassword, newPassword);

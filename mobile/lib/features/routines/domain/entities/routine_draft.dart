@@ -1,6 +1,9 @@
 /// One step of a routine being created or edited.
 class RoutineStepDraft {
-  const RoutineStepDraft({required this.habitId, required this.durationMinutes});
+  const RoutineStepDraft({
+    required this.habitId,
+    required this.durationMinutes,
+  });
 
   final String habitId;
   final int durationMinutes;
@@ -34,10 +37,10 @@ class RoutineDraft {
   final List<RoutineStepDraft> steps;
 
   RoutineDraft copyWith({String? name}) => RoutineDraft(
-        name: name ?? this.name,
-        description: description,
-        color: color,
-        cadence: cadence,
-        steps: steps,
-      );
+    name: name ?? this.name,
+    description: description,
+    color: color,
+    cadence: cadence,
+    steps: steps,
+  );
 }

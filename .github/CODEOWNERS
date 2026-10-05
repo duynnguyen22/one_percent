@@ -1,0 +1,30 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# -----------------------------------------------------------------------------
+# Global Fallback Owner
+# -----------------------------------------------------------------------------
+# Default owner for everything in the repo unless a more specific pattern matches.
+* @DuyNguyenlk22
+
+# -----------------------------------------------------------------------------
+# CI/CD and GitHub Configuration
+# -----------------------------------------------------------------------------
+/.github/ @DuyNguyenlk22
+
+# -----------------------------------------------------------------------------
+# Backend (NestJS, Prisma, Database)
+# -----------------------------------------------------------------------------
+/backend/ @DuyNguyenlk22
+
+# -----------------------------------------------------------------------------
+# Mobile (Flutter App)
+# -----------------------------------------------------------------------------
+/mobile/ @DuyNguyenlk22
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+/docs/ @DuyNguyenlk22
+*.md @DuyNguyenlk22

@@ -19,7 +19,7 @@ import '../utils/logger.dart';
 /// class-validator rejects a DTO.
 class ApiClient {
   ApiClient({Dio? dio, List<Interceptor> interceptors = const []})
-      : _dio = dio ?? Dio() {
+    : _dio = dio ?? Dio() {
     _dio.options = _dio.options.copyWith(
       baseUrl: ApiConstants.baseUrl,
       connectTimeout: ApiConstants.connectTimeout,
@@ -37,14 +37,21 @@ class ApiClient {
   Dio get dio => _dio;
 
   Future<T> get<T>(String path, {Map<String, dynamic>? queryParameters}) =>
-      _send<T>(() => _dio.get<T>(path, queryParameters: queryParameters), 'GET', path);
-
-  Future<T> post<T>(String path, {Object? data, Map<String, dynamic>? queryParameters}) =>
       _send<T>(
-        () => _dio.post<T>(path, data: data, queryParameters: queryParameters),
-        'POST',
+        () => _dio.get<T>(path, queryParameters: queryParameters),
+        'GET',
         path,
       );
+
+  Future<T> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+  }) => _send<T>(
+    () => _dio.post<T>(path, data: data, queryParameters: queryParameters),
+    'POST',
+    path,
+  );
 
   Future<T> patch<T>(String path, {Object? data}) =>
       _send<T>(() => _dio.patch<T>(path, data: data), 'PATCH', path);
@@ -57,18 +64,15 @@ class ApiClient {
     String path, {
     required String filePath,
     String field = 'file',
-  }) =>
-      _send<T>(
-        () async => _dio.post<T>(
-          path,
-          data: FormData.fromMap({
-            field: await MultipartFile.fromFile(filePath),
-          }),
-          options: Options(sendTimeout: ApiConstants.uploadSendTimeout),
-        ),
-        'POST',
-        path,
-      );
+  }) => _send<T>(
+    () async => _dio.post<T>(
+      path,
+      data: FormData.fromMap({field: await MultipartFile.fromFile(filePath)}),
+      options: Options(sendTimeout: ApiConstants.uploadSendTimeout),
+    ),
+    'POST',
+    path,
+  );
 
   Future<T> delete<T>(String path, {Object? data}) =>
       _send<T>(() => _dio.delete<T>(path, data: data), 'DELETE', path);
@@ -102,14 +106,18 @@ class ApiClient {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.transformTimeout:
-        return const NetworkException('The request timed out. Please try again.');
+        return const NetworkException(
+          'The request timed out. Please try again.',
+        );
       case DioExceptionType.connectionError:
       case DioExceptionType.unknown:
         return const NetworkException();
       case DioExceptionType.cancel:
         return const ServerException('The request was cancelled.');
       case DioExceptionType.badCertificate:
-        return const ServerException('The server certificate could not be verified.');
+        return const ServerException(
+          'The server certificate could not be verified.',
+        );
       case DioExceptionType.badResponse:
         return _fromResponse(error.response);
     }
@@ -121,16 +129,19 @@ class ApiClient {
 
     return switch (status) {
       400 || 422 => ValidationException(
-          message ?? 'Please check the information you entered.',
-          errors: errors,
-          statusCode: status,
-        ),
-      401 || 403 => UnauthorizedException(message ?? 'Your session has expired.'),
-      404 => NotFoundException(message ?? 'The requested resource was not found.'),
+        message ?? 'Please check the information you entered.',
+        errors: errors,
+        statusCode: status,
+      ),
+      401 ||
+      403 => UnauthorizedException(message ?? 'Your session has expired.'),
+      404 => NotFoundException(
+        message ?? 'The requested resource was not found.',
+      ),
       _ => ServerException(
-          message ?? 'Something went wrong on our end. Please try again.',
-          statusCode: status,
-        ),
+        message ?? 'Something went wrong on our end. Please try again.',
+        statusCode: status,
+      ),
     };
   }
 

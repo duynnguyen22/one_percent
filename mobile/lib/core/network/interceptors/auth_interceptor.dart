@@ -10,7 +10,7 @@ import '../../storage/secure_storage.dart';
 /// `JwtAuthGuard`, so every request except login and register needs the header.
 class AuthInterceptor extends Interceptor {
   AuthInterceptor({required SecureStorage secureStorage, this.onUnauthorized})
-      : _secureStorage = secureStorage;
+    : _secureStorage = secureStorage;
 
   final SecureStorage _secureStorage;
 
@@ -41,7 +41,10 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     final status = err.response?.statusCode;
     final isPublic = _publicPaths.contains(err.requestOptions.path);
 

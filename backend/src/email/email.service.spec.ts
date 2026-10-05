@@ -95,7 +95,7 @@ describe('EmailService', () => {
     await service.sendPasswordResetCode('alex@example.com', '481920');
 
     expect(sent[0].text).toContain('481920');
-    expect(sent[0].text).toContain('15 minutes');
+    expect(sent[0].text).toContain('5 minutes');
     expect(sent[0].html).toContain('481920');
   });
 

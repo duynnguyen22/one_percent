@@ -78,8 +78,10 @@ class DailyHabitsNotifier extends AsyncNotifier<List<DailyHabit>> {
 
   /// Creates a habit and reloads, so the new row arrives with its real id.
   Future<Failure?> create({required String name, String? color}) async {
-    final result =
-        await ref.read(createHabitUseCaseProvider)(name: name, color: color);
+    final result = await ref.read(createHabitUseCaseProvider)(
+      name: name,
+      color: color,
+    );
     if (result case ResultError(:final failure)) return failure;
 
     await refresh();
@@ -154,17 +156,16 @@ class DailyHabitsNotifier extends AsyncNotifier<List<DailyHabit>> {
     String habitId,
     DailyHabit replacement,
   ) {
-    return [
-      for (final item in list) item.id == habitId ? replacement : item,
-    ];
+    return [for (final item in list) item.id == habitId ? replacement : item];
   }
 
-  List<DailyHabit> _without(List<DailyHabit> list, String habitId) =>
-      [for (final item in list) if (item.id != habitId) item];
+  List<DailyHabit> _without(List<DailyHabit> list, String habitId) => [
+    for (final item in list)
+      if (item.id != habitId) item,
+  ];
 }
 
-final dailyHabitsProvider =
-    AsyncNotifierProvider<DailyHabitsNotifier, List<DailyHabit>>(
+final dailyHabitsProvider = AsyncNotifierProvider<DailyHabitsNotifier, List<DailyHabit>>(
   DailyHabitsNotifier.new,
   // Riverpod 3 retries a failed build with backoff by default, leaving the
   // provider in AsyncLoading(retrying) rather than an error the UI can render.

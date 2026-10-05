@@ -21,33 +21,42 @@ void main() {
   setUp(() {
     habits = MockHabitRepository();
     entries = MockEntryRepository();
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const Success([]));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const Success([]));
   });
 
   List<Override> overrides() => [
-        ...signedOutOverrides(),
-        habitRepositoryProvider.overrideWithValue(habits),
-        entryRepositoryProvider.overrideWithValue(entries),
-      ];
+    ...signedOutOverrides(),
+    habitRepositoryProvider.overrideWithValue(habits),
+    entryRepositoryProvider.overrideWithValue(entries),
+  ];
 
-  testWidgets('shows the computed streaks, not the hardcoded ones',
-      (tester) async {
+  testWidgets('shows the computed streaks, not the hardcoded ones', (
+    tester,
+  ) async {
     when(() => habits.getHabits()).thenAnswer(
       (_) async => Success<List<Habit>>([
         buildHabitModel(
-            id: 'habit-1', name: 'Read', createdAt: DateTime(2026, 1, 1)),
+          id: 'habit-1',
+          name: 'Read',
+          createdAt: DateTime(2026, 1, 1),
+        ),
       ]),
     );
-    when(() => entries.getEntries(
-          habitId: any(named: 'habitId'),
-          from: any(named: 'from'),
-          to: any(named: 'to'),
-        )).thenAnswer((_) async => Success([
-          AppDateUtils.today,
-          AppDateUtils.subtractDays(AppDateUtils.today, 1),
-          AppDateUtils.subtractDays(AppDateUtils.today, 2),
-        ]));
+    when(
+      () => entries.getEntries(
+        habitId: any(named: 'habitId'),
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer(
+      (_) async => Success([
+        AppDateUtils.today,
+        AppDateUtils.subtractDays(AppDateUtils.today, 1),
+        AppDateUtils.subtractDays(AppDateUtils.today, 2),
+      ]),
+    );
 
     await pumpApp(tester, const InsightsPage(), overrides: overrides());
 
@@ -60,21 +69,31 @@ void main() {
     when(() => habits.getHabits()).thenAnswer(
       (_) async => Success<List<Habit>>([
         buildHabitModel(
-            id: 'habit-1', name: 'Read', createdAt: DateTime(2026, 1, 1)),
+          id: 'habit-1',
+          name: 'Read',
+          createdAt: DateTime(2026, 1, 1),
+        ),
         buildHabitModel(
-            id: 'habit-2', name: 'Stretch', createdAt: DateTime(2026, 1, 1)),
+          id: 'habit-2',
+          name: 'Stretch',
+          createdAt: DateTime(2026, 1, 1),
+        ),
       ]),
     );
-    when(() => entries.getEntries(
-          habitId: 'habit-1',
-          from: any(named: 'from'),
-          to: any(named: 'to'),
-        )).thenAnswer((_) async => Success([AppDateUtils.today]));
-    when(() => entries.getEntries(
-          habitId: 'habit-2',
-          from: any(named: 'from'),
-          to: any(named: 'to'),
-        )).thenAnswer((_) async => const Success(<DateTime>[]));
+    when(
+      () => entries.getEntries(
+        habitId: 'habit-1',
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer((_) async => Success([AppDateUtils.today]));
+    when(
+      () => entries.getEntries(
+        habitId: 'habit-2',
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer((_) async => const Success(<DateTime>[]));
 
     await pumpApp(tester, const InsightsPage(), overrides: overrides());
     await tester.scrollUntilVisible(find.text('Read'), -100);
@@ -85,10 +104,12 @@ void main() {
     expect(find.text('Early Sleep'), findsNothing);
   });
 
-  testWidgets('shows an empty state before anything is tracked',
-      (tester) async {
-    when(() => habits.getHabits())
-        .thenAnswer((_) async => const Success(<Habit>[]));
+  testWidgets('shows an empty state before anything is tracked', (
+    tester,
+  ) async {
+    when(
+      () => habits.getHabits(),
+    ).thenAnswer((_) async => const Success(<Habit>[]));
 
     await pumpApp(tester, const InsightsPage(), overrides: overrides());
 
@@ -96,8 +117,9 @@ void main() {
   });
 
   testWidgets('offers a retry when the load fails', (tester) async {
-    when(() => habits.getHabits())
-        .thenAnswer((_) async => const ResultError(NetworkFailure()));
+    when(
+      () => habits.getHabits(),
+    ).thenAnswer((_) async => const ResultError(NetworkFailure()));
 
     await pumpApp(tester, const InsightsPage(), overrides: overrides());
 

@@ -93,14 +93,19 @@ class AuthNotifier extends Notifier<AuthState> {
 
     final result = await ref.read(getCurrentUserUseCaseProvider)();
     state = switch (result) {
-      Success(:final data) => AuthState(status: AuthStatus.authenticated, user: data),
+      Success(:final data) => AuthState(
+        status: AuthStatus.authenticated,
+        user: data,
+      ),
       ResultError() => const AuthState(status: AuthStatus.unauthenticated),
     };
   }
 
   /// Signs in. Returns true when the user is authenticated afterwards.
   Future<bool> login({required String email, required String password}) {
-    return _submit(() => ref.read(loginUseCaseProvider)(email: email, password: password));
+    return _submit(
+      () => ref.read(loginUseCaseProvider)(email: email, password: password),
+    );
   }
 
   /// Creates an account and signs in.
@@ -148,7 +153,9 @@ class AuthNotifier extends Notifier<AuthState> {
 }
 
 /// The app's auth state. Pages watch this; the router listens to it.
-final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
 /// The signed-in user, or `null`. A convenience for widgets that need only
 /// the profile and should not rebuild on submission-state changes.

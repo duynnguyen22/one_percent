@@ -20,25 +20,19 @@ class LocalStorage {
 
   String? getString(String key) => _preferences.getString(key);
 
-  Future<void> setString(String key, String value) => _guard(
-        () => _preferences.setString(key, value),
-        key,
-      );
+  Future<void> setString(String key, String value) =>
+      _guard(() => _preferences.setString(key, value), key);
 
   bool getBool(String key, {bool defaultValue = false}) =>
       _preferences.getBool(key) ?? defaultValue;
 
-  Future<void> setBool(String key, {required bool value}) => _guard(
-        () => _preferences.setBool(key, value),
-        key,
-      );
+  Future<void> setBool(String key, {required bool value}) =>
+      _guard(() => _preferences.setBool(key, value), key);
 
   int? getInt(String key) => _preferences.getInt(key);
 
-  Future<void> setInt(String key, int value) => _guard(
-        () => _preferences.setInt(key, value),
-        key,
-      );
+  Future<void> setInt(String key, int value) =>
+      _guard(() => _preferences.setInt(key, value), key);
 
   /// Reads a JSON object previously written with [setJson].
   ///
@@ -59,7 +53,8 @@ class LocalStorage {
   Future<void> setJson(String key, Map<String, dynamic> value) =>
       setString(key, jsonEncode(value));
 
-  Future<void> remove(String key) => _guard(() => _preferences.remove(key), key);
+  Future<void> remove(String key) =>
+      _guard(() => _preferences.remove(key), key);
 
   Future<void> clear() => _guard(_preferences.clear, 'all');
 

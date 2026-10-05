@@ -19,7 +19,9 @@ void main() {
       mockNetworkInfo = MockNetworkInfo();
     });
 
-    testWidgets('renders all visual elements matching Stitch design', (tester) async {
+    testWidgets('renders all visual elements matching Stitch design', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
         const OfflinePage(
@@ -51,24 +53,33 @@ void main() {
       expect(find.text('Always Available Offline'), findsOneWidget);
       expect(find.byIcon(Icons.cloud_done_rounded), findsOneWidget);
       expect(find.text('Log mindful habits & check-ins'), findsOneWidget);
-      expect(find.text('Your streaks remain continuous and intact.'), findsOneWidget);
+      expect(
+        find.text('Your streaks remain continuous and intact.'),
+        findsOneWidget,
+      );
       expect(find.text('Access guided timers & notes'), findsOneWidget);
-      expect(find.text('Cached audio rings and reflections load instantly.'), findsOneWidget);
+      expect(
+        find.text('Cached audio rings and reflections load instantly.'),
+        findsOneWidget,
+      );
       expect(find.text('Seamless automatic sync'), findsOneWidget);
-      expect(find.text('Changes quietly merge once connection resumes.'), findsOneWidget);
+      expect(
+        find.text('Changes quietly merge once connection resumes.'),
+        findsOneWidget,
+      );
 
       // Action Buttons
       expect(find.text('Try Reconnecting'), findsOneWidget);
       expect(find.text('Continue in Offline Mode'), findsOneWidget);
     });
 
-    testWidgets('triggers onContinueOffline when secondary button is tapped', (tester) async {
+    testWidgets('triggers onContinueOffline when secondary button is tapped', (
+      tester,
+    ) async {
       bool continued = false;
       await pumpApp(
         tester,
-        OfflinePage(
-          onContinueOffline: () => continued = true,
-        ),
+        OfflinePage(onContinueOffline: () => continued = true),
       );
 
       final continueButton = find.text('Continue in Offline Mode');
@@ -79,48 +90,55 @@ void main() {
       expect(continued, isTrue);
     });
 
-    testWidgets('shows signal searching feedback banner when reconnection fails', (tester) async {
+    testWidgets(
+      'shows signal searching feedback banner when reconnection fails',
+      (tester) async {
+        final completer = Completer<bool>();
+        when(
+          () => mockNetworkInfo.isConnected,
+        ).thenAnswer((_) => completer.future);
+
+        await pumpApp(
+          tester,
+          const OfflinePage(),
+          overrides: [networkInfoProvider.overrideWithValue(mockNetworkInfo)],
+        );
+
+        final reconnectButton = find.text('Try Reconnecting');
+        await tester.ensureVisible(reconnectButton);
+        await tester.tap(reconnectButton);
+        await tester.pump();
+
+        // In checking state - spinner is shown
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+        // Complete async future with offline (false)
+        completer.complete(false);
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // Feedback banner is visible
+        expect(
+          find.text(
+            "Still searching for signal. You're safe to proceed offline.",
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('shows success toast when reconnection succeeds', (
+      tester,
+    ) async {
       final completer = Completer<bool>();
-      when(() => mockNetworkInfo.isConnected).thenAnswer((_) => completer.future);
-
-      await pumpApp(
-        tester,
-        const OfflinePage(),
-        overrides: [
-          networkInfoProvider.overrideWithValue(mockNetworkInfo),
-        ],
-      );
-
-      final reconnectButton = find.text('Try Reconnecting');
-      await tester.ensureVisible(reconnectButton);
-      await tester.tap(reconnectButton);
-      await tester.pump();
-
-      // In checking state - spinner is shown
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-      // Complete async future with offline (false)
-      completer.complete(false);
-      await tester.pump();
-      await tester.pumpAndSettle();
-
-      // Feedback banner is visible
-      expect(
-        find.text("Still searching for signal. You're safe to proceed offline."),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('shows success toast when reconnection succeeds', (tester) async {
-      final completer = Completer<bool>();
-      when(() => mockNetworkInfo.isConnected).thenAnswer((_) => completer.future);
+      when(
+        () => mockNetworkInfo.isConnected,
+      ).thenAnswer((_) => completer.future);
 
       await pumpRoutedApp(
         tester,
         const OfflinePage(),
-        overrides: [
-          networkInfoProvider.overrideWithValue(mockNetworkInfo),
-        ],
+        overrides: [networkInfoProvider.overrideWithValue(mockNetworkInfo)],
       );
 
       final reconnectButton = find.text('Try Reconnecting');

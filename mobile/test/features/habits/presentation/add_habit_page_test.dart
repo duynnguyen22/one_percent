@@ -20,19 +20,22 @@ void main() {
   setUp(() {
     habits = MockHabitRepository();
     entries = MockEntryRepository();
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const Success([]));
-    when(() => habits.createHabit(
-          name: any(named: 'name'),
-          color: any(named: 'color'),
-        )).thenAnswer((_) async => Success(buildHabitModel()));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const Success([]));
+    when(
+      () => habits.createHabit(
+        name: any(named: 'name'),
+        color: any(named: 'color'),
+      ),
+    ).thenAnswer((_) async => Success(buildHabitModel()));
   });
 
   List<Override> overrides() => [
-        ...signedOutOverrides(),
-        habitRepositoryProvider.overrideWithValue(habits),
-        entryRepositoryProvider.overrideWithValue(entries),
-      ];
+    ...signedOutOverrides(),
+    habitRepositoryProvider.overrideWithValue(habits),
+    entryRepositoryProvider.overrideWithValue(entries),
+  ];
 
   testWidgets('drops the fields the schema cannot store', (tester) async {
     await pumpRoutedApp(tester, const AddHabitPage(), overrides: overrides());
@@ -50,10 +53,12 @@ void main() {
     await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
-    verify(() => habits.createHabit(
-          name: 'Drink water',
-          color: any(named: 'color'),
-        )).called(1);
+    verify(
+      () => habits.createHabit(
+        name: 'Drink water',
+        color: any(named: 'color'),
+      ),
+    ).called(1);
     await clearToasts(tester);
   });
 
@@ -66,10 +71,12 @@ void main() {
     await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
-    verify(() => habits.createHabit(
-          name: 'Walk the dog',
-          color: any(named: 'color'),
-        )).called(1);
+    verify(
+      () => habits.createHabit(
+        name: 'Walk the dog',
+        color: any(named: 'color'),
+      ),
+    ).called(1);
     await clearToasts(tester);
   });
 
@@ -81,10 +88,12 @@ void main() {
     await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
-    verifyNever(() => habits.createHabit(
-          name: any(named: 'name'),
-          color: any(named: 'color'),
-        ));
+    verifyNever(
+      () => habits.createHabit(
+        name: any(named: 'name'),
+        color: any(named: 'color'),
+      ),
+    );
     expect(find.text('Please enter a habit name'), findsOneWidget);
     await clearToasts(tester);
   });
@@ -97,17 +106,21 @@ void main() {
     await tester.tap(find.text('Confirm'));
     await tester.pumpAndSettle();
 
-    verify(() => habits.createHabit(name: 'Drink water', color: '#C77D52'))
-        .called(1);
+    verify(
+      () => habits.createHabit(name: 'Drink water', color: '#C77D52'),
+    ).called(1);
     await clearToasts(tester);
   });
 
-  testWidgets('a server failure keeps the form open with a message',
-      (tester) async {
-    when(() => habits.createHabit(
-          name: any(named: 'name'),
-          color: any(named: 'color'),
-        )).thenAnswer((_) async => const ResultError(ServerFailure('boom')));
+  testWidgets('a server failure keeps the form open with a message', (
+    tester,
+  ) async {
+    when(
+      () => habits.createHabit(
+        name: any(named: 'name'),
+        color: any(named: 'color'),
+      ),
+    ).thenAnswer((_) async => const ResultError(ServerFailure('boom')));
 
     await pumpRoutedApp(tester, const AddHabitPage(), overrides: overrides());
     await tester.tap(find.text('Confirm'));

@@ -25,7 +25,10 @@ void main() {
 
     test('rejects a short or empty password', () {
       expect(Validators.password(''), 'Password is required');
-      expect(Validators.password('short'), 'Password must be at least 6 characters');
+      expect(
+        Validators.password('short'),
+        'Password must be at least 6 characters',
+      );
     });
   });
 
@@ -35,8 +38,14 @@ void main() {
     });
 
     test('rejects a mismatch or a blank value', () {
-      expect(Validators.confirmPassword('other', 'secret'), 'Passwords do not match');
-      expect(Validators.confirmPassword('', 'secret'), 'Please confirm your password');
+      expect(
+        Validators.confirmPassword('other', 'secret'),
+        'Passwords do not match',
+      );
+      expect(
+        Validators.confirmPassword('', 'secret'),
+        'Please confirm your password',
+      );
     });
   });
 

@@ -58,7 +58,6 @@ import '../features/routines/domain/usecases/delete_routine.dart';
 import '../features/routines/domain/usecases/get_routines.dart';
 import '../features/routines/domain/usecases/save_routine.dart';
 
-
 // ---------------------------------------------------------------------------
 // Platform
 // ---------------------------------------------------------------------------
@@ -81,7 +80,9 @@ final localStorageProvider = Provider<LocalStorage>(
 
 final secureStorageProvider = Provider<SecureStorage>((ref) => SecureStorage());
 
-final networkInfoProvider = Provider<NetworkInfo>((ref) => const NetworkInfoImpl());
+final networkInfoProvider = Provider<NetworkInfo>(
+  (ref) => const NetworkInfoImpl(),
+);
 
 /// Counts the times the backend has rejected the bearer token.
 ///
@@ -96,8 +97,9 @@ class SessionExpiryNotifier extends Notifier<int> {
   void expire() => state = state + 1;
 }
 
-final sessionExpiredProvider =
-    NotifierProvider<SessionExpiryNotifier, int>(SessionExpiryNotifier.new);
+final sessionExpiredProvider = NotifierProvider<SessionExpiryNotifier, int>(
+  SessionExpiryNotifier.new,
+);
 
 /// The configured HTTP client, with the auth interceptor already attached.
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -210,8 +212,9 @@ class HabitsRevisionNotifier extends Notifier<int> {
   void bump() => state = state + 1;
 }
 
-final habitsRevisionProvider =
-    NotifierProvider<HabitsRevisionNotifier, int>(HabitsRevisionNotifier.new);
+final habitsRevisionProvider = NotifierProvider<HabitsRevisionNotifier, int>(
+  HabitsRevisionNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Feature: entries

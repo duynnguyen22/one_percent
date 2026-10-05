@@ -29,8 +29,12 @@ void main() {
       networkInfo: network,
     );
     when(() => network.isConnected).thenAnswer((_) async => true);
-    when(() => local.cacheSession(accessToken: any(named: 'accessToken'), user: any(named: 'user')))
-        .thenAnswer((_) async {});
+    when(
+      () => local.cacheSession(
+        accessToken: any(named: 'accessToken'),
+        user: any(named: 'user'),
+      ),
+    ).thenAnswer((_) async {});
     when(() => local.cacheUser(any())).thenAnswer((_) async {});
     when(local.clearSession).thenAnswer((_) async {});
   });
@@ -39,67 +43,117 @@ void main() {
 
   group('login', () {
     test('returns the user and caches the session on success', () async {
-      when(() => remote.login(email: any(named: 'email'), password: any(named: 'password')))
-          .thenAnswer((_) async => authResponse);
+      when(
+        () => remote.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => authResponse);
 
-      final result = await repository.login(email: user.email, password: 'secret');
+      final result = await repository.login(
+        email: user.email,
+        password: 'secret',
+      );
 
       expect(result, isA<Success<dynamic>>());
       expect(result.dataOrNull, user);
-      verify(() => local.cacheSession(accessToken: 'jwt-token', user: user)).called(1);
+      verify(
+        () => local.cacheSession(accessToken: 'jwt-token', user: user),
+      ).called(1);
     });
 
     test('announces the new user on authStateChanges', () async {
-      when(() => remote.login(email: any(named: 'email'), password: any(named: 'password')))
-          .thenAnswer((_) async => authResponse);
+      when(
+        () => remote.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => authResponse);
 
       expectLater(repository.authStateChanges, emits(user));
 
       await repository.login(email: user.email, password: 'secret');
     });
 
-    test('fails with NetworkFailure and never calls the API when offline', () async {
-      when(() => network.isConnected).thenAnswer((_) async => false);
+    test(
+      'fails with NetworkFailure and never calls the API when offline',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => false);
 
-      final result = await repository.login(email: user.email, password: 'secret');
+        final result = await repository.login(
+          email: user.email,
+          password: 'secret',
+        );
 
-      expect(result.failureOrNull, isA<NetworkFailure>());
-      verifyNever(
-        () => remote.login(email: any(named: 'email'), password: any(named: 'password')),
-      );
-    });
+        expect(result.failureOrNull, isA<NetworkFailure>());
+        verifyNever(
+          () => remote.login(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        );
+      },
+    );
 
     test('maps a rejected credential to AuthFailure', () async {
-      when(() => remote.login(email: any(named: 'email'), password: any(named: 'password')))
-          .thenThrow(const UnauthorizedException('Invalid credentials'));
+      when(
+        () => remote.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const UnauthorizedException('Invalid credentials'));
 
-      final result = await repository.login(email: user.email, password: 'wrong');
+      final result = await repository.login(
+        email: user.email,
+        password: 'wrong',
+      );
 
       expect(result.failureOrNull, const AuthFailure('Invalid credentials'));
       verifyNever(
-        () => local.cacheSession(accessToken: any(named: 'accessToken'), user: any(named: 'user')),
+        () => local.cacheSession(
+          accessToken: any(named: 'accessToken'),
+          user: any(named: 'user'),
+        ),
       );
     });
 
     test('maps a validation error, keeping the field messages', () async {
-      when(() => remote.login(email: any(named: 'email'), password: any(named: 'password')))
-          .thenThrow(const ValidationException(
-        'Please provide a valid email',
-        errors: ['Please provide a valid email'],
-        statusCode: 400,
-      ));
+      when(
+        () => remote.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(
+        const ValidationException(
+          'Please provide a valid email',
+          errors: ['Please provide a valid email'],
+          statusCode: 400,
+        ),
+      );
 
-      final failure = (await repository.login(email: 'nope', password: 'secret')).failureOrNull;
+      final failure = (await repository.login(
+        email: 'nope',
+        password: 'secret',
+      )).failureOrNull;
 
       expect(failure, isA<ValidationFailure>());
-      expect((failure! as ValidationFailure).errors, ['Please provide a valid email']);
+      expect((failure! as ValidationFailure).errors, [
+        'Please provide a valid email',
+      ]);
     });
 
     test('maps a server error to ServerFailure with its status code', () async {
-      when(() => remote.login(email: any(named: 'email'), password: any(named: 'password')))
-          .thenThrow(const ServerException('Internal error', statusCode: 500));
+      when(
+        () => remote.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(const ServerException('Internal error', statusCode: 500));
 
-      final failure = (await repository.login(email: user.email, password: 'secret')).failureOrNull;
+      final failure = (await repository.login(
+        email: user.email,
+        password: 'secret',
+      )).failureOrNull;
 
       expect(failure, isA<ServerFailure>());
       expect((failure! as ServerFailure).statusCode, 500);
@@ -108,13 +162,22 @@ void main() {
 
   group('register', () {
     test('caches the session on success', () async {
-      when(() => remote.register(email: any(named: 'email'), password: any(named: 'password')))
-          .thenAnswer((_) async => authResponse);
+      when(
+        () => remote.register(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => authResponse);
 
-      final result = await repository.register(email: user.email, password: 'secret');
+      final result = await repository.register(
+        email: user.email,
+        password: 'secret',
+      );
 
       expect(result.dataOrNull, user);
-      verify(() => local.cacheSession(accessToken: 'jwt-token', user: user)).called(1);
+      verify(
+        () => local.cacheSession(accessToken: 'jwt-token', user: user),
+      ).called(1);
     });
   });
 
@@ -131,8 +194,9 @@ void main() {
 
   group('requestPasswordReset', () {
     test('succeeds when the backend accepts the address', () async {
-      when(() => remote.requestPasswordReset(email: any(named: 'email')))
-          .thenAnswer((_) async {});
+      when(
+        () => remote.requestPasswordReset(email: any(named: 'email')),
+      ).thenAnswer((_) async {});
 
       final result = await repository.requestPasswordReset(email: user.email);
 
@@ -140,50 +204,73 @@ void main() {
       verify(() => remote.requestPasswordReset(email: user.email)).called(1);
     });
 
-    test('fails with NetworkFailure and never calls the API when offline', () async {
-      when(() => network.isConnected).thenAnswer((_) async => false);
+    test(
+      'fails with NetworkFailure and never calls the API when offline',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => false);
 
-      final result = await repository.requestPasswordReset(email: user.email);
+        final result = await repository.requestPasswordReset(email: user.email);
 
-      expect(result.failureOrNull, isA<NetworkFailure>());
-      verifyNever(() => remote.requestPasswordReset(email: any(named: 'email')));
-    });
+        expect(result.failureOrNull, isA<NetworkFailure>());
+        verifyNever(
+          () => remote.requestPasswordReset(email: any(named: 'email')),
+        );
+      },
+    );
 
     test('surfaces the throttle message the backend sends', () async {
-      when(() => remote.requestPasswordReset(email: any(named: 'email'))).thenThrow(
+      when(
+        () => remote.requestPasswordReset(email: any(named: 'email')),
+      ).thenThrow(
         const ServerException(
           'Too many requests. Please try again in a minute.',
           statusCode: 429,
         ),
       );
 
-      final failure = (await repository.requestPasswordReset(email: user.email)).failureOrNull;
+      final failure = (await repository.requestPasswordReset(
+        email: user.email,
+      )).failureOrNull;
 
       expect(failure, isA<ServerFailure>());
-      expect(failure?.message, 'Too many requests. Please try again in a minute.');
+      expect(
+        failure?.message,
+        'Too many requests. Please try again in a minute.',
+      );
     });
   });
 
   group('verifyResetCode', () {
     test('returns the reset token on success', () async {
-      when(() => remote.verifyResetCode(
-            email: any(named: 'email'),
-            code: any(named: 'code'),
-          )).thenAnswer((_) async => 'reset-token');
+      when(
+        () => remote.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
+      ).thenAnswer((_) async => 'reset-token');
 
-      final result = await repository.verifyResetCode(email: user.email, code: '481920');
+      final result = await repository.verifyResetCode(
+        email: user.email,
+        code: '481920',
+      );
 
       expect(result.dataOrNull, 'reset-token');
     });
 
     test('maps a rejected code to ValidationFailure, message intact', () async {
-      when(() => remote.verifyResetCode(
-            email: any(named: 'email'),
-            code: any(named: 'code'),
-          )).thenThrow(const ValidationException('Invalid or expired code', statusCode: 400));
+      when(
+        () => remote.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
+      ).thenThrow(
+        const ValidationException('Invalid or expired code', statusCode: 400),
+      );
 
-      final failure =
-          (await repository.verifyResetCode(email: user.email, code: '000000')).failureOrNull;
+      final failure = (await repository.verifyResetCode(
+        email: user.email,
+        code: '000000',
+      )).failureOrNull;
 
       expect(failure, isA<ValidationFailure>());
       expect(failure?.message, 'Invalid or expired code');
@@ -192,21 +279,29 @@ void main() {
     test('fails with NetworkFailure when offline', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
 
-      final result = await repository.verifyResetCode(email: user.email, code: '481920');
+      final result = await repository.verifyResetCode(
+        email: user.email,
+        code: '481920',
+      );
 
       expect(result.failureOrNull, isA<NetworkFailure>());
       verifyNever(
-        () => remote.verifyResetCode(email: any(named: 'email'), code: any(named: 'code')),
+        () => remote.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
       );
     });
   });
 
   group('resetPassword', () {
     test('succeeds without touching the cached session', () async {
-      when(() => remote.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          )).thenAnswer((_) async {});
+      when(
+        () => remote.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      ).thenAnswer((_) async {});
 
       final result = await repository.resetPassword(
         resetToken: 'reset-token',
@@ -217,21 +312,27 @@ void main() {
       // The backend deliberately issues no access token here — the user signs
       // in again — so nothing may be cached.
       verifyNever(
-        () => local.cacheSession(accessToken: any(named: 'accessToken'), user: any(named: 'user')),
+        () => local.cacheSession(
+          accessToken: any(named: 'accessToken'),
+          user: any(named: 'user'),
+        ),
       );
     });
 
     test('maps a spent or forged token to AuthFailure', () async {
-      when(() => remote.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          )).thenThrow(const UnauthorizedException('Invalid or expired reset token'));
+      when(
+        () => remote.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      ).thenThrow(
+        const UnauthorizedException('Invalid or expired reset token'),
+      );
 
       final failure = (await repository.resetPassword(
         resetToken: 'spent',
         newPassword: 'newsecret',
-      ))
-          .failureOrNull;
+      )).failureOrNull;
 
       expect(failure, const AuthFailure('Invalid or expired reset token'));
     });

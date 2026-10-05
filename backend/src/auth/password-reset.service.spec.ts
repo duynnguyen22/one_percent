@@ -102,13 +102,13 @@ describe('AuthService password reset', () => {
       expect((await newestRow()).codeHash).not.toContain(lastCode());
     });
 
-    it('expires the stored code 15 minutes out', async () => {
+    it('expires the stored code 5 minutes out', async () => {
       const before = Date.now();
       await ctx.service.forgotPassword(user.email);
 
       const ttl = (await newestRow()).expiresAt.getTime() - before;
-      expect(ttl).toBeGreaterThan(14 * 60 * 1000);
-      expect(ttl).toBeLessThanOrEqual(15 * 60 * 1000 + 1000);
+      expect(ttl).toBeGreaterThan(4 * 60 * 1000);
+      expect(ttl).toBeLessThanOrEqual(5 * 60 * 1000 + 1000);
     });
 
     it('consumes prior unconsumed rows when a new code is requested', async () => {

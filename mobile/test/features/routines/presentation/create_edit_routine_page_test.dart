@@ -9,7 +9,9 @@ import '../../../helpers/routine_doubles.dart';
 
 void main() {
   group('CreateRoutinePage', () {
-    testWidgets('renders sequence builder form inputs and add habits button', (tester) async {
+    testWidgets('renders sequence builder form inputs and add habits button', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
         const CreateRoutinePage(),
@@ -19,7 +21,10 @@ void main() {
       expect(find.text('Habit Creation'), findsOneWidget);
       expect(find.text('SEQUENCE BUILDER'), findsOneWidget);
       expect(
-        find.textContaining('Design an intentional sequence', findRichText: true),
+        find.textContaining(
+          'Design an intentional sequence',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
       expect(find.text('ROUTINE NAME'), findsOneWidget);
@@ -34,7 +39,9 @@ void main() {
       expect(find.text('+ Add Habit'), findsOneWidget);
     });
 
-    testWidgets('opens Select Habits modal when tapping Add Habit', (tester) async {
+    testWidgets('opens Select Habits modal when tapping Add Habit', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
         const CreateRoutinePage(),
@@ -51,17 +58,25 @@ void main() {
 
       expect(find.text('Select Habits from Today'), findsOneWidget);
       expect(
-        find.textContaining('Choose existing habits to weave into this routine', findRichText: true),
+        find.textContaining(
+          'Choose existing habits to weave into this routine',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
-      expect(find.textContaining('Add Selected Habits', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('Add Selected Habits', findRichText: true),
+        findsOneWidget,
+      );
     });
   });
 
   group('EditRoutinePage', () {
     final routine = Routine.defaults.first;
 
-    testWidgets('renders routine editor with sequence steps and cadence card', (tester) async {
+    testWidgets('renders routine editor with sequence steps and cadence card', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
         EditRoutinePage(routine: routine),

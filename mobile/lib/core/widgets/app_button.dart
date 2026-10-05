@@ -92,17 +92,21 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground, border) = switch (variant) {
-      AppButtonVariant.primary => (AppColors.primary, AppColors.onPrimary, null),
+      AppButtonVariant.primary => (
+        AppColors.primary,
+        AppColors.onPrimary,
+        null,
+      ),
       AppButtonVariant.secondary => (
-          AppColors.surfaceContainer,
-          AppColors.onSurface,
-          null,
-        ),
+        AppColors.surfaceContainer,
+        AppColors.onSurface,
+        null,
+      ),
       AppButtonVariant.outlined => (
-          Colors.transparent,
-          AppColors.primary,
-          const BorderSide(color: AppColors.outlineVariant),
-        ),
+        Colors.transparent,
+        AppColors.primary,
+        const BorderSide(color: AppColors.outlineVariant),
+      ),
       AppButtonVariant.text => (Colors.transparent, AppColors.primary, null),
     };
 
@@ -118,14 +122,19 @@ class AppButton extends StatelessWidget {
           disabledForegroundColor: foreground.withValues(alpha: 0.6),
           elevation: 0,
           side: border,
-          shape: const RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusPill),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppSpacing.borderRadiusPill,
+          ),
           textStyle: AppTypography.labelLarge,
         ),
         child: isLoading
             ? SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.4, color: foreground),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: foreground,
+                ),
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,

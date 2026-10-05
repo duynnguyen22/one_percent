@@ -48,8 +48,9 @@ final class ValidationException extends AppException {
 
 /// The requested resource does not exist (404).
 final class NotFoundException extends AppException {
-  const NotFoundException([super.message = 'The requested resource was not found.'])
-      : super(statusCode: 404);
+  const NotFoundException([
+    super.message = 'The requested resource was not found.',
+  ]) : super(statusCode: 404);
 }
 
 /// Reading from or writing to device storage failed.

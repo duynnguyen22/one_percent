@@ -45,13 +45,13 @@ void main() {
 
   group('getEntries', () {
     test('returns the bare date list the endpoint sends', () async {
-      when(() => remote.getEntries(
-                habitId: any(named: 'habitId'),
-                from: any(named: 'from'),
-                to: any(named: 'to'),
-              ))
-          .thenAnswer(
-              (_) async => [DateTime(2026, 3, 9), DateTime(2026, 3, 10)]);
+      when(
+        () => remote.getEntries(
+          habitId: any(named: 'habitId'),
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => [DateTime(2026, 3, 9), DateTime(2026, 3, 10)]);
 
       final result = await repository.getEntries(
         habitId: habitId,
@@ -72,20 +72,24 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<NetworkFailure>());
-      verifyNever(() => remote.getEntries(
-            habitId: any(named: 'habitId'),
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          ));
+      verifyNever(
+        () => remote.getEntries(
+          habitId: any(named: 'habitId'),
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      );
     });
   });
 
   group('exception translation', () {
     test('a 404 becomes NotFoundFailure', () async {
-      when(() => remote.checkOff(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenThrow(const NotFoundException());
+      when(
+        () => remote.checkOff(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenThrow(const NotFoundException());
 
       final result = await repository.checkOff(habitId: habitId, date: day);
 
@@ -93,10 +97,12 @@ void main() {
     });
 
     test('a 401 becomes AuthFailure', () async {
-      when(() => remote.deleteEntry(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenThrow(const UnauthorizedException());
+      when(
+        () => remote.deleteEntry(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenThrow(const UnauthorizedException());
 
       final result = await repository.deleteEntry(habitId: habitId, date: day);
 
@@ -112,10 +118,12 @@ void main() {
     });
 
     test('completed true checks the day off', () async {
-      when(() => entryRepository.checkOff(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenAnswer((_) async => Success(buildHabitEntryModel()));
+      when(
+        () => entryRepository.checkOff(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => Success(buildHabitEntryModel()));
 
       await SetEntry(entryRepository)(
         habitId: habitId,
@@ -123,19 +131,24 @@ void main() {
         completed: true,
       );
 
-      verify(() => entryRepository.checkOff(habitId: habitId, date: day))
-          .called(1);
-      verifyNever(() => entryRepository.deleteEntry(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          ));
+      verify(
+        () => entryRepository.checkOff(habitId: habitId, date: day),
+      ).called(1);
+      verifyNever(
+        () => entryRepository.deleteEntry(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      );
     });
 
     test('completed false un-checks the day', () async {
-      when(() => entryRepository.deleteEntry(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          )).thenAnswer((_) async => const Success(null));
+      when(
+        () => entryRepository.deleteEntry(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      ).thenAnswer((_) async => const Success(null));
 
       await SetEntry(entryRepository)(
         habitId: habitId,
@@ -143,24 +156,29 @@ void main() {
         completed: false,
       );
 
-      verify(() => entryRepository.deleteEntry(habitId: habitId, date: day))
-          .called(1);
+      verify(
+        () => entryRepository.deleteEntry(habitId: habitId, date: day),
+      ).called(1);
     });
 
-    test('un-checking a day that was never checked off is not an error',
-        () async {
-      when(() => entryRepository.deleteEntry(
+    test(
+      'un-checking a day that was never checked off is not an error',
+      () async {
+        when(
+          () => entryRepository.deleteEntry(
             habitId: any(named: 'habitId'),
             date: any(named: 'date'),
-          )).thenAnswer((_) async => const ResultError(NotFoundFailure()));
+          ),
+        ).thenAnswer((_) async => const ResultError(NotFoundFailure()));
 
-      final result = await SetEntry(entryRepository)(
-        habitId: habitId,
-        date: day,
-        completed: false,
-      );
+        final result = await SetEntry(entryRepository)(
+          habitId: habitId,
+          date: day,
+          completed: false,
+        );
 
-      expect(result.isSuccess, isTrue);
-    });
+        expect(result.isSuccess, isTrue);
+      },
+    );
   });
 }

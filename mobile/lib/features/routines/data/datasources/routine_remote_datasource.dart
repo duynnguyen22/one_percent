@@ -35,8 +35,9 @@ class RoutineRemoteDataSourceImpl implements RoutineRemoteDataSource {
   Future<List<RoutineModel>> getRoutines({DateTime? date}) async {
     final json = await _client.get<Map<String, dynamic>>(
       ApiConstants.routines,
-      queryParameters:
-          date == null ? null : {'date': AppDateUtils.toApiDate(date)},
+      queryParameters: date == null
+          ? null
+          : {'date': AppDateUtils.toApiDate(date)},
     );
     return (_data(json) as List<dynamic>)
         .map((row) => RoutineModel.fromJson(row as Map<String, dynamic>))

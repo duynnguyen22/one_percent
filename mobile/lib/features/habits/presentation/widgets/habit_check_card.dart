@@ -40,8 +40,9 @@ class HabitCheckCard extends StatelessWidget {
             vertical: 16,
           ),
           decoration: BoxDecoration(
-            color:
-                done ? AppColors.primaryContainer : AppColors.surfaceContainer,
+            color: done
+                ? AppColors.primaryContainer
+                : AppColors.surfaceContainer,
             borderRadius: AppSpacing.borderRadiusCard,
             boxShadow: AppSpacing.ambientShadow,
           ),
@@ -82,8 +83,9 @@ class HabitCheckCard extends StatelessWidget {
                       _streakLabel(habit.currentStreak),
                       style: AppTypography.labelSmall.copyWith(
                         color: done
-                            ? AppColors.onPrimaryContainer
-                                .withValues(alpha: 0.75)
+                            ? AppColors.onPrimaryContainer.withValues(
+                                alpha: 0.75,
+                              )
                             : AppColors.onSurfaceVariant,
                       ),
                     ),
@@ -95,16 +97,20 @@ class HabitCheckCard extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color:
-                      done ? AppColors.onPrimaryContainer : Colors.transparent,
+                  color: done
+                      ? AppColors.onPrimaryContainer
+                      : Colors.transparent,
                   border: Border.all(
                     color: done ? Colors.transparent : AppColors.outlineVariant,
                     width: 2,
                   ),
                 ),
                 child: done
-                    ? const Icon(Icons.check_rounded,
-                        color: AppColors.primary, size: 20)
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      )
                     : null,
               ),
             ],
@@ -115,8 +121,8 @@ class HabitCheckCard extends StatelessWidget {
   }
 
   static String _streakLabel(int streak) => switch (streak) {
-        0 => 'Not started',
-        1 => '1 day streak',
-        _ => '$streak day streak',
-      };
+    0 => 'Not started',
+    1 => '1 day streak',
+    _ => '$streak day streak',
+  };
 }

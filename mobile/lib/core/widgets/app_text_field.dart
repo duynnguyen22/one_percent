@@ -268,7 +268,8 @@ class _AppTextFieldState extends State<AppTextField> {
             ),
             filled: true,
             fillColor: AppColors.surfaceContainer, // #F0EEE9
-            contentPadding: widget.contentPadding ??
+            contentPadding:
+                widget.contentPadding ??
                 EdgeInsets.symmetric(
                   horizontal: widget.prefixIcon != null ? 20.0 : 24.0,
                   vertical: 14.0,
@@ -289,22 +290,18 @@ class _AppTextFieldState extends State<AppTextField> {
                   )
                 : null,
             prefixIconConstraints: widget.prefixIcon != null
-                ? const BoxConstraints(
-                    minWidth: 48,
-                    minHeight: 24,
-                  )
+                ? const BoxConstraints(minWidth: 48, minHeight: 24)
                 : null,
-            suffixIcon: widget.suffixIcon ??
+            suffixIcon:
+                widget.suffixIcon ??
                 (widget.isPassword
                     ? Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: IconButton(
                           icon: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
-                            transitionBuilder: (child, anim) => ScaleTransition(
-                              scale: anim,
-                              child: child,
-                            ),
+                            transitionBuilder: (child, anim) =>
+                                ScaleTransition(scale: anim, child: child),
                             child: Icon(
                               _obscureText
                                   ? Icons.visibility_off_outlined
@@ -316,7 +313,9 @@ class _AppTextFieldState extends State<AppTextField> {
                           ),
                           onPressed: _toggleObscureText,
                           splashRadius: 20.0,
-                          tooltip: _obscureText ? 'Show password' : 'Hide password',
+                          tooltip: _obscureText
+                              ? 'Show password'
+                              : 'Hide password',
                         ),
                       )
                     : null),
@@ -337,17 +336,11 @@ class _AppTextFieldState extends State<AppTextField> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusPill,
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusPill,
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),

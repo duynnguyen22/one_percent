@@ -11,7 +11,10 @@ abstract interface class AuthRepository {
   Future<Result<User>> login({required String email, required String password});
 
   /// Creates an account and signs the new user in.
-  Future<Result<User>> register({required String email, required String password});
+  Future<Result<User>> register({
+    required String email,
+    required String password,
+  });
 
   /// Clears the stored session. Succeeds even when already signed out.
   Future<Result<void>> logout();

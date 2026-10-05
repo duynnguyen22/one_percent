@@ -214,19 +214,22 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                                       children: [
                                         TextSpan(
                                           text: '$completed',
-                                          style: AppTypography.headlineSmall.copyWith(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.onSurface,
-                                          ),
+                                          style: AppTypography.headlineSmall
+                                              .copyWith(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.onSurface,
+                                              ),
                                         ),
                                         TextSpan(
                                           text: '/$total',
-                                          style: AppTypography.labelSmall.copyWith(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.onSurfaceVariant,
-                                          ),
+                                          style: AppTypography.labelSmall
+                                              .copyWith(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color:
+                                                    AppColors.onSurfaceVariant,
+                                              ),
                                         ),
                                       ],
                                     ),

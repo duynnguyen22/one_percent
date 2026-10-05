@@ -162,7 +162,9 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
                               color: isSelected
                                   ? AppColors.onPrimary
                                   : AppColors.onSurface,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                             ),
                           ),
                           backgroundColor: AppColors.surfaceContainer,
@@ -191,7 +193,9 @@ class _AddHabitPageState extends ConsumerState<AddHabitPage> {
                           decoration: InputDecoration(
                             hintText: 'Name your habit...',
                             hintStyle: AppTypography.bodyLarge.copyWith(
-                              color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+                              color: AppColors.onSurfaceVariant.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             filled: true,
                             fillColor: AppColors.surfaceContainerLow,

@@ -13,16 +13,21 @@ void main() {
 
   setUp(() {
     repository = MockAuthRepository();
-    when(() => repository.requestPasswordReset(email: any(named: 'email')))
-        .thenAnswer((_) async => const Success(null));
-    when(() => repository.verifyResetCode(
-          email: any(named: 'email'),
-          code: any(named: 'code'),
-        )).thenAnswer((_) async => const Success('reset-token'));
-    when(() => repository.resetPassword(
-          resetToken: any(named: 'resetToken'),
-          newPassword: any(named: 'newPassword'),
-        )).thenAnswer((_) async => const Success(null));
+    when(
+      () => repository.requestPasswordReset(email: any(named: 'email')),
+    ).thenAnswer((_) async => const Success(null));
+    when(
+      () => repository.verifyResetCode(
+        email: any(named: 'email'),
+        code: any(named: 'code'),
+      ),
+    ).thenAnswer((_) async => const Success('reset-token'));
+    when(
+      () => repository.resetPassword(
+        resetToken: any(named: 'resetToken'),
+        newPassword: any(named: 'newPassword'),
+      ),
+    ).thenAnswer((_) async => const Success(null));
   });
 
   group('RequestPasswordReset', () {
@@ -32,8 +37,9 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      verify(() => repository.requestPasswordReset(email: 'alex.bloom@example.com'))
-          .called(1);
+      verify(
+        () => repository.requestPasswordReset(email: 'alex.bloom@example.com'),
+      ).called(1);
     });
 
     test('rejects a malformed email without spending a round trip', () async {
@@ -41,7 +47,9 @@ void main() {
 
       expect(result.failureOrNull, isA<ValidationFailure>());
       expect(result.failureOrNull?.message, 'Enter a valid email address');
-      verifyNever(() => repository.requestPasswordReset(email: any(named: 'email')));
+      verifyNever(
+        () => repository.requestPasswordReset(email: any(named: 'email')),
+      );
     });
   });
 
@@ -53,10 +61,12 @@ void main() {
       );
 
       expect(result.dataOrNull, 'reset-token');
-      verify(() => repository.verifyResetCode(
-            email: 'alex.bloom@example.com',
-            code: '481920',
-          )).called(1);
+      verify(
+        () => repository.verifyResetCode(
+          email: 'alex.bloom@example.com',
+          code: '481920',
+        ),
+      ).called(1);
     });
 
     test('rejects a code that is not six digits', () async {
@@ -66,10 +76,12 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
-      verifyNever(() => repository.verifyResetCode(
-            email: any(named: 'email'),
-            code: any(named: 'code'),
-          ));
+      verifyNever(
+        () => repository.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
+      );
     });
 
     test('rejects a non-numeric code', () async {
@@ -79,10 +91,12 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
-      verifyNever(() => repository.verifyResetCode(
-            email: any(named: 'email'),
-            code: any(named: 'code'),
-          ));
+      verifyNever(
+        () => repository.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
+      );
     });
 
     test('rejects a malformed email before sending the code', () async {
@@ -92,10 +106,12 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
-      verifyNever(() => repository.verifyResetCode(
-            email: any(named: 'email'),
-            code: any(named: 'code'),
-          ));
+      verifyNever(
+        () => repository.verifyResetCode(
+          email: any(named: 'email'),
+          code: any(named: 'code'),
+        ),
+      );
     });
   });
 
@@ -108,10 +124,12 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      verify(() => repository.resetPassword(
-            resetToken: 'reset-token',
-            newPassword: 'newsecret',
-          )).called(1);
+      verify(
+        () => repository.resetPassword(
+          resetToken: 'reset-token',
+          newPassword: 'newsecret',
+        ),
+      ).called(1);
     });
 
     test('rejects a confirmation that does not match', () async {
@@ -122,10 +140,12 @@ void main() {
       );
 
       expect(result.failureOrNull?.message, 'Passwords do not match');
-      verifyNever(() => repository.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          ));
+      verifyNever(
+        () => repository.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      );
     });
 
     test('rejects a password shorter than the backend allows', () async {
@@ -136,10 +156,12 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
-      verifyNever(() => repository.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          ));
+      verifyNever(
+        () => repository.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      );
     });
 
     test('rejects a missing reset token rather than calling the API', () async {
@@ -150,10 +172,12 @@ void main() {
       );
 
       expect(result.failureOrNull, isA<ValidationFailure>());
-      verifyNever(() => repository.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          ));
+      verifyNever(
+        () => repository.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      );
     });
   });
 }
