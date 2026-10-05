@@ -93,9 +93,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.forgotPasswordPath,
         name: RouteNames.forgotPassword,
-        builder: (context, state) => ForgotPasswordPage(
-          email: state.uri.queryParameters['email'] ?? '',
-        ),
+        builder: (context, state) =>
+            ForgotPasswordPage(email: state.uri.queryParameters['email'] ?? ''),
       ),
       GoRoute(
         path: RouteNames.resetPasswordPath,
@@ -105,8 +104,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // change, so send the user back to start the flow again.
         redirect: (context, state) =>
             (state.uri.queryParameters['token'] ?? '').isEmpty
-                ? RouteNames.forgotPasswordPath
-                : null,
+            ? RouteNames.forgotPasswordPath
+            : null,
         builder: (context, state) => ResetPasswordPage(
           resetToken: state.uri.queryParameters['token'] ?? '',
           email: state.uri.queryParameters['email'] ?? '',
@@ -118,7 +117,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => OfflinePage(
           flowTitle: state.uri.queryParameters['flowTitle'] ?? 'Add Habit Flow',
-          lastSyncedText: state.uri.queryParameters['lastSynced'] ?? 'Synced 8:30 AM',
+          lastSyncedText:
+              state.uri.queryParameters['lastSynced'] ?? 'Synced 8:30 AM',
         ),
       ),
       StatefulShellRoute.indexedStack(
@@ -195,7 +195,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) => RoutineLoader(
                       routineId: state.pathParameters['routineId'] ?? '',
-                      builder: (routine) => RoutineExecutionPage(routine: routine),
+                      builder: (routine) =>
+                          RoutineExecutionPage(routine: routine),
                     ),
                   ),
                   GoRoute(
@@ -204,7 +205,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) => RoutineLoader(
                       routineId: state.pathParameters['routineId'] ?? '',
-                      builder: (routine) => RoutineCompletedPage(routine: routine),
+                      builder: (routine) =>
+                          RoutineCompletedPage(routine: routine),
                     ),
                   ),
                 ],
@@ -240,9 +242,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Page not found: ${state.uri}')),
-    ),
+    errorBuilder: (context, state) =>
+        Scaffold(body: Center(child: Text('Page not found: ${state.uri}'))),
   );
 });
 

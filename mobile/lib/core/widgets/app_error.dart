@@ -45,12 +45,18 @@ class AppError extends StatelessWidget {
               child: Icon(icon, size: 32, color: AppColors.onErrorContainer),
             ),
             const SizedBox(height: AppSpacing.stackGap),
-            Text(title, style: AppTypography.headlineSmall, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AppTypography.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTypography.bodySmall.copyWith(color: AppColors.onSurfaceVariant),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: AppSpacing.sectionGap),
@@ -84,12 +90,18 @@ class AppErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 20, color: AppColors.onErrorContainer),
+          const Icon(
+            Icons.error_outline_rounded,
+            size: 20,
+            color: AppColors.onErrorContainer,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: AppTypography.bodySmall.copyWith(color: AppColors.onErrorContainer),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.onErrorContainer,
+              ),
             ),
           ),
         ],

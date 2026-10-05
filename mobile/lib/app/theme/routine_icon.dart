@@ -33,20 +33,14 @@ class RoutineNavIcon extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _RoutineIconPainter(
-          isSelected: isSelected,
-          color: color,
-        ),
+        painter: _RoutineIconPainter(isSelected: isSelected, color: color),
       ),
     );
   }
 }
 
 class _RoutineIconPainter extends CustomPainter {
-  const _RoutineIconPainter({
-    required this.isSelected,
-    required this.color,
-  });
+  const _RoutineIconPainter({required this.isSelected, required this.color});
 
   final bool isSelected;
   final Color color;
@@ -76,11 +70,7 @@ class _RoutineIconPainter extends CustomPainter {
     // Node 1: Top (12 o'clock / Start) -> angle: -pi / 2
     // Node 2: Bottom-right (~4 o'clock / Progress) -> angle: -pi / 2 + 2 * pi / 3 = pi / 6
     // Node 3: Bottom-left (~8 o'clock / Completion) -> angle: -pi / 2 + 4 * pi / 3 = 5 * pi / 6
-    final nodeAngles = [
-      -math.pi / 2,
-      math.pi / 6,
-      5 * math.pi / 6,
-    ];
+    final nodeAngles = [-math.pi / 2, math.pi / 6, 5 * math.pi / 6];
 
     final nodePaint = Paint()..color = color;
 

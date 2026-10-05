@@ -53,8 +53,12 @@ abstract final class AppColors {
   static const Color onErrorContainer = Color(0xFF93000A);
 
   // Glassmorphism & Ambient Shadows
-  static const Color glassBackground = Color(0xD9FBF9F4); // rgba(251, 249, 244, 0.85)
-  static const Color ambientShadow = Color(0x0A4D6054); // rgba(77, 96, 84, 0.04)
+  static const Color glassBackground = Color(
+    0xD9FBF9F4,
+  ); // rgba(251, 249, 244, 0.85)
+  static const Color ambientShadow = Color(
+    0x0A4D6054,
+  ); // rgba(77, 96, 84, 0.04)
 
   /// Material 3 ColorScheme mapping based on Bloom tokens.
   static const ColorScheme colorScheme = ColorScheme(

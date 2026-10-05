@@ -18,84 +18,124 @@ void main() {
   group('Responsive small screen layout checks (zero overflow)', () {
     final routine = Routine.defaults.first;
 
-    testWidgets('RoutinesHomePage renders on small screen without overflow', (tester) async {
+    testWidgets('RoutinesHomePage renders on small screen without overflow', (
+      tester,
+    ) async {
       tester.view.physicalSize = smallScreenSize;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, const RoutinesHomePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+      await pumpApp(
+        tester,
+        const RoutinesHomePage(),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+      );
 
       expect(tester.takeException(), isNull);
       expect(find.text('Your Routines'), findsOneWidget);
     });
 
-    testWidgets('RoutineDetailPage renders on small screen without overflow', (tester) async {
+    testWidgets('RoutineDetailPage renders on small screen without overflow', (
+      tester,
+    ) async {
       tester.view.physicalSize = smallScreenSize;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineDetailPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+      await pumpApp(
+        tester,
+        RoutineDetailPage(routine: routine),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+      );
 
       expect(tester.takeException(), isNull);
       expect(find.text('Morning Ritual'), findsOneWidget);
     });
 
-    testWidgets('CreateRoutinePage renders on small screen without overflow', (tester) async {
+    testWidgets('CreateRoutinePage renders on small screen without overflow', (
+      tester,
+    ) async {
       tester.view.physicalSize = smallScreenSize;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, const CreateRoutinePage(), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+      await pumpApp(
+        tester,
+        const CreateRoutinePage(),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+      );
 
       expect(tester.takeException(), isNull);
       expect(find.text('Habit Creation'), findsOneWidget);
     });
 
-    testWidgets('EditRoutinePage renders on small screen without overflow', (tester) async {
+    testWidgets('EditRoutinePage renders on small screen without overflow', (
+      tester,
+    ) async {
       tester.view.physicalSize = smallScreenSize;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, EditRoutinePage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+      await pumpApp(
+        tester,
+        EditRoutinePage(routine: routine),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+      );
 
       expect(tester.takeException(), isNull);
       expect(find.text('EDITING SEQUENCE'), findsOneWidget);
     });
 
-    testWidgets('RoutineExecutionPage (Step 1 & Step 2) renders on small screen without overflow', (tester) async {
-      tester.view.physicalSize = smallScreenSize;
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'RoutineExecutionPage (Step 1 & Step 2) renders on small screen without overflow',
+      (tester) async {
+        tester.view.physicalSize = smallScreenSize;
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineExecutionPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+        await pumpApp(
+          tester,
+          RoutineExecutionPage(routine: routine),
+          overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+        );
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('DRINK WATER'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        expect(find.text('DRINK WATER'), findsOneWidget);
 
-      await tester.scrollUntilVisible(
-        find.text('Done & Next'),
-        150,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(find.text('Done & Next'));
-      await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Done & Next'),
+          150,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('Done & Next'));
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('GENTLE STRETCH'), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.text('GENTLE STRETCH'), findsOneWidget);
+      },
+    );
 
-    testWidgets('RoutineCompletedPage renders on small screen without overflow', (tester) async {
-      tester.view.physicalSize = smallScreenSize;
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'RoutineCompletedPage renders on small screen without overflow',
+      (tester) async {
+        tester.view.physicalSize = smallScreenSize;
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await pumpApp(tester, RoutineCompletedPage(routine: routine), overrides: RoutineDoubles(routines: Routine.defaults).overrides);
+        await pumpApp(
+          tester,
+          RoutineCompletedPage(routine: routine),
+          overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+        );
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('Morning Ritual Complete'), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.text('Morning Ritual Complete'), findsOneWidget);
+      },
+    );
 
-    testWidgets('SelectHabitsModal renders on small screen without overflow', (tester) async {
+    testWidgets('SelectHabitsModal renders on small screen without overflow', (
+      tester,
+    ) async {
       tester.view.physicalSize = smallScreenSize;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());

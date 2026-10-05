@@ -23,10 +23,11 @@ class RoutineModel extends Routine {
 
   /// Parses a routine view from any `/routines` response.
   factory RoutineModel.fromJson(Map<String, dynamic> json) {
-    final rows = (json['steps'] as List<dynamic>? ?? const [])
-        .cast<Map<String, dynamic>>()
-        .toList()
-      ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+    final rows =
+        (json['steps'] as List<dynamic>? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .toList()
+          ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
 
     return RoutineModel(
       id: json['id'] as String,

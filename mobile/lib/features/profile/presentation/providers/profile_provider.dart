@@ -8,18 +8,12 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// State for the profile editing flow.
 class ProfileEditState {
-  const ProfileEditState({
-    this.isSubmitting = false,
-    this.failure,
-  });
+  const ProfileEditState({this.isSubmitting = false, this.failure});
 
   final bool isSubmitting;
   final Failure? failure;
 
-  ProfileEditState copyWith({
-    bool? isSubmitting,
-    Failure? failure,
-  }) {
+  ProfileEditState copyWith({bool? isSubmitting, Failure? failure}) {
     return ProfileEditState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
       failure: failure,
@@ -42,8 +36,9 @@ class ProfileEditNotifier extends Notifier<ProfileEditState> {
     state = state.copyWith(isSubmitting: true);
 
     if (avatarFilePath != null) {
-      final upload =
-          await ref.read(uploadAvatarUseCaseProvider)(avatarFilePath);
+      final upload = await ref.read(uploadAvatarUseCaseProvider)(
+        avatarFilePath,
+      );
       switch (upload) {
         case Success(:final data):
           // Shown right away, even if the text fields then fail to save.
@@ -73,8 +68,8 @@ class ProfileEditNotifier extends Notifier<ProfileEditState> {
 
 final profileEditProvider =
     NotifierProvider<ProfileEditNotifier, ProfileEditState>(
-  ProfileEditNotifier.new,
-);
+      ProfileEditNotifier.new,
+    );
 
 /// The platform photo picker, behind a provider so tests can stub it.
 final imagePickerProvider = Provider<ImagePicker>((ref) => ImagePicker());

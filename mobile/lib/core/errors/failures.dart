@@ -18,7 +18,9 @@ sealed class Failure {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Failure && runtimeType == other.runtimeType && message == other.message;
+      other is Failure &&
+          runtimeType == other.runtimeType &&
+          message == other.message;
 
   @override
   int get hashCode => Object.hash(runtimeType, message);
@@ -40,7 +42,9 @@ final class NetworkFailure extends Failure {
 
 /// Credentials were rejected, or the session is no longer valid.
 final class AuthFailure extends Failure {
-  const AuthFailure([super.message = 'Your session has expired. Please sign in again.']);
+  const AuthFailure([
+    super.message = 'Your session has expired. Please sign in again.',
+  ]);
 }
 
 /// Input was rejected, either locally or by the backend.
@@ -53,7 +57,9 @@ final class ValidationFailure extends Failure {
 
 /// The requested resource does not exist.
 final class NotFoundFailure extends Failure {
-  const NotFoundFailure([super.message = 'The requested resource was not found.']);
+  const NotFoundFailure([
+    super.message = 'The requested resource was not found.',
+  ]);
 }
 
 /// Local storage could not be read or written.
@@ -63,5 +69,7 @@ final class CacheFailure extends Failure {
 
 /// Nothing else fit. Carries the original error description for logging.
 final class UnexpectedFailure extends Failure {
-  const UnexpectedFailure([super.message = 'Something went wrong. Please try again.']);
+  const UnexpectedFailure([
+    super.message = 'Something went wrong. Please try again.',
+  ]);
 }

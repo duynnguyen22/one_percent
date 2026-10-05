@@ -18,10 +18,12 @@ void main() {
   setUp(() {
     repository = MockRoutineRepository();
     saveRoutine = SaveRoutine(repository);
-    when(() => repository.createRoutine(any()))
-        .thenAnswer((_) async => Success(routine));
-    when(() => repository.updateRoutine(any(), any()))
-        .thenAnswer((_) async => Success(routine));
+    when(
+      () => repository.createRoutine(any()),
+    ).thenAnswer((_) async => Success(routine));
+    when(
+      () => repository.updateRoutine(any(), any()),
+    ).thenAnswer((_) async => Success(routine));
   });
 
   Future<Failure?> failureFor(RoutineDraft draft) async =>
@@ -45,13 +47,17 @@ void main() {
   });
 
   test('rejects a blank name', () async {
-    expect(await failureFor(buildRoutineDraft(name: '   ')),
-        isA<ValidationFailure>());
+    expect(
+      await failureFor(buildRoutineDraft(name: '   ')),
+      isA<ValidationFailure>(),
+    );
   });
 
   test('rejects a routine without steps', () async {
-    expect(await failureFor(buildRoutineDraft(steps: const [])),
-        isA<ValidationFailure>());
+    expect(
+      await failureFor(buildRoutineDraft(steps: const [])),
+      isA<ValidationFailure>(),
+    );
   });
 
   test('rejects more than 20 steps', () async {
@@ -59,20 +65,26 @@ void main() {
       for (var i = 0; i < 21; i++)
         RoutineStepDraft(habitId: 'habit-$i', durationMinutes: 5),
     ];
-    expect(await failureFor(buildRoutineDraft(steps: steps)),
-        isA<ValidationFailure>());
+    expect(
+      await failureFor(buildRoutineDraft(steps: steps)),
+      isA<ValidationFailure>(),
+    );
   });
 
   test('rejects the same habit twice', () async {
     const step = RoutineStepDraft(habitId: 'habit-1', durationMinutes: 5);
-    expect(await failureFor(buildRoutineDraft(steps: const [step, step])),
-        isA<ValidationFailure>());
+    expect(
+      await failureFor(buildRoutineDraft(steps: const [step, step])),
+      isA<ValidationFailure>(),
+    );
   });
 
   test('rejects step durations outside 1–180 minutes', () async {
     const step = RoutineStepDraft(habitId: 'habit-1', durationMinutes: 181);
-    expect(await failureFor(buildRoutineDraft(steps: const [step])),
-        isA<ValidationFailure>());
+    expect(
+      await failureFor(buildRoutineDraft(steps: const [step])),
+      isA<ValidationFailure>(),
+    );
   });
 
   test('never reaches the repository when invalid', () async {

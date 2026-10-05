@@ -26,7 +26,9 @@ class NetworkInfoImpl implements NetworkInfo {
   @override
   Future<bool> get isConnected async {
     try {
-      final addresses = await InternetAddress.lookup(lookupHost).timeout(timeout);
+      final addresses = await InternetAddress.lookup(
+        lookupHost,
+      ).timeout(timeout);
       return addresses.isNotEmpty && addresses.first.rawAddress.isNotEmpty;
     } on Exception {
       return false;

@@ -23,17 +23,18 @@ class HabitModel extends Habit {
       name: json['name'] as String,
       color: json['color'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
-      archivedAt:
-          archivedAt == null ? null : DateTime.parse(archivedAt).toLocal(),
+      archivedAt: archivedAt == null
+          ? null
+          : DateTime.parse(archivedAt).toLocal(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'userId': userId,
-        'name': name,
-        'color': color,
-        'createdAt': createdAt.toUtc().toIso8601String(),
-        'archivedAt': archivedAt?.toUtc().toIso8601String(),
-      };
+    'id': id,
+    'userId': userId,
+    'name': name,
+    'color': color,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'archivedAt': archivedAt?.toUtc().toIso8601String(),
+  };
 }

@@ -29,21 +29,21 @@ class UserModel extends User {
 
   /// Serialises for the local cache. The backend never receives this.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'createdAt': createdAt.toUtc().toIso8601String(),
-        'userName': userName,
-        'userPhone': userPhone,
-        'avatarUrl': avatarUrl,
-      };
+    'id': id,
+    'email': email,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'userName': userName,
+    'userPhone': userPhone,
+    'avatarUrl': avatarUrl,
+  };
 
   /// Widens an entity into a model, for writing a cached copy.
   factory UserModel.fromEntity(User user) => UserModel(
-        id: user.id,
-        email: user.email,
-        createdAt: user.createdAt,
-        userName: user.userName,
-        userPhone: user.userPhone,
-        avatarUrl: user.avatarUrl,
-      );
+    id: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+    userName: user.userName,
+    userPhone: user.userPhone,
+    avatarUrl: user.avatarUrl,
+  );
 }

@@ -10,7 +10,10 @@ import '../models/user_model.dart';
 /// a secret — goes to plain preferences, so the app can render a name before
 /// `/auth/me` returns.
 abstract interface class AuthLocalDataSource {
-  Future<void> cacheSession({required String accessToken, required UserModel user});
+  Future<void> cacheSession({
+    required String accessToken,
+    required UserModel user,
+  });
 
   Future<String?> getAccessToken();
 
@@ -29,8 +32,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   const AuthLocalDataSourceImpl({
     required SecureStorage secureStorage,
     required LocalStorage localStorage,
-  })  : _secureStorage = secureStorage,
-        _localStorage = localStorage;
+  }) : _secureStorage = secureStorage,
+       _localStorage = localStorage;
 
   final SecureStorage _secureStorage;
   final LocalStorage _localStorage;

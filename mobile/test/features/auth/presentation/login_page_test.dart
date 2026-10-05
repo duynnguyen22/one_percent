@@ -9,7 +9,10 @@ void main() {
       await pumpApp(tester, const LoginPage(), overrides: signedOutOverrides());
 
       expect(find.text('Welcome back'), findsOneWidget);
-      expect(find.text('Your journey to consistency continues.'), findsOneWidget);
+      expect(
+        find.text('Your journey to consistency continues.'),
+        findsOneWidget,
+      );
       expect(find.text('Email Address'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Sign In'), findsOneWidget);

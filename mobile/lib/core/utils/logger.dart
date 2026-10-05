@@ -27,8 +27,13 @@ abstract final class Logger {
     String tag = _defaultTag,
     Object? error,
     StackTrace? stackTrace,
-  }) =>
-      _write(LogLevel.error, message, tag: tag, error: error, stackTrace: stackTrace);
+  }) => _write(
+    LogLevel.error,
+    message,
+    tag: tag,
+    error: error,
+    stackTrace: stackTrace,
+  );
 
   static void _write(
     LogLevel level,

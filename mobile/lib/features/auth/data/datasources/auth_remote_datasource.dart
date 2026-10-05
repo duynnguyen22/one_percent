@@ -10,10 +10,16 @@ import '../models/user_model.dart';
 /// repository's job.
 abstract interface class AuthRemoteDataSource {
   /// `POST /auth/login`
-  Future<AuthResponseModel> login({required String email, required String password});
+  Future<AuthResponseModel> login({
+    required String email,
+    required String password,
+  });
 
   /// `POST /auth/register`
-  Future<AuthResponseModel> register({required String email, required String password});
+  Future<AuthResponseModel> register({
+    required String email,
+    required String password,
+  });
 
   /// `GET /auth/me`, requires the bearer token.
   Future<UserModel> getCurrentUser();
@@ -45,7 +51,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient _client;
 
   @override
-  Future<AuthResponseModel> login({required String email, required String password}) async {
+  Future<AuthResponseModel> login({
+    required String email,
+    required String password,
+  }) async {
     final json = await _client.post<Map<String, dynamic>>(
       ApiConstants.login,
       data: {'email': email, 'password': password},

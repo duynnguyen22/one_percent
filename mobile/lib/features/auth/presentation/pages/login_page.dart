@@ -120,12 +120,13 @@ class _LoginPageState extends ConsumerState<LoginPage>
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Center(
-                            child: Icon(
-                              Icons.spa_rounded,
-                              size: 40,
-                              color: AppColors.primary, // Sage Green fallback
-                            ),
-                          ),
+                                child: Icon(
+                                  Icons.spa_rounded,
+                                  size: 40,
+                                  color:
+                                      AppColors.primary, // Sage Green fallback
+                                ),
+                              ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -229,9 +230,12 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
                       // 5. Sign In CTA with Tactile Press Scale (0.98x)
                       GestureDetector(
-                        onTapDown: (_) => setState(() => _isButtonPressed = true),
-                        onTapUp: (_) => setState(() => _isButtonPressed = false),
-                        onTapCancel: () => setState(() => _isButtonPressed = false),
+                        onTapDown: (_) =>
+                            setState(() => _isButtonPressed = true),
+                        onTapUp: (_) =>
+                            setState(() => _isButtonPressed = false),
+                        onTapCancel: () =>
+                            setState(() => _isButtonPressed = false),
                         child: AnimatedScale(
                           scale: _isButtonPressed ? 0.98 : 1.0,
                           duration: const Duration(milliseconds: 100),
@@ -239,7 +243,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             width: double.infinity,
                             height: AppSpacing.touchTarget, // 56px
                             child: ElevatedButton(
-                              onPressed: authState.isSubmitting ? null : _handleSignIn,
+                              onPressed: authState.isSubmitting
+                                  ? null
+                                  : _handleSignIn,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.onPrimary,
@@ -256,14 +262,16 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                       ),
                                     )
                                   : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Sign In',
-                                          style: AppTypography.labelLarge.copyWith(
-                                            color: AppColors.onPrimary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTypography.labelLarge
+                                              .copyWith(
+                                                color: AppColors.onPrimary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                         const SizedBox(width: 8),
                                         const Icon(

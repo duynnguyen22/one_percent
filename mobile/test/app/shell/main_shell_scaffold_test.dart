@@ -17,7 +17,9 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/today',
-                  builder: (context, state) => const Scaffold(body: Center(child: Text('Today Content'))),
+                  builder: (context, state) => const Scaffold(
+                    body: Center(child: Text('Today Content')),
+                  ),
                 ),
               ],
             ),
@@ -25,7 +27,9 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/habits',
-                  builder: (context, state) => const Scaffold(body: Center(child: Text('Habits Content'))),
+                  builder: (context, state) => const Scaffold(
+                    body: Center(child: Text('Habits Content')),
+                  ),
                 ),
               ],
             ),
@@ -33,7 +37,9 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/routines',
-                  builder: (context, state) => const Scaffold(body: Center(child: Text('Routines Content'))),
+                  builder: (context, state) => const Scaffold(
+                    body: Center(child: Text('Routines Content')),
+                  ),
                 ),
               ],
             ),
@@ -41,7 +47,9 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/insights',
-                  builder: (context, state) => const Scaffold(body: Center(child: Text('Insights Content'))),
+                  builder: (context, state) => const Scaffold(
+                    body: Center(child: Text('Insights Content')),
+                  ),
                 ),
               ],
             ),
@@ -49,7 +57,9 @@ void main() {
               routes: [
                 GoRoute(
                   path: '/profile',
-                  builder: (context, state) => const Scaffold(body: Center(child: Text('Profile Content'))),
+                  builder: (context, state) => const Scaffold(
+                    body: Center(child: Text('Profile Content')),
+                  ),
                 ),
               ],
             ),
@@ -60,34 +70,30 @@ void main() {
   }
 
   group('MainShellScaffold Bottom Navigation', () {
-    testWidgets('renders all 5 bottom navigation tabs including Routines with crafted icon',
-        (tester) async {
+    testWidgets(
+      'renders all 5 bottom navigation tabs including Routines with crafted icon',
+      (tester) async {
+        final router = createTestRouter();
+
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text('Habits'), findsOneWidget);
+        expect(find.text('Routines'), findsOneWidget);
+        expect(find.text('Insights'), findsOneWidget);
+        expect(find.text('Profile'), findsOneWidget);
+
+        expect(find.byType(RoutineNavIcon), findsOneWidget);
+      },
+    );
+
+    testWidgets('tapping Routines tab navigates to routines branch', (
+      tester,
+    ) async {
       final router = createTestRouter();
 
-      await tester.pumpWidget(
-        MaterialApp.router(
-          routerConfig: router,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Habits'), findsOneWidget);
-      expect(find.text('Routines'), findsOneWidget);
-      expect(find.text('Insights'), findsOneWidget);
-      expect(find.text('Profile'), findsOneWidget);
-
-      expect(find.byType(RoutineNavIcon), findsOneWidget);
-    });
-
-    testWidgets('tapping Routines tab navigates to routines branch', (tester) async {
-      final router = createTestRouter();
-
-      await tester.pumpWidget(
-        MaterialApp.router(
-          routerConfig: router,
-        ),
-      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
       expect(find.text('Today Content'), findsOneWidget);
@@ -99,7 +105,9 @@ void main() {
       expect(find.text('Routines Content'), findsOneWidget);
     });
 
-    testWidgets('renders without overflow on a small 320x568 screen', (tester) async {
+    testWidgets('renders without overflow on a small 320x568 screen', (
+      tester,
+    ) async {
       final router = createTestRouter();
 
       tester.view.physicalSize = const Size(320, 568);
@@ -109,11 +117,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        MaterialApp.router(
-          routerConfig: router,
-        ),
-      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

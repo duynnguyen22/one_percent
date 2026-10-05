@@ -5,19 +5,36 @@
 /// [toApiDate] and [dateOnly] keep the client honest about that.
 abstract final class AppDateUtils {
   static const List<String> _weekdayNames = [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
   ];
 
   static const List<String> _monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   /// Today with its time component removed.
   static DateTime get today => dateOnly(DateTime.now());
 
   /// Strips the time component, keeping the local calendar day.
-  static DateTime dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+  static DateTime dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 
   /// Formats as `yyyy-MM-dd`, the shape the API expects.
   static String toApiDate(DateTime date) {
@@ -68,9 +85,11 @@ abstract final class AppDateUtils {
   static int daysBetween(DateTime from, DateTime to) {
     final start = dateOnly(from);
     final end = dateOnly(to);
-    return DateTime.utc(end.year, end.month, end.day)
-        .difference(DateTime.utc(start.year, start.month, start.day))
-        .inDays;
+    return DateTime.utc(
+      end.year,
+      end.month,
+      end.day,
+    ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
   }
 
   /// The Monday of [date]'s week.

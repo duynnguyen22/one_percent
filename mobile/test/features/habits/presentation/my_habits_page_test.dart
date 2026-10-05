@@ -30,10 +30,10 @@ void main() {
   });
 
   List<Override> overrides() => [
-        ...signedOutOverrides(),
-        habitRepositoryProvider.overrideWithValue(habits),
-        entryRepositoryProvider.overrideWithValue(entries),
-      ];
+    ...signedOutOverrides(),
+    habitRepositoryProvider.overrideWithValue(habits),
+    entryRepositoryProvider.overrideWithValue(entries),
+  ];
 
   Future<void> openMenu(WidgetTester tester) async {
     await tester.tap(find.byKey(const ValueKey('habit-menu-habit-1')));
@@ -49,13 +49,14 @@ void main() {
   });
 
   testWidgets('renames a habit through the overflow menu', (tester) async {
-    when(() => habits.updateHabit(
-              habitId: any(named: 'habitId'),
-              name: any(named: 'name'),
-              color: any(named: 'color'),
-              archived: any(named: 'archived'),
-            ))
-        .thenAnswer((_) async => Success(buildHabitModel(name: 'Read daily')));
+    when(
+      () => habits.updateHabit(
+        habitId: any(named: 'habitId'),
+        name: any(named: 'name'),
+        color: any(named: 'color'),
+        archived: any(named: 'archived'),
+      ),
+    ).thenAnswer((_) async => Success(buildHabitModel(name: 'Read daily')));
 
     await pumpApp(tester, const MyHabitsPage(), overrides: overrides());
     await openMenu(tester);
@@ -66,37 +67,44 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    verify(() => habits.updateHabit(
-          habitId: 'habit-1',
-          name: 'Read daily',
-          color: null,
-          archived: null,
-        )).called(1);
+    verify(
+      () => habits.updateHabit(
+        habitId: 'habit-1',
+        name: 'Read daily',
+        color: null,
+        archived: null,
+      ),
+    ).called(1);
   });
 
   testWidgets('archiving does not ask for confirmation', (tester) async {
-    when(() => habits.updateHabit(
-          habitId: any(named: 'habitId'),
-          name: any(named: 'name'),
-          color: any(named: 'color'),
-          archived: any(named: 'archived'),
-        )).thenAnswer((_) async => Success(buildHabitModel()));
+    when(
+      () => habits.updateHabit(
+        habitId: any(named: 'habitId'),
+        name: any(named: 'name'),
+        color: any(named: 'color'),
+        archived: any(named: 'archived'),
+      ),
+    ).thenAnswer((_) async => Success(buildHabitModel()));
 
     await pumpApp(tester, const MyHabitsPage(), overrides: overrides());
     await openMenu(tester);
     await tester.tap(find.text('Archive'));
     await tester.pumpAndSettle();
 
-    verify(() => habits.updateHabit(
-          habitId: 'habit-1',
-          name: null,
-          color: null,
-          archived: true,
-        )).called(1);
+    verify(
+      () => habits.updateHabit(
+        habitId: 'habit-1',
+        name: null,
+        color: null,
+        archived: true,
+      ),
+    ).called(1);
   });
 
-  testWidgets('deleting asks first and does nothing when cancelled',
-      (tester) async {
+  testWidgets('deleting asks first and does nothing when cancelled', (
+    tester,
+  ) async {
     await pumpApp(tester, const MyHabitsPage(), overrides: overrides());
     await openMenu(tester);
     await tester.tap(find.text('Delete'));
@@ -111,8 +119,9 @@ void main() {
   });
 
   testWidgets('confirming the dialog deletes the habit', (tester) async {
-    when(() => habits.deleteHabit(any()))
-        .thenAnswer((_) async => const Success(null));
+    when(
+      () => habits.deleteHabit(any()),
+    ).thenAnswer((_) async => const Success(null));
 
     await pumpApp(tester, const MyHabitsPage(), overrides: overrides());
     await openMenu(tester);
@@ -125,8 +134,9 @@ void main() {
   });
 
   testWidgets('shows an empty state when nothing is tracked', (tester) async {
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const Success(<DailyHabit>[]));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const Success(<DailyHabit>[]));
 
     await pumpApp(tester, const MyHabitsPage(), overrides: overrides());
 

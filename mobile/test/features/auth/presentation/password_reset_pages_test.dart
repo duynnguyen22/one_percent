@@ -99,20 +99,27 @@ void main() {
 
   setUp(() {
     repository = MockAuthRepository();
-    when(() => repository.requestPasswordReset(email: any(named: 'email')))
-        .thenAnswer((_) async => const Success(null));
-    when(() => repository.verifyResetCode(
-          email: any(named: 'email'),
-          code: any(named: 'code'),
-        )).thenAnswer((_) async => const Success('reset-token'));
-    when(() => repository.resetPassword(
-          resetToken: any(named: 'resetToken'),
-          newPassword: any(named: 'newPassword'),
-        )).thenAnswer((_) async => const Success(null));
+    when(
+      () => repository.requestPasswordReset(email: any(named: 'email')),
+    ).thenAnswer((_) async => const Success(null));
+    when(
+      () => repository.verifyResetCode(
+        email: any(named: 'email'),
+        code: any(named: 'code'),
+      ),
+    ).thenAnswer((_) async => const Success('reset-token'));
+    when(
+      () => repository.resetPassword(
+        resetToken: any(named: 'resetToken'),
+        newPassword: any(named: 'newPassword'),
+      ),
+    ).thenAnswer((_) async => const Success(null));
   });
 
   group('ForgotPasswordPage', () {
-    testWidgets('asks the backend for a code as soon as it opens', (tester) async {
+    testWidgets('asks the backend for a code as soon as it opens', (
+      tester,
+    ) async {
       await pumpResetFlow(tester, repository);
 
       verify(() => repository.requestPasswordReset(email: _email)).called(1);
@@ -128,52 +135,60 @@ void main() {
       );
     });
 
-    testWidgets('carries the reset token to the reset-password screen',
-        (tester) async {
+    testWidgets('carries the reset token to the reset-password screen', (
+      tester,
+    ) async {
       final router = await pumpResetFlow(tester, repository);
 
       await enterCode(tester, '481920');
 
-      verify(() => repository.verifyResetCode(email: _email, code: '481920'))
-          .called(1);
+      verify(
+        () => repository.verifyResetCode(email: _email, code: '481920'),
+      ).called(1);
       final location = router.routerDelegate.currentConfiguration.uri;
       expect(location.path, RouteNames.resetPasswordPath);
       expect(location.queryParameters['token'], 'reset-token');
     });
 
-    testWidgets('shows the backend message and clears the boxes on a bad code',
-        (tester) async {
-      when(() => repository.verifyResetCode(
+    testWidgets(
+      'shows the backend message and clears the boxes on a bad code',
+      (tester) async {
+        when(
+          () => repository.verifyResetCode(
             email: any(named: 'email'),
             code: any(named: 'code'),
-          )).thenAnswer(
-        (_) async => const ResultError(ValidationFailure('Invalid or expired code')),
-      );
+          ),
+        ).thenAnswer(
+          (_) async =>
+              const ResultError(ValidationFailure('Invalid or expired code')),
+        );
 
-      final router = await pumpResetFlow(tester, repository);
+        final router = await pumpResetFlow(tester, repository);
 
-      await enterCode(tester, '000000');
-      // Settling is off the table (see pumpResetFlow), so step the clock far
-      // enough for the toast's entrance animation to build it.
-      await tester.pump(const Duration(milliseconds: 100));
+        await enterCode(tester, '000000');
+        // Settling is off the table (see pumpResetFlow), so step the clock far
+        // enough for the toast's entrance animation to build it.
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Invalid or expired code'), findsOneWidget);
-      // Still on the code screen, with the boxes emptied for another try.
-      expect(
-        router.routerDelegate.currentConfiguration.uri.path,
-        RouteNames.forgotPasswordPath,
-      );
-      final firstBox = tester.widget<TextFormField>(
-        find.byType(TextFormField).first,
-      );
-      expect(firstBox.controller?.text, isEmpty);
-      await clearToasts(tester);
-    });
+        expect(find.text('Invalid or expired code'), findsOneWidget);
+        // Still on the code screen, with the boxes emptied for another try.
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          RouteNames.forgotPasswordPath,
+        );
+        final firstBox = tester.widget<TextFormField>(
+          find.byType(TextFormField).first,
+        );
+        expect(firstBox.controller?.text, isEmpty);
+        await clearToasts(tester);
+      },
+    );
   });
 
   group('ForgotPasswordPage email step', () {
-    testWidgets('opens on the email step when login sent no address',
-        (tester) async {
+    testWidgets('opens on the email step when login sent no address', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -183,30 +198,34 @@ void main() {
       expect(find.text('Send Code'), findsOneWidget);
       // One field — the email input. The six code boxes come later.
       expect(find.byType(TextFormField), findsOneWidget);
-      verifyNever(() => repository.requestPasswordReset(
-            email: any(named: 'email'),
-          ));
-    });
-
-    testWidgets('starts on the email step when login passed a malformed address',
-        (tester) async {
-      await pumpResetFlow(
-        tester,
-        repository,
-        initialLocation: '${RouteNames.forgotPasswordPath}?email=not-an-email',
+      verifyNever(
+        () => repository.requestPasswordReset(email: any(named: 'email')),
       );
-
-      expect(find.text('Send Code'), findsOneWidget);
-      verifyNever(() => repository.requestPasswordReset(
-            email: any(named: 'email'),
-          ));
-      // Prefilled, so the user corrects rather than retypes.
-      final field = tester.widget<TextFormField>(find.byType(TextFormField));
-      expect(field.controller?.text, 'not-an-email');
     });
 
-    testWidgets('refuses an invalid address without calling the backend',
-        (tester) async {
+    testWidgets(
+      'starts on the email step when login passed a malformed address',
+      (tester) async {
+        await pumpResetFlow(
+          tester,
+          repository,
+          initialLocation:
+              '${RouteNames.forgotPasswordPath}?email=not-an-email',
+        );
+
+        expect(find.text('Send Code'), findsOneWidget);
+        verifyNever(
+          () => repository.requestPasswordReset(email: any(named: 'email')),
+        );
+        // Prefilled, so the user corrects rather than retypes.
+        final field = tester.widget<TextFormField>(find.byType(TextFormField));
+        expect(field.controller?.text, 'not-an-email');
+      },
+    );
+
+    testWidgets('refuses an invalid address without calling the backend', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -216,13 +235,14 @@ void main() {
       await submitEmail(tester, 'not-an-email');
 
       expect(find.text('Enter a valid email address'), findsOneWidget);
-      verifyNever(() => repository.requestPasswordReset(
-            email: any(named: 'email'),
-          ));
+      verifyNever(
+        () => repository.requestPasswordReset(email: any(named: 'email')),
+      );
     });
 
-    testWidgets('sends the code to the address typed on the email step',
-        (tester) async {
+    testWidgets('sends the code to the address typed on the email step', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -234,8 +254,9 @@ void main() {
       verify(() => repository.requestPasswordReset(email: _email)).called(1);
     });
 
-    testWidgets('reveals the code boxes once the email step succeeds',
-        (tester) async {
+    testWidgets('reveals the code boxes once the email step succeeds', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -245,26 +266,26 @@ void main() {
       await submitEmail(tester, _email);
 
       expect(find.byType(TextFormField), findsNWidgets(6));
-      expect(
-        find.textContaining(_email, findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.textContaining(_email, findRichText: true), findsOneWidget);
     });
 
-    testWidgets('verifies the code against the address typed on the email step',
-        (tester) async {
-      await pumpResetFlow(
-        tester,
-        repository,
-        initialLocation: RouteNames.forgotPasswordPath,
-      );
-      await submitEmail(tester, _email);
+    testWidgets(
+      'verifies the code against the address typed on the email step',
+      (tester) async {
+        await pumpResetFlow(
+          tester,
+          repository,
+          initialLocation: RouteNames.forgotPasswordPath,
+        );
+        await submitEmail(tester, _email);
 
-      await enterCode(tester, '481920');
+        await enterCode(tester, '481920');
 
-      verify(() => repository.verifyResetCode(email: _email, code: '481920'))
-          .called(1);
-    });
+        verify(
+          () => repository.verifyResetCode(email: _email, code: '481920'),
+        ).called(1);
+      },
+    );
 
     testWidgets('lets the user go back to correct the address', (tester) async {
       await pumpResetFlow(tester, repository);
@@ -282,8 +303,9 @@ void main() {
   });
 
   group('ResetPasswordPage', () {
-    testWidgets('sends the new password with the token it was given',
-        (tester) async {
+    testWidgets('sends the new password with the token it was given', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -298,15 +320,18 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      verify(() => repository.resetPassword(
-            resetToken: 'reset-token',
-            newPassword: 'newsecret',
-          )).called(1);
+      verify(
+        () => repository.resetPassword(
+          resetToken: 'reset-token',
+          newPassword: 'newsecret',
+        ),
+      ).called(1);
       await clearToasts(tester);
     });
 
-    testWidgets('returns the user to login once the password is set',
-        (tester) async {
+    testWidgets('returns the user to login once the password is set', (
+      tester,
+    ) async {
       final router = await pumpResetFlow(
         tester,
         repository,
@@ -328,8 +353,9 @@ void main() {
       await clearToasts(tester);
     });
 
-    testWidgets('refuses a mismatched confirmation without calling the API',
-        (tester) async {
+    testWidgets('refuses a mismatched confirmation without calling the API', (
+      tester,
+    ) async {
       await pumpResetFlow(
         tester,
         repository,
@@ -344,10 +370,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Passwords do not match'), findsOneWidget);
-      verifyNever(() => repository.resetPassword(
-            resetToken: any(named: 'resetToken'),
-            newPassword: any(named: 'newPassword'),
-          ));
+      verifyNever(
+        () => repository.resetPassword(
+          resetToken: any(named: 'resetToken'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      );
     });
   });
 }

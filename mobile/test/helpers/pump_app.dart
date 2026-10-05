@@ -51,9 +51,7 @@ Future<void> pumpRoutedApp(
       GoRoute(
         path: '/',
         builder: (context, state) => const SizedBox.shrink(),
-        routes: [
-          GoRoute(path: 'page', builder: (context, state) => widget),
-        ],
+        routes: [GoRoute(path: 'page', builder: (context, state) => widget)],
       ),
     ],
     initialLocation: '/page',
@@ -81,7 +79,9 @@ Future<void> pumpRoutedApp(
 MockAuthRepository buildSignedOutRepository() {
   final repository = MockAuthRepository();
   when(repository.hasSession).thenAnswer((_) async => false);
-  when(() => repository.authStateChanges).thenAnswer((_) => const Stream<User?>.empty());
+  when(
+    () => repository.authStateChanges,
+  ).thenAnswer((_) => const Stream<User?>.empty());
   return repository;
 }
 
@@ -93,17 +93,20 @@ MockAuthRepository buildSignedInRepository(User user) {
   final repository = MockAuthRepository();
   when(repository.hasSession).thenAnswer((_) async => true);
   when(repository.getCurrentUser).thenAnswer((_) async => Success(user));
-  when(() => repository.authStateChanges)
-      .thenAnswer((_) => Stream<User?>.value(user));
+  when(
+    () => repository.authStateChanges,
+  ).thenAnswer((_) => Stream<User?>.value(user));
   return repository;
 }
 
 /// The override list a signed-in widget test needs.
 List<Override> signedInOverrides(User user) => [
-      authRepositoryProvider.overrideWithValue(buildSignedInRepository(user)),
-    ];
+  authRepositoryProvider.overrideWithValue(buildSignedInRepository(user)),
+];
 
 /// The override list a widget test normally needs.
 List<Override> signedOutOverrides([AuthRepository? repository]) => [
-      authRepositoryProvider.overrideWithValue(repository ?? buildSignedOutRepository()),
-    ];
+  authRepositoryProvider.overrideWithValue(
+    repository ?? buildSignedOutRepository(),
+  ),
+];

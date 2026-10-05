@@ -40,7 +40,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('App opens on the welcome screen while signed out', (tester) async {
+  testWidgets('App opens on the welcome screen while signed out', (
+    tester,
+  ) async {
     await pumpBootedApp(tester, overrides: signedOutOverrides());
 
     expect(find.byType(WelcomePage), findsOneWidget);
@@ -64,11 +66,13 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
   });
 
-  testWidgets('a signed-in user sees the welcome screen, then the shell',
-      (tester) async {
+  testWidgets('a signed-in user sees the welcome screen, then the shell', (
+    tester,
+  ) async {
     final habits = MockHabitRepository();
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const Success(<DailyHabit>[]));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const Success(<DailyHabit>[]));
 
     await pumpBootedApp(
       tester,

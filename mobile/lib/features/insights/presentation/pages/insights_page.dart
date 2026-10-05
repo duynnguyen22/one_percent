@@ -24,15 +24,16 @@ class InsightsPage extends ConsumerWidget {
 
     return switch (summaryAsync) {
       AsyncError(:final error) => _Frame(
-          child: AppError(
-            message: error is Failure
-                ? error.message
-                : 'Could not load your insights.',
-            onRetry: () => ref.read(insightsProvider.notifier).refresh(),
-          ),
+        child: AppError(
+          message: error is Failure
+              ? error.message
+              : 'Could not load your insights.',
+          onRetry: () => ref.read(insightsProvider.notifier).refresh(),
         ),
-      AsyncData(:final value) when value.habitCount == 0 =>
-        const _Frame(child: _EmptyInsights()),
+      ),
+      AsyncData(:final value) when value.habitCount == 0 => const _Frame(
+        child: _EmptyInsights(),
+      ),
       AsyncData(:final value) => _build(context, ref, value),
       _ => const _Frame(child: AppLoading()),
     };
@@ -62,7 +63,9 @@ class InsightsPage extends ConsumerWidget {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer.withValues(alpha: 0.15),
+                            color: AppColors.primaryContainer.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -211,7 +214,9 @@ class InsightsPage extends ConsumerWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryContainer.withValues(alpha: 0.2),
+                              color: AppColors.primaryContainer.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -231,7 +236,9 @@ class InsightsPage extends ConsumerWidget {
                         height: 160,
                         width: double.infinity,
                         child: CustomPaint(
-                          painter: _WeeklyFlowPainter(_lastSevenDays(summary.dailyCompletion)),
+                          painter: _WeeklyFlowPainter(
+                            _lastSevenDays(summary.dailyCompletion),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -279,28 +286,27 @@ class InsightsPage extends ConsumerWidget {
                 horizontal: AppSpacing.containerMargin,
               ),
               sliver: SliverList(
-                delegate: SliverChildListDelegate(
-                  [
-                    for (final entry in _focusAreas(summary)) ...[
-                      _FocusAreaCard(
-                        title: entry.habit.name,
-                        subtitle: entry == summary.habitConsistency.first
-                            ? 'Most Consistent'
-                            : 'Needs Attention',
-                        percentage: '${(entry.rate * 100).round()}%',
-                        icon: Icons.eco_rounded,
-                        iconBg: HabitColors.parse(entry.habit.color)
-                            .withValues(alpha: 0.25),
-                        iconColor: HabitColors.parse(entry.habit.color),
-                        percentColor: HabitColors.parse(entry.habit.color),
-                      ),
-                      const SizedBox(height: AppSpacing.stackGap),
-                    ],
-
-                    // Space for floating dock
-                    const SizedBox(height: 110),
+                delegate: SliverChildListDelegate([
+                  for (final entry in _focusAreas(summary)) ...[
+                    _FocusAreaCard(
+                      title: entry.habit.name,
+                      subtitle: entry == summary.habitConsistency.first
+                          ? 'Most Consistent'
+                          : 'Needs Attention',
+                      percentage: '${(entry.rate * 100).round()}%',
+                      icon: Icons.eco_rounded,
+                      iconBg: HabitColors.parse(
+                        entry.habit.color,
+                      ).withValues(alpha: 0.25),
+                      iconColor: HabitColors.parse(entry.habit.color),
+                      percentColor: HabitColors.parse(entry.habit.color),
+                    ),
+                    const SizedBox(height: AppSpacing.stackGap),
                   ],
-                ),
+
+                  // Space for floating dock
+                  const SizedBox(height: 110),
+                ]),
               ),
             ),
           ],
@@ -325,8 +331,9 @@ List<String> _weekdayInitials() {
   final today = AppDateUtils.today;
   return [
     for (var back = 6; back >= 0; back--)
-      AppDateUtils.weekdayLabel(AppDateUtils.subtractDays(today, back))
-          .substring(0, 1),
+      AppDateUtils.weekdayLabel(
+        AppDateUtils.subtractDays(today, back),
+      ).substring(0, 1),
   ];
 }
 
@@ -363,19 +370,25 @@ class _EmptyInsights extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.insights_rounded, size: 44, color: AppColors.primary),
+          const Icon(
+            Icons.insights_rounded,
+            size: 44,
+            color: AppColors.primary,
+          ),
           const SizedBox(height: 12),
           Text(
             'Nothing to chart yet',
-            style:
-                AppTypography.headlineSmall.copyWith(color: AppColors.onSurface),
+            style: AppTypography.headlineSmall.copyWith(
+              color: AppColors.onSurface,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             'Check a habit off and your history starts here.',
             textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium
-                .copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -475,10 +488,7 @@ class _FocusAreaCard extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: iconBg,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: iconBg),
             child: Icon(icon, color: iconColor, size: 24),
           ),
           const SizedBox(width: 14),

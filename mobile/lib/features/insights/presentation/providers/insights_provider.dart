@@ -68,8 +68,8 @@ class InsightsNotifier extends AsyncNotifier<InsightsSummary> {
 
 final insightsProvider =
     AsyncNotifierProvider<InsightsNotifier, InsightsSummary>(
-  InsightsNotifier.new,
-  // Same reasoning as dailyHabitsProvider: an explicit Retry beats a silent
-  // background retry that hides the failure and keeps hitting the API.
-  retry: (_, _) => null,
-);
+      InsightsNotifier.new,
+      // Same reasoning as dailyHabitsProvider: an explicit Retry beats a silent
+      // background retry that hides the failure and keeps hitting the API.
+      retry: (_, _) => null,
+    );

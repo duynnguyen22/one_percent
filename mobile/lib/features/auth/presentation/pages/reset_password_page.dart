@@ -206,9 +206,12 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage>
                       const SizedBox(height: 20),
 
                       GestureDetector(
-                        onTapDown: (_) => setState(() => _isButtonPressed = true),
-                        onTapUp: (_) => setState(() => _isButtonPressed = false),
-                        onTapCancel: () => setState(() => _isButtonPressed = false),
+                        onTapDown: (_) =>
+                            setState(() => _isButtonPressed = true),
+                        onTapUp: (_) =>
+                            setState(() => _isButtonPressed = false),
+                        onTapCancel: () =>
+                            setState(() => _isButtonPressed = false),
                         onTap: _isSubmitting ? null : _handleSubmit,
                         child: AnimatedScale(
                           scale: _isButtonPressed ? 0.98 : 1.0,
@@ -222,7 +225,9 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage>
                               borderRadius: AppSpacing.borderRadiusPill,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.15),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 8),
                                 ),
@@ -235,9 +240,10 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage>
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          AppColors.onPrimary,
-                                        ),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColors.onPrimary,
+                                            ),
                                       ),
                                     )
                                   : Text(

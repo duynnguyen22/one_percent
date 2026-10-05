@@ -33,15 +33,15 @@ sealed class Result<T> {
 
   /// The data when successful, otherwise `null`.
   T? get dataOrNull => switch (this) {
-        Success<T>(:final data) => data,
-        ResultError<T>() => null,
-      };
+    Success<T>(:final data) => data,
+    ResultError<T>() => null,
+  };
 
   /// The failure when unsuccessful, otherwise `null`.
   Failure? get failureOrNull => switch (this) {
-        Success<T>() => null,
-        ResultError<T>(:final failure) => failure,
-      };
+    Success<T>() => null,
+    ResultError<T>(:final failure) => failure,
+  };
 
   /// Collapses both cases into a single value.
   R fold<R>(R Function(Failure failure) onError, R Function(T data) onSuccess) {
@@ -85,7 +85,8 @@ final class ResultError<T> extends Result<T> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is ResultError<T> && failure == other.failure;
+      identical(this, other) ||
+      other is ResultError<T> && failure == other.failure;
 
   @override
   int get hashCode => failure.hashCode;

@@ -38,7 +38,9 @@ abstract final class InsightsCalculator {
 
     final dailyCompletion = <double>[];
     final dueDayCounts = <String, int>{for (final habit in habits) habit.id: 0};
-    final doneDayCounts = <String, int>{for (final habit in habits) habit.id: 0};
+    final doneDayCounts = <String, int>{
+      for (final habit in habits) habit.id: 0,
+    };
     // A day counts toward a streak only if everything due that day was done.
     final perfectDays = <bool>[];
     final scoredDays = <double>[];

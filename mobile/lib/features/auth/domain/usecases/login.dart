@@ -14,12 +14,16 @@ class Login {
 
   final AuthRepository _repository;
 
-  Future<Result<User>> call({required String email, required String password}) async {
+  Future<Result<User>> call({
+    required String email,
+    required String password,
+  }) async {
     final emailError = Validators.email(email);
     if (emailError != null) return ResultError(ValidationFailure(emailError));
 
     final passwordError = Validators.password(password);
-    if (passwordError != null) return ResultError(ValidationFailure(passwordError));
+    if (passwordError != null)
+      return ResultError(ValidationFailure(passwordError));
 
     return _repository.login(email: email.trim(), password: password);
   }

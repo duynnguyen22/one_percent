@@ -27,8 +27,9 @@ void main() {
   });
 
   test('getRoutines returns the list for the day', () async {
-    when(() => remote.getRoutines(date: any(named: 'date')))
-        .thenAnswer((_) async => [routine]);
+    when(
+      () => remote.getRoutines(date: any(named: 'date')),
+    ).thenAnswer((_) async => [routine]);
 
     final result = await repository.getRoutines(date: DateTime(2026, 9, 27));
 
@@ -46,8 +47,9 @@ void main() {
 
   test('forwards create, update and delete to the data source', () async {
     when(() => remote.createRoutine(draft)).thenAnswer((_) async => routine);
-    when(() => remote.updateRoutine(routine.id, draft))
-        .thenAnswer((_) async => routine);
+    when(
+      () => remote.updateRoutine(routine.id, draft),
+    ).thenAnswer((_) async => routine);
     when(() => remote.deleteRoutine(routine.id)).thenAnswer((_) async {});
 
     expect((await repository.createRoutine(draft)).dataOrNull, routine);
@@ -78,8 +80,9 @@ void main() {
   });
 
   test('an unrecognised error becomes UnexpectedFailure', () async {
-    when(() => remote.getRoutines(date: any(named: 'date')))
-        .thenThrow(StateError('nope'));
+    when(
+      () => remote.getRoutines(date: any(named: 'date')),
+    ).thenThrow(StateError('nope'));
 
     final result = await repository.getRoutines();
 

@@ -35,33 +35,47 @@ void main() {
     testWidgets('lists the routines the API returns', (tester) async {
       final doubles = RoutineDoubles(routines: [routine]);
 
-      await pumpApp(tester, const RoutinesHomePage(),
-          overrides: doubles.overrides);
+      await pumpApp(
+        tester,
+        const RoutinesHomePage(),
+        overrides: doubles.overrides,
+      );
 
       expect(find.text('Sunrise Flow'), findsOneWidget);
       expect(find.text('Drink Water'), findsOneWidget);
       expect(find.text('Morning Ritual'), findsNothing);
     });
 
-    testWidgets('invites the user to create one when there are none',
-        (tester) async {
-      await pumpApp(tester, const RoutinesHomePage(),
-          overrides: RoutineDoubles().overrides);
+    testWidgets('invites the user to create one when there are none', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        const RoutinesHomePage(),
+        overrides: RoutineDoubles().overrides,
+      );
 
       expect(find.text('No routines yet'), findsOneWidget);
     });
 
-    testWidgets('shows the failure with a Try again that reloads', (tester) async {
+    testWidgets('shows the failure with a Try again that reloads', (
+      tester,
+    ) async {
       final doubles = RoutineDoubles();
-      when(() => doubles.routines.getRoutines(date: any(named: 'date')))
-          .thenAnswer((_) async => const ResultError(ServerFailure('Down')));
+      when(
+        () => doubles.routines.getRoutines(date: any(named: 'date')),
+      ).thenAnswer((_) async => const ResultError(ServerFailure('Down')));
 
-      await pumpApp(tester, const RoutinesHomePage(),
-          overrides: doubles.overrides);
+      await pumpApp(
+        tester,
+        const RoutinesHomePage(),
+        overrides: doubles.overrides,
+      );
       expect(find.text('Down'), findsOneWidget);
 
-      when(() => doubles.routines.getRoutines(date: any(named: 'date')))
-          .thenAnswer((_) async => Success([routine]));
+      when(
+        () => doubles.routines.getRoutines(date: any(named: 'date')),
+      ).thenAnswer((_) async => Success([routine]));
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
 
@@ -70,10 +84,14 @@ void main() {
   });
 
   group('CreateRoutinePage', () {
-    testWidgets('starts empty, with Create disabled until a habit is added',
-        (tester) async {
-      await pumpApp(tester, const CreateRoutinePage(),
-          overrides: RoutineDoubles().overrides);
+    testWidgets('starts empty, with Create disabled until a habit is added', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        const CreateRoutinePage(),
+        overrides: RoutineDoubles().overrides,
+      );
 
       await scrollTo(tester, find.text('Create Routine'));
       final button = tester.widget<FilledButton>(
@@ -85,10 +103,14 @@ void main() {
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('the habit picker lists the user\'s own habits',
-        (tester) async {
-      await pumpApp(tester, const CreateRoutinePage(),
-          overrides: RoutineDoubles(habits: [read, stretch]).overrides);
+    testWidgets('the habit picker lists the user\'s own habits', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        const CreateRoutinePage(),
+        overrides: RoutineDoubles(habits: [read, stretch]).overrides,
+      );
 
       await scrollTo(tester, find.text('+ Add Habit'));
       await tester.tap(find.text('+ Add Habit'));
@@ -98,14 +120,19 @@ void main() {
       expect(find.text('Stretch'), findsOneWidget);
     });
 
-    testWidgets('creates the routine with the picked habits, in order',
-        (tester) async {
+    testWidgets('creates the routine with the picked habits, in order', (
+      tester,
+    ) async {
       final doubles = RoutineDoubles(habits: [read, stretch]);
-      when(() => doubles.routines.createRoutine(any()))
-          .thenAnswer((_) async => Success(routine));
+      when(
+        () => doubles.routines.createRoutine(any()),
+      ).thenAnswer((_) async => Success(routine));
 
-      await pumpRoutedApp(tester, const CreateRoutinePage(),
-          overrides: doubles.overrides);
+      await pumpRoutedApp(
+        tester,
+        const CreateRoutinePage(),
+        overrides: doubles.overrides,
+      );
 
       await tester.enterText(find.byType(TextField).first, 'Evening Reset');
       await tester.tap(find.text('Evening'));
@@ -121,25 +148,34 @@ void main() {
       await tester.tap(find.text('Create Routine'));
       await tester.pumpAndSettle();
 
-      final draft = verify(() => doubles.routines.createRoutine(captureAny()))
-          .captured
-          .single as RoutineDraft;
+      final draft =
+          verify(
+                () => doubles.routines.createRoutine(captureAny()),
+              ).captured.single
+              as RoutineDraft;
       expect(draft.name, 'Evening Reset');
       expect(draft.cadence, 'Evening');
-      expect(draft.steps.map((s) => s.habitId), ['habit-stretch', 'habit-read']);
+      expect(draft.steps.map((s) => s.habitId), [
+        'habit-stretch',
+        'habit-read',
+      ]);
       expect(find.byType(CreateRoutinePage), findsNothing);
       await clearToasts(tester);
     });
 
-    testWidgets('keeps the page open and shows why when saving fails',
-        (tester) async {
+    testWidgets('keeps the page open and shows why when saving fails', (
+      tester,
+    ) async {
       final doubles = RoutineDoubles(habits: [read]);
       when(() => doubles.routines.createRoutine(any())).thenAnswer(
         (_) async => const ResultError(ValidationFailure('Habit is archived')),
       );
 
-      await pumpRoutedApp(tester, const CreateRoutinePage(),
-          overrides: doubles.overrides);
+      await pumpRoutedApp(
+        tester,
+        const CreateRoutinePage(),
+        overrides: doubles.overrides,
+      );
       await tester.enterText(find.byType(TextField).first, 'Focus');
       await scrollTo(tester, find.text('+ Add Habit'));
       await tester.tap(find.text('+ Add Habit'));
@@ -160,18 +196,22 @@ void main() {
   group('EditRoutinePage', () {
     testWidgets('saves the edited routine through the API', (tester) async {
       final doubles = RoutineDoubles(routines: [routine]);
-      when(() => doubles.routines.updateRoutine(any(), any()))
-          .thenAnswer((_) async => Success(routine));
+      when(
+        () => doubles.routines.updateRoutine(any(), any()),
+      ).thenAnswer((_) async => Success(routine));
 
-      await pumpRoutedApp(tester, EditRoutinePage(routine: routine),
-          overrides: doubles.overrides);
+      await pumpRoutedApp(
+        tester,
+        EditRoutinePage(routine: routine),
+        overrides: doubles.overrides,
+      );
       await tester.enterText(find.byType(TextField).first, 'Sunrise 2.0');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
-      final captured =
-          verify(() => doubles.routines.updateRoutine(captureAny(), captureAny()))
-              .captured;
+      final captured = verify(
+        () => doubles.routines.updateRoutine(captureAny(), captureAny()),
+      ).captured;
       expect(captured[0], 'routine-1');
       final draft = captured[1] as RoutineDraft;
       expect(draft.name, 'Sunrise 2.0');
@@ -181,11 +221,15 @@ void main() {
 
     testWidgets('deletes only after the user confirms', (tester) async {
       final doubles = RoutineDoubles(routines: [routine]);
-      when(() => doubles.routines.deleteRoutine(any()))
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => doubles.routines.deleteRoutine(any()),
+      ).thenAnswer((_) async => const Success(null));
 
-      await pumpRoutedApp(tester, EditRoutinePage(routine: routine),
-          overrides: doubles.overrides);
+      await pumpRoutedApp(
+        tester,
+        EditRoutinePage(routine: routine),
+        overrides: doubles.overrides,
+      );
       await scrollTo(tester, find.text('Delete Routine'));
       await tester.tap(find.text('Delete Routine'));
       await tester.pumpAndSettle();
@@ -200,40 +244,52 @@ void main() {
   });
 
   group('RoutineExecutionPage', () {
-    testWidgets('Done & Next checks the step\'s habit off on Today',
-        (tester) async {
+    testWidgets('Done & Next checks the step\'s habit off on Today', (
+      tester,
+    ) async {
       final doubles = RoutineDoubles(routines: [routine]);
 
-      await pumpApp(tester, RoutineExecutionPage(routine: routine),
-          overrides: doubles.overrides);
+      await pumpApp(
+        tester,
+        RoutineExecutionPage(routine: routine),
+        overrides: doubles.overrides,
+      );
       await scrollTo(tester, find.text('Done & Next'));
       await tester.tap(find.text('Done & Next'));
       await tester.pumpAndSettle();
 
-      verify(() => doubles.entries.checkOff(
-            habitId: routine.steps.first.habitId,
-            date: any(named: 'date'),
-          )).called(1);
+      verify(
+        () => doubles.entries.checkOff(
+          habitId: routine.steps.first.habitId,
+          date: any(named: 'date'),
+        ),
+      ).called(1);
     });
 
     testWidgets('Skip Step does not check anything off', (tester) async {
       final doubles = RoutineDoubles(routines: [routine]);
 
-      await pumpApp(tester, RoutineExecutionPage(routine: routine),
-          overrides: doubles.overrides);
+      await pumpApp(
+        tester,
+        RoutineExecutionPage(routine: routine),
+        overrides: doubles.overrides,
+      );
       await scrollTo(tester, find.text('Skip Step'));
       await tester.tap(find.text('Skip Step'));
       await tester.pumpAndSettle();
 
-      verifyNever(() => doubles.entries.checkOff(
-            habitId: any(named: 'habitId'),
-            date: any(named: 'date'),
-          ));
+      verifyNever(
+        () => doubles.entries.checkOff(
+          habitId: any(named: 'habitId'),
+          date: any(named: 'date'),
+        ),
+      );
       expect(find.textContaining('logged to Today'), findsNothing);
     });
 
-    testWidgets('explains a routine whose habits are all archived',
-        (tester) async {
+    testWidgets('explains a routine whose habits are all archived', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
         RoutineExecutionPage(routine: routine.copyWith(steps: const [])),

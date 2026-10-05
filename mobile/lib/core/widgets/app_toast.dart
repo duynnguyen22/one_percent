@@ -20,18 +20,18 @@ abstract final class AppToast {
   );
 
   static void success(String message) => _show(
-        message,
-        type: ToastificationType.success,
-        color: AppColors.primary,
-        icon: Icons.check_circle_rounded,
-      );
+    message,
+    type: ToastificationType.success,
+    color: AppColors.primary,
+    icon: Icons.check_circle_rounded,
+  );
 
   static void error(String message) => _show(
-        message,
-        type: ToastificationType.error,
-        color: AppColors.error,
-        icon: Icons.error_outline_rounded,
-      );
+    message,
+    type: ToastificationType.error,
+    color: AppColors.error,
+    icon: Icons.error_outline_rounded,
+  );
 
   static void _show(
     String message, {

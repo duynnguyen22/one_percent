@@ -13,7 +13,10 @@ void main() {
 
     expect(container.read(habitRepositoryProvider), isA<HabitRepository>());
     expect(container.read(entryRepositoryProvider), isA<EntryRepository>());
-    expect(container.read(getDailyHabitsUseCaseProvider), isA<GetDailyHabits>());
+    expect(
+      container.read(getDailyHabitsUseCaseProvider),
+      isA<GetDailyHabits>(),
+    );
     expect(container.read(createHabitUseCaseProvider), isA<CreateHabit>());
   });
 

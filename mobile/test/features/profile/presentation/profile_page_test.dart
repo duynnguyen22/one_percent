@@ -21,31 +21,41 @@ void main() {
     habits = MockHabitRepository();
     entries = MockEntryRepository();
 
-    when(() => habits.getHabitsForDate(any()))
-        .thenAnswer((_) async => const Success([]));
+    when(
+      () => habits.getHabitsForDate(any()),
+    ).thenAnswer((_) async => const Success([]));
     when(() => habits.getHabits()).thenAnswer(
       (_) async => Success<List<Habit>>([
         buildHabitModel(
-            id: 'habit-1', name: 'Read', createdAt: DateTime(2026, 1, 1)),
+          id: 'habit-1',
+          name: 'Read',
+          createdAt: DateTime(2026, 1, 1),
+        ),
         buildHabitModel(
-            id: 'habit-2', name: 'Stretch', createdAt: DateTime(2026, 1, 1)),
+          id: 'habit-2',
+          name: 'Stretch',
+          createdAt: DateTime(2026, 1, 1),
+        ),
       ]),
     );
-    when(() => entries.getEntries(
-          habitId: any(named: 'habitId'),
-          from: any(named: 'from'),
-          to: any(named: 'to'),
-        )).thenAnswer((_) async => Success([AppDateUtils.today]));
+    when(
+      () => entries.getEntries(
+        habitId: any(named: 'habitId'),
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer((_) async => Success([AppDateUtils.today]));
   });
 
   List<Override> overrides({List<Override> auth = const []}) => [
-        ...(auth.isEmpty ? signedOutOverrides() : auth),
-        habitRepositoryProvider.overrideWithValue(habits),
-        entryRepositoryProvider.overrideWithValue(entries),
-      ];
+    ...(auth.isEmpty ? signedOutOverrides() : auth),
+    habitRepositoryProvider.overrideWithValue(habits),
+    entryRepositoryProvider.overrideWithValue(entries),
+  ];
 
-  testWidgets('shows the real habit count, not the hardcoded stats',
-      (tester) async {
+  testWidgets('shows the real habit count, not the hardcoded stats', (
+    tester,
+  ) async {
     await pumpApp(tester, const ProfilePage(), overrides: overrides());
 
     expect(find.text('2'), findsOneWidget);
@@ -54,10 +64,12 @@ void main() {
     expect(find.text('28'), findsNothing);
   });
 
-  testWidgets('the stat row falls back to zeroes when nothing is tracked',
-      (tester) async {
-    when(() => habits.getHabits())
-        .thenAnswer((_) async => const Success(<Habit>[]));
+  testWidgets('the stat row falls back to zeroes when nothing is tracked', (
+    tester,
+  ) async {
+    when(
+      () => habits.getHabits(),
+    ).thenAnswer((_) async => const Success(<Habit>[]));
 
     await pumpApp(tester, const ProfilePage(), overrides: overrides());
 
@@ -65,8 +77,9 @@ void main() {
     expect(find.text('0%'), findsOneWidget);
   });
 
-  testWidgets('shows when the account was created, not a fixed date',
-      (tester) async {
+  testWidgets('shows when the account was created, not a fixed date', (
+    tester,
+  ) async {
     await pumpApp(
       tester,
       const ProfilePage(),
@@ -87,17 +100,15 @@ void main() {
     expect(find.text('Welcome to Bloom'), findsOneWidget);
   });
 
-  testWidgets('shows userName and userPhone when provided on user profile',
-      (tester) async {
+  testWidgets('shows userName and userPhone when provided on user profile', (
+    tester,
+  ) async {
     await pumpApp(
       tester,
       const ProfilePage(),
       overrides: overrides(
         auth: signedInOverrides(
-          buildUserModel(
-            userName: 'Samantha Ray',
-            userPhone: '+1-555-0199',
-          ),
+          buildUserModel(userName: 'Samantha Ray', userPhone: '+1-555-0199'),
         ),
       ),
     );
@@ -110,9 +121,7 @@ void main() {
     await pumpApp(
       tester,
       const ProfilePage(),
-      overrides: overrides(
-        auth: signedInOverrides(buildUserModel()),
-      ),
+      overrides: overrides(auth: signedInOverrides(buildUserModel())),
     );
 
     expect(find.byKey(const Key('edit_profile_badge_button')), findsOneWidget);
@@ -142,8 +151,14 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byKey(const Key('logout_dialog_confirm_button')), findsOneWidget);
-    expect(find.byKey(const Key('logout_dialog_cancel_button')), findsOneWidget);
+    expect(
+      find.byKey(const Key('logout_dialog_confirm_button')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('logout_dialog_cancel_button')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('logout_dialog_cancel_button')));
     await tester.pumpAndSettle();
@@ -160,4 +175,3 @@ void main() {
     expect(find.text('Log out of Bloom?'), findsNothing);
   });
 }
-

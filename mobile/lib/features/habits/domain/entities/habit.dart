@@ -54,7 +54,8 @@ class Habit {
           archivedAt == other.archivedAt;
 
   @override
-  int get hashCode => Object.hash(id, userId, name, color, createdAt, archivedAt);
+  int get hashCode =>
+      Object.hash(id, userId, name, color, createdAt, archivedAt);
 
   @override
   String toString() => 'Habit(id: $id, name: $name)';

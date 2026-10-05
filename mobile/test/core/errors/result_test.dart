@@ -39,15 +39,18 @@ void main() {
     });
 
     test('map leaves the failure untouched and re-types the result', () {
-      expect(result.map((data) => data.toString()), const ResultError<String>(failure));
+      expect(
+        result.map((data) => data.toString()),
+        const ResultError<String>(failure),
+      );
     });
   });
 
   test('switch over a Result is exhaustive', () {
     String describe(Result<int> result) => switch (result) {
-          Success(:final data) => 'ok:$data',
-          ResultError(:final failure) => 'err:${failure.message}',
-        };
+      Success(:final data) => 'ok:$data',
+      ResultError(:final failure) => 'err:${failure.message}',
+    };
 
     expect(describe(const Success(1)), 'ok:1');
     expect(describe(const ResultError(failure)), 'err:boom');
@@ -55,6 +58,9 @@ void main() {
 
   test('failures of the same type and message are equal', () {
     expect(const NetworkFailure('offline'), const NetworkFailure('offline'));
-    expect(const NetworkFailure('offline'), isNot(const CacheFailure('offline')));
+    expect(
+      const NetworkFailure('offline'),
+      isNot(const CacheFailure('offline')),
+    );
   });
 }

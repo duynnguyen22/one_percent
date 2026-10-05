@@ -39,8 +39,7 @@ class ProfilePage extends ConsumerWidget {
     // Zeroes while loading rather than a spinner: the stat row is a summary on
     // a page whose real purpose is settings and sign-out, and swapping it for
     // a spinner makes the whole page feel like it is loading.
-    final summary =
-        ref.watch(insightsProvider).value ?? InsightsSummary.empty;
+    final summary = ref.watch(insightsProvider).value ?? InsightsSummary.empty;
     final displayName = user?.displayName ?? '';
 
     return Scaffold(
@@ -65,15 +64,15 @@ class ProfilePage extends ConsumerWidget {
                       height: 104,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primaryContainer.withValues(alpha: 0.15),
-                        border: Border.all(
-                          color: AppColors.surface,
-                          width: 4,
+                        color: AppColors.primaryContainer.withValues(
+                          alpha: 0.15,
                         ),
+                        border: Border.all(color: AppColors.surface, width: 4),
                         boxShadow: AppSpacing.ambientShadow,
                       ),
                       child: ClipOval(
-                        child: (user?.avatarUrl != null &&
+                        child:
+                            (user?.avatarUrl != null &&
                                 user!.avatarUrl!.trim().isNotEmpty)
                             ? Image.network(
                                 ApiConstants.mediaUrl(user.avatarUrl!.trim()),
@@ -165,7 +164,10 @@ class ProfilePage extends ConsumerWidget {
 
               // Stats Row (3 Columns)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerLow,
                   borderRadius: AppSpacing.borderRadiusCard,
@@ -310,10 +312,7 @@ String _growingSince(DateTime? createdAt) {
 }
 
 class _StatColumn extends StatelessWidget {
-  const _StatColumn({
-    required this.value,
-    required this.label,
-  });
+  const _StatColumn({required this.value, required this.label});
 
   final String value;
   final String label;
@@ -372,10 +371,7 @@ class _SettingsItem extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: iconBg,
-              ),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: iconBg),
               child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 14),
@@ -511,8 +507,9 @@ class _LogoutConfirmationDialog extends StatelessWidget {
                 key: const Key('logout_dialog_cancel_button'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.onSurface,
-                  backgroundColor:
-                      AppColors.surfaceContainerLow.withValues(alpha: 0.5),
+                  backgroundColor: AppColors.surfaceContainerLow.withValues(
+                    alpha: 0.5,
+                  ),
                   side: BorderSide(
                     color: AppColors.outlineVariant.withValues(alpha: 0.4),
                   ),
@@ -535,4 +532,3 @@ class _LogoutConfirmationDialog extends StatelessWidget {
     );
   }
 }
-

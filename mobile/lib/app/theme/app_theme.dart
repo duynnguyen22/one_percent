@@ -12,7 +12,7 @@ abstract final class AppTheme {
       colorScheme: AppColors.colorScheme,
       scaffoldBackgroundColor: AppColors.surface,
       textTheme: AppTypography.textTheme,
-      
+
       // AppBar Theme
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
@@ -62,7 +62,10 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
         border: const OutlineInputBorder(
           borderRadius: AppSpacing.borderRadiusPill,
           borderSide: BorderSide.none,
@@ -84,7 +87,9 @@ abstract final class AppTheme {
           borderSide: BorderSide(color: AppColors.error, width: 1.5),
         ),
         labelStyle: AppTypography.labelMedium,
-        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
+        hintStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
       ),
 
       // Divider Theme
