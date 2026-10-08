@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../domain/entities/routine.dart';
+import '../widgets/sorting_view_options_sheet.dart';
 
 /// Routine Detail Preview Screen (Stitch Screen 1 - 37104ba5aca94716b3fdb55355df2b81).
 /// Displays a comprehensive sequence roadmap, energy profile, and cadence guide.
@@ -58,6 +59,16 @@ class RoutineDetailPage extends ConsumerWidget {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.tune_rounded,
+              color: AppColors.primary,
+            ),
+            onPressed: () => SortingViewOptionsSheet.show(context),
+            tooltip: 'Sorting & View Options',
+          ),
+        ],
       ),
       body: Stack(
         children: [

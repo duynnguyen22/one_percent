@@ -91,5 +91,24 @@ void main() {
         );
       },
     );
+
+    testWidgets('tapping tune icon opens Sorting & View Options sheet', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        const RoutinesHomePage(),
+        overrides: RoutineDoubles(routines: Routine.defaults).overrides,
+      );
+
+      final tuneButton = find.byIcon(Icons.tune_rounded);
+      expect(tuneButton, findsOneWidget);
+
+      await tester.tap(tuneButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sorting & View Options'), findsOneWidget);
+      expect(find.text('Sort & Reorder Routines'), findsOneWidget);
+    });
   });
 }

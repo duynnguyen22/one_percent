@@ -9,7 +9,9 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/routine.dart';
+import '../providers/routine_view_preferences_provider.dart';
 import '../providers/routines_provider.dart';
+import '../widgets/sorting_view_options_sheet.dart';
 
 /// Routines Home screen (Stitch Screen 2 - 4efa2478aaf241b6b0ce465e2a1cc99b).
 /// Displays user's guided rituals, flow cards, and motivational wisdom.
@@ -74,8 +76,8 @@ class RoutinesHomePage extends ConsumerWidget {
                           Icons.tune_rounded,
                           color: AppColors.primary,
                         ),
-                        onPressed: () {},
-                        tooltip: 'Filter Routines',
+                        onPressed: () => SortingViewOptionsSheet.show(context),
+                        tooltip: 'Sorting & View Options',
                       ),
                     ],
                   ),
@@ -310,16 +312,26 @@ class RoutinesHomePage extends ConsumerWidget {
   Widget _routineList(WidgetRef ref, AsyncValue<List<Routine>> routines) {
     if (routines.hasValue) {
       final list = routines.requireValue;
-      if (list.isEmpty) {
-        return const SliverToBoxAdapter(child: _EmptyRoutines());
+      final preferences = ref.watch(routineViewPreferencesProvider);
+      final filteredList = preferences.applyTo(list);
+
+      if (filteredList.isEmpty) {
+        return SliverToBoxAdapter(
+          child: _EmptyRoutines(isFiltered: list.isNotEmpty),
+        );
       }
+
+      final isCompact = preferences.viewDensity == RoutineViewDensity.compact;
+
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) => Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: _RoutineCard(routine: list[index]),
+            child: isCompact
+                ? _CompactRoutineCard(routine: filteredList[index])
+                : _RoutineCard(routine: filteredList[index]),
           ),
-          childCount: list.length,
+          childCount: filteredList.length,
         ),
       );
     }
@@ -342,7 +354,9 @@ class RoutinesHomePage extends ConsumerWidget {
 }
 
 class _EmptyRoutines extends StatelessWidget {
-  const _EmptyRoutines();
+  const _EmptyRoutines({this.isFiltered = false});
+
+  final bool isFiltered;
 
   @override
   Widget build(BuildContext context) {
@@ -355,10 +369,14 @@ class _EmptyRoutines extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.spa_outlined, color: AppColors.primary, size: 32),
+          Icon(
+            isFiltered ? Icons.filter_alt_off_outlined : Icons.spa_outlined,
+            color: AppColors.primary,
+            size: 32,
+          ),
           const SizedBox(height: 8),
           Text(
-            'No routines yet',
+            isFiltered ? 'No routines match filter' : 'No routines yet',
             style: AppTypography.labelLarge.copyWith(
               color: AppColors.onSurface,
               fontWeight: FontWeight.w600,
@@ -366,7 +384,9 @@ class _EmptyRoutines extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Weave a few of your habits into a guided sequence.',
+            isFiltered
+                ? 'Try adjusting your ritual time filter in Sorting & View Options.'
+                : 'Weave a few of your habits into a guided sequence.',
             textAlign: TextAlign.center,
             style: AppTypography.labelSmall.copyWith(
               color: AppColors.onSurfaceVariant,
@@ -652,3 +672,157 @@ class _RoutineCard extends StatelessWidget {
     };
   }
 }
+
+/// High-density compact routine card for Quick scanning & high density mode.
+class _CompactRoutineCard extends StatelessWidget {
+  const _CompactRoutineCard({required this.routine});
+
+  final Routine routine;
+
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = Color(
+      int.parse(routine.accentColorHex.replaceAll('#', '0xFF')),
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: AppSpacing.borderRadiusCard,
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.ambientShadow,
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            context.pushNamed(
+              RouteNames.routineDetail,
+              pathParameters: {'routineId': routine.id},
+            );
+          },
+          borderRadius: AppSpacing.borderRadiusCard,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                // Cadence Icon Circle
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _RoutineCard._cadenceIcon(routine.cadence),
+                    size: 18,
+                    color: accentColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Title & Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        routine.name,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusPill,
+                              ),
+                            ),
+                            child: Text(
+                              routine.cadence,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: accentColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${routine.stepCount} steps · ~${routine.totalMinutes}m',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: AppColors.outline,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Compact Play Button
+                FilledButton(
+                  onPressed: routine.steps.isEmpty
+                      ? null
+                      : () {
+                          context.pushNamed(
+                            RouteNames.routineExecution,
+                            pathParameters: {'routineId': routine.id},
+                          );
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: AppColors.onPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppSpacing.borderRadiusPill,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Start',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.play_arrow_rounded, size: 14),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
