@@ -61,10 +61,7 @@ class RoutineDetailPage extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.tune_rounded,
-              color: AppColors.primary,
-            ),
+            icon: const Icon(Icons.tune_rounded, color: AppColors.primary),
             onPressed: () => SortingViewOptionsSheet.show(context),
             tooltip: 'Sorting & View Options',
           ),

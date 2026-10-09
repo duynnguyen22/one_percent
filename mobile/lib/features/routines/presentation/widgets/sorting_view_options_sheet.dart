@@ -55,7 +55,9 @@ class _SortingViewOptionsSheetState
   }
 
   void _applyPreferences() {
-    ref.read(routineViewPreferencesProvider.notifier).update(
+    ref
+        .read(routineViewPreferencesProvider.notifier)
+        .update(
           sortOption: _selectedSort,
           viewDensity: _selectedDensity,
           timeFilter: _selectedFilter,
@@ -109,8 +111,7 @@ class _SortingViewOptionsSheetState
                 margin: const EdgeInsets.only(top: 12, bottom: 12),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerHighest,
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusPill),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
                 ),
               ),
             ),
@@ -372,11 +373,7 @@ class _SortingViewOptionsSheetState
                         ),
                         if (extraIcon != null) ...[
                           const SizedBox(width: 6),
-                          Icon(
-                            extraIcon,
-                            size: 15,
-                            color: AppColors.outline,
-                          ),
+                          Icon(extraIcon, size: 15, color: AppColors.outline),
                         ],
                         if (badge != null) ...[
                           const SizedBox(width: 8),
@@ -756,8 +753,9 @@ class _SortingViewOptionsSheetState
                         height: 12,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusPill),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusPill,
+                          ),
                         ),
                         alignment: Alignment.center,
                         child: Container(

@@ -5,12 +5,15 @@ import 'package:mobile/features/routines/presentation/providers/routine_view_pre
 
 void main() {
   group('RoutineViewPreferences', () {
-    test('default preferences have priority sort, expanded view, and all filter', () {
-      const prefs = RoutineViewPreferences();
-      expect(prefs.sortOption, RoutineSortOption.priority);
-      expect(prefs.viewDensity, RoutineViewDensity.expanded);
-      expect(prefs.timeFilter, RitualTimeFilter.all);
-    });
+    test(
+      'default preferences have priority sort, expanded view, and all filter',
+      () {
+        const prefs = RoutineViewPreferences();
+        expect(prefs.sortOption, RoutineSortOption.priority);
+        expect(prefs.viewDensity, RoutineViewDensity.expanded);
+        expect(prefs.timeFilter, RitualTimeFilter.all);
+      },
+    );
 
     test('filters routines by cadence', () {
       final routines = Routine.defaults;
@@ -20,7 +23,9 @@ void main() {
       );
       final morningRoutines = morningPrefs.applyTo(routines);
       expect(
-        morningRoutines.every((r) => r.cadence.toLowerCase().contains('morning')),
+        morningRoutines.every(
+          (r) => r.cadence.toLowerCase().contains('morning'),
+        ),
         isTrue,
       );
 
@@ -29,7 +34,9 @@ void main() {
       );
       final eveningRoutines = eveningPrefs.applyTo(routines);
       expect(
-        eveningRoutines.every((r) => r.cadence.toLowerCase().contains('evening')),
+        eveningRoutines.every(
+          (r) => r.cadence.toLowerCase().contains('evening'),
+        ),
         isTrue,
       );
     });

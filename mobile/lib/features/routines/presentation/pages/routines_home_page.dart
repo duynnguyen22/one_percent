@@ -825,4 +825,3 @@ class _CompactRoutineCard extends StatelessWidget {
     );
   }
 }
-

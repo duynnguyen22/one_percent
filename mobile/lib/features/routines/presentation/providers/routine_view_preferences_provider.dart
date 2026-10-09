@@ -7,7 +7,10 @@ import '../../domain/entities/routine.dart';
 /// Available sorting options for routine arrangement.
 enum RoutineSortOption {
   priority('Priority First', 'High impact & core morning habits at the top'),
-  scheduledTime('Scheduled Time', 'Chronological flow: Morning → Midday → Evening'),
+  scheduledTime(
+    'Scheduled Time',
+    'Chronological flow: Morning → Midday → Evening',
+  ),
   manual('Custom Manual Order', 'Drag and reorder your rituals directly');
 
   const RoutineSortOption(this.label, this.description);
@@ -69,21 +72,27 @@ class RoutineViewPreferences {
     // 1. Filter
     final filtered = switch (timeFilter) {
       RitualTimeFilter.all => routines.toList(),
-      RitualTimeFilter.morning => routines
-          .where((r) => r.cadence.toLowerCase().contains('morning'))
-          .toList(),
-      RitualTimeFilter.afternoon => routines
-          .where((r) => r.cadence.toLowerCase().contains('afternoon'))
-          .toList(),
-      RitualTimeFilter.evening => routines
-          .where((r) => r.cadence.toLowerCase().contains('evening'))
-          .toList(),
-      RitualTimeFilter.custom => routines
-          .where((r) =>
-              !r.cadence.toLowerCase().contains('morning') &&
-              !r.cadence.toLowerCase().contains('afternoon') &&
-              !r.cadence.toLowerCase().contains('evening'))
-          .toList(),
+      RitualTimeFilter.morning =>
+        routines
+            .where((r) => r.cadence.toLowerCase().contains('morning'))
+            .toList(),
+      RitualTimeFilter.afternoon =>
+        routines
+            .where((r) => r.cadence.toLowerCase().contains('afternoon'))
+            .toList(),
+      RitualTimeFilter.evening =>
+        routines
+            .where((r) => r.cadence.toLowerCase().contains('evening'))
+            .toList(),
+      RitualTimeFilter.custom =>
+        routines
+            .where(
+              (r) =>
+                  !r.cadence.toLowerCase().contains('morning') &&
+                  !r.cadence.toLowerCase().contains('afternoon') &&
+                  !r.cadence.toLowerCase().contains('evening'),
+            )
+            .toList(),
     };
 
     // 2. Sort
@@ -101,9 +110,9 @@ class RoutineViewPreferences {
       case RoutineSortOption.scheduledTime:
         // Chronological order: Morning -> Afternoon -> Evening
         filtered.sort((a, b) {
-          return _cadenceTimeOrder(a.cadence).compareTo(
-            _cadenceTimeOrder(b.cadence),
-          );
+          return _cadenceTimeOrder(
+            a.cadence,
+          ).compareTo(_cadenceTimeOrder(b.cadence));
         });
       case RoutineSortOption.manual:
         // Preserves original server or custom position
@@ -221,5 +230,5 @@ class RoutineViewPreferencesNotifier extends Notifier<RoutineViewPreferences> {
 
 final routineViewPreferencesProvider =
     NotifierProvider<RoutineViewPreferencesNotifier, RoutineViewPreferences>(
-  RoutineViewPreferencesNotifier.new,
-);
+      RoutineViewPreferencesNotifier.new,
+    );
