@@ -24,7 +24,13 @@ describe('RoutineService', () => {
     journal = (await createHabit(ctx.prisma, userId, { name: 'Journal' })).id;
   });
 
-  const morning = (steps: { habitId: string; durationMinutes?: number }[]) =>
+  const morning = (
+    steps: {
+      habitId: string;
+      durationMinutes?: number;
+      guides?: { title: string; durationSeconds: number }[];
+    }[],
+  ) =>
     ctx.service.create(userId, {
       name: 'Morning Ritual',
       description: 'Start slow.',
@@ -71,6 +77,7 @@ describe('RoutineService', () => {
             color: '#4d6054',
             order: 1,
             durationMinutes: 2,
+            guides: [],
           },
           {
             habitId: stretch,
@@ -78,6 +85,7 @@ describe('RoutineService', () => {
             color: '#4d6054',
             order: 2,
             durationMinutes: 5,
+            guides: [],
           },
         ],
         createdAt: expect.any(Date) as Date,
@@ -312,6 +320,104 @@ describe('RoutineService', () => {
       expect(await storedSteps(created.id)).toEqual([[water, 1, 2]]);
       const stored = await ctx.prisma.orm.Routine.first({ id: created.id });
       expect(stored?.name).toBe('Morning Ritual');
+    });
+  });
+
+  describe('guides', () => {
+    const moves = [
+      { title: 'Cat-Cow spinal rolls', durationSeconds: 60 },
+      { title: 'Standing chest opener', durationSeconds: 120 },
+    ];
+    const guidesOf = (
+      steps: { habitId: string; guides: { title: string }[] }[],
+      habitId: string,
+    ) => steps.find((s) => s.habitId === habitId)?.guides.map((g) => g.title);
+
+    it('stores and returns guides in array order', async () => {
+      const { data } = await morning([
+        { habitId: water },
+        { habitId: stretch, guides: moves },
+      ]);
+
+      expect(data.steps[0].guides).toEqual([]);
+      expect(data.steps[1].guides).toEqual([
+        { order: 1, ...moves[0] },
+        { order: 2, ...moves[1] },
+      ]);
+    });
+
+    it('keeps guides when steps are replaced without guides', async () => {
+      const { data: created } = await morning([
+        { habitId: stretch, guides: moves },
+      ]);
+
+      const { data } = await ctx.service.update(userId, created.id, {
+        steps: [{ habitId: water }, { habitId: stretch, durationMinutes: 9 }],
+      });
+
+      expect(guidesOf(data.steps, stretch)).toEqual(moves.map((m) => m.title));
+      expect(guidesOf(data.steps, water)).toEqual([]);
+    });
+
+    it('replaces guides when supplied and clears them with []', async () => {
+      const { data: created } = await morning([
+        { habitId: stretch, guides: moves },
+      ]);
+
+      const { data: replaced } = await ctx.service.update(userId, created.id, {
+        steps: [{ habitId: stretch, guides: [moves[1]] }],
+      });
+      expect(guidesOf(replaced.steps, stretch)).toEqual([moves[1].title]);
+
+      const { data: cleared } = await ctx.service.update(userId, created.id, {
+        steps: [{ habitId: stretch, guides: [] }],
+      });
+      expect(cleared.steps[0].guides).toEqual([]);
+    });
+
+    it('treats guides: null like an omitted list', async () => {
+      const { data: created } = await morning([
+        { habitId: stretch, guides: moves },
+      ]);
+
+      const { data } = await ctx.service.update(userId, created.id, {
+        steps: [{ habitId: stretch, guides: null as never }],
+      });
+
+      expect(guidesOf(data.steps, stretch)).toEqual(moves.map((m) => m.title));
+    });
+
+    it('keeps guides when only other fields are updated', async () => {
+      const { data: created } = await morning([
+        { habitId: stretch, guides: moves },
+      ]);
+
+      const { data } = await ctx.service.update(userId, created.id, {
+        name: 'Renamed',
+      });
+
+      expect(guidesOf(data.steps, stretch)).toEqual(moves.map((m) => m.title));
+    });
+
+    it('lists each routine with its own guides for the same habit', async () => {
+      await morning([{ habitId: stretch, guides: [moves[0]] }]);
+      await morning([{ habitId: stretch, guides: [moves[1]] }]);
+
+      const { data } = await ctx.service.findAll(userId, {});
+
+      expect(data.map((r) => guidesOf(r.steps, stretch)).sort()).toEqual(
+        [[moves[0].title], [moves[1].title]].sort(),
+      );
+    });
+
+    it('deletes guides with the routine', async () => {
+      const { data: created } = await morning([
+        { habitId: stretch, guides: moves },
+      ]);
+
+      await ctx.service.remove(userId, created.id);
+
+      expect(await ctx.prisma.orm.RoutineStepGuide.all()).toHaveLength(0);
     });
   });
 

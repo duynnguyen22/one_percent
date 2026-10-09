@@ -80,6 +80,7 @@ class _EditRoutinePageState extends ConsumerState<EditRoutinePage> {
                 RoutineStepDraft(
                   habitId: step.habitId,
                   durationMinutes: step.durationMinutes,
+                  guides: step.guides,
                 ),
             ],
           ),

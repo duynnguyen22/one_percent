@@ -42,7 +42,7 @@ The app has no business logic of its own. It asks the server, shows the answer, 
 | 🔥 | **Streaks** | Computed server-side from entry rows and never stored, so there's nothing to drift out of sync. |
 | 📊 | **Insights** | A 30-day window with your current and best perfect-day streak, daily completion and per-habit consistency. |
 | 👤 | **Profile** | Your stats at a glance, plus an editable name, phone and avatar. |
-| 🧘 | **Routines** *(UI preview)* | Group habits into a guided, timed routine and play it step by step: pause, skip, sound toggle and a celebration screen at the end. |
+| 🧘 | **Routines** | Group habits into a timed routine, each step with optional ordered guide moves ("Cat-Cow spinal rolls · 1m"). Play it step by step: pause, skip, sound toggle and a celebration screen at the end. Steps check off the habits for today. |
 | 📡 | **Offline screen** | A friendly stop sign when the network drops, instead of a wall of errors. |
 
 ---
@@ -63,11 +63,39 @@ createdb habit_tracker
 cd backend
 pnpm install
 cp .env.example .env              # fill in DATABASE_URL, JWT secrets and SMTP
-pnpm prisma contract emit         # generate the client from prisma8/contract.prisma
+pnpm prisma:migrate               # apply every migration in migrations/app to your database
+pnpm prisma:verify                # optional: confirm the database matches the contract
 pnpm run start:dev                # → http://localhost:3001
 ```
 
+`pnpm install` already generates the client from `prisma8/contract.prisma` (the `postinstall` hook runs `prisma contract emit`).
+
 🧪 **Swagger UI** lives at **http://localhost:3001/api**. Paste a token into *Authorize* and you can call every endpoint from there.
+
+### 🗃 Database migrations
+
+The database schema is versioned in `backend/migrations/`, and **those files are committed**:
+
+| Path | Purpose |
+|---|---|
+| `migrations/app/<timestamp>_migration/` | One schema change: the operations and the SQL they produce |
+| `migrations/snapshots/<hash>/` | The full schema after a migration. The next `plan` diffs against the latest one. |
+| `migrations/app/refs/db.json` | Which snapshot the database is at, so Prisma knows what is still pending |
+
+**New teammate or fresh database:** run `pnpm prisma:migrate` once, as in the steps above.
+
+**After pulling** changes that add files under `migrations/`, run `pnpm prisma:migrate` again.
+
+**Changing the schema:**
+
+```bash
+# 1. edit backend/prisma8/contract.prisma
+pnpm prisma:plan       # emits the contract and writes a new migration; review it
+pnpm prisma:migrate    # apply it to your database
+# 2. commit contract.prisma, migrations/app/…, migrations/snapshots/… and refs/db.json together
+```
+
+> ⚠️ Never edit a migration that has been applied or pushed. Plan a new one instead. And don't change tables by hand: it can't be reproduced on another machine.
 
 <details>
 <summary><b>backend/.env reference</b></summary>
@@ -173,9 +201,10 @@ bloom_app/
 │   ├── src/entries/         check-off, un-check, history range
 │   ├── src/profile/         profile updates
 │   ├── src/email/           SMTP mailer for reset codes
-│   ├── src/routine/         routines (scaffold)
+│   ├── src/routine/         routines · steps · guide moves
 │   ├── src/utils/           computeCurrentStreak, date helpers
-│   └── prisma8/             Prisma 8 contract (the schema)
+│   ├── prisma8/             Prisma 8 contract (the schema)
+│   └── migrations/          versioned schema changes (commit these)
 ├── mobile/                  Flutter app
 │   ├── lib/app/             theme · router · tab shell
 │   ├── lib/core/            network · storage · errors · shared widgets
@@ -199,6 +228,7 @@ erDiagram
     habits ||--o{ habit_entries : "checked off on"
     routines ||--o{ routine_habits : contains
     habits ||--o{ routine_habits : "appears in"
+    routine_habits ||--o{ routine_step_guides : "has moves"
 
     users {
         string id PK
@@ -226,11 +256,21 @@ erDiagram
         string name
         string description "nullable"
         string color "nullable"
+        string cadence "nullable"
     }
     routine_habits {
         string routineId PK
         string habitId PK
         int order
+        int durationMinutes
+    }
+    routine_step_guides {
+        string id PK
+        string routineId FK
+        string habitId FK
+        int order
+        string title
+        int durationSeconds
     }
     password_reset_codes {
         string id PK
@@ -259,6 +299,18 @@ REST + JSON. Everything under `/habits` and `/profile` requires `Authorization: 
 | `POST` | `/auth/forgot-password` | `{ email }` | always returns the same message, so it never reveals whether an account exists · throttled |
 | `POST` | `/auth/verify-reset-code` | `{ email, code }` | → short-lived `resetToken` · throttled, attempts capped |
 | `POST` | `/auth/reset-password` | `{ resetToken, newPassword }` | no access token on purpose, so you sign in again |
+
+**Routines** (all require a bearer token)
+
+| Method | Path | Body / Query | Notes |
+|---|---|---|---|
+| `POST` | `/routines` | `{ name, description?, color?, cadence?, steps }` | `steps` has 1–20 items of `{ habitId, durationMinutes?, guides? }`. Array position is the order, and a habit may appear once. |
+| `GET` | `/routines` | `?date=YYYY-MM-DD` | with a date, each step carries `doneToday` and the routine `completedToday` |
+| `GET` | `/routines/:id` | `?date=` | one routine |
+| `PATCH` | `/routines/:id` | any create field | with `steps`, the whole sequence is replaced. A step that omits `guides` keeps its current ones; `guides: []` clears them. |
+| `DELETE` | `/routines/:id` | — | removes the routine and its steps, not the habits |
+
+A guide is `{ title, durationSeconds }` (title 1–100 characters, 5–3600 seconds, up to 20 per step). Responses return `guides: [{ order, title, durationSeconds }]` on every step.
 
 **Habits, entries and profile**
 
@@ -289,10 +341,12 @@ REST + JSON. Everything under `/habits` and `/profile` requires `Authorization: 
 ## 🧪 Testing
 
 ```bash
-cd backend && pnpm test          # auth, habits, entries, email, date helpers
+cd backend && pnpm test          # auth, habits, entries, routines, email, date helpers
 cd mobile  && flutter test       # use cases, repositories, providers, widgets, responsive layouts
 cd mobile  && flutter analyze    # static analysis
 ```
+
+🗄 Backend tests need Postgres running. They use a separate database named after your dev one plus `_test` (or `TEST_DATABASE_URL`), which the test setup creates and migrates itself. It is truncated before every test, and any name not ending in `_test` is refused.
 
 😈 **Hostile time zone mode.** Date bugs break quietly, so run both suites at the edges of the planet before you trust a change:
 
@@ -318,7 +372,7 @@ TZ=Pacific/Midway flutter test       # UTC-11
 ## 🛣 What's next
 
 **Still on the list**
-- [ ] 🧘 **Routines backend.** The UI is built, but it runs on local state and `/routine` is still the Nest scaffold. The tables already exist.
+- [ ] 🧘 **Routine guide editor.** Guides are stored, returned and played, but the create and edit screens can't author them yet. Nothing checks that guide seconds add up to the step duration.
 - [ ] ⏰ **Reminders and notifications.** See [docs/notification-plan.md](docs/notification-plan.md).
 - [ ] 💧 **Quantity habits** such as "2L of water", and custom schedules.
 - [ ] 🔄 **Offline sync and social login.**

@@ -8,6 +8,7 @@ const APP_TABLES = [
   'password_reset_codes',
   'routines',
   'routine_habits',
+  'routine_step_guides',
 ];
 
 /**

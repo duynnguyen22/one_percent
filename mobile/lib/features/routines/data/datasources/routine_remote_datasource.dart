@@ -89,7 +89,18 @@ class RoutineRemoteDataSourceImpl implements RoutineRemoteDataSource {
       if (cadence.isNotEmpty) 'cadence': cadence,
       'steps': [
         for (final step in draft.steps)
-          {'habitId': step.habitId, 'durationMinutes': step.durationMinutes},
+          {
+            'habitId': step.habitId,
+            'durationMinutes': step.durationMinutes,
+            if (step.guides != null)
+              'guides': [
+                for (final guide in step.guides!)
+                  {
+                    'title': guide.title,
+                    'durationSeconds': guide.durationSeconds,
+                  },
+              ],
+          },
       ],
     };
   }

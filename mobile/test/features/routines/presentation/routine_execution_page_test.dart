@@ -54,6 +54,40 @@ void main() {
       },
     );
 
+    testWidgets('shows the guided sequence and advances the active move', (
+      tester,
+    ) async {
+      final stretch = Routine.defaults.first.copyWith(
+        steps: [Routine.defaults.first.steps[1]], // 5 min, 1m + 2m + 2m
+      );
+      await pumpApp(
+        tester,
+        RoutineExecutionPage(routine: stretch),
+        overrides: RoutineDoubles(routines: [stretch]).overrides,
+      );
+
+      expect(find.text('GUIDED SEQUENCE'), findsOneWidget);
+      expect(find.text('Active · 1m'), findsOneWidget);
+      expect(find.text('2 min'), findsNWidgets(2));
+
+      await tester.pump(const Duration(seconds: 61));
+
+      expect(find.text('Active · 2m'), findsOneWidget);
+      expect(find.text('1 min'), findsOneWidget);
+    });
+
+    testWidgets('hides the guided sequence for a step without guides', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        RoutineExecutionPage(routine: routine),
+        overrides: RoutineDoubles(routines: [routine]).overrides,
+      );
+
+      expect(find.text('GUIDED SEQUENCE'), findsNothing);
+    });
+
     testWidgets('counts down from the step duration every second', (
       tester,
     ) async {

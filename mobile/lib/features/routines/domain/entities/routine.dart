@@ -1,5 +1,39 @@
 import 'package:flutter/material.dart';
 
+/// One ordered sub-move inside a [RoutineStep], e.g. "Cat-Cow spinal rolls".
+class RoutineGuide {
+  const RoutineGuide({required this.title, required this.durationSeconds});
+
+  final String title;
+  final int durationSeconds;
+
+  /// "1m" / "1m 30s" / "45s", the compact form used on the active move.
+  String get compactLabel {
+    if (durationSeconds < 60) return '${durationSeconds}s';
+    final rest = durationSeconds % 60;
+    final minutes = durationSeconds ~/ 60;
+    return rest == 0 ? '${minutes}m' : '${minutes}m ${rest}s';
+  }
+
+  /// "2 min" / "1m 30s" / "45s".
+  String get durationLabel {
+    if (durationSeconds < 60) return '${durationSeconds}s';
+    final minutes = durationSeconds ~/ 60;
+    final rest = durationSeconds % 60;
+    return rest == 0 ? '$minutes min' : '${minutes}m ${rest}s';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RoutineGuide &&
+          title == other.title &&
+          durationSeconds == other.durationSeconds;
+
+  @override
+  int get hashCode => Object.hash(title, durationSeconds);
+}
+
 /// A single step inside a routine sequence.
 class RoutineStep {
   const RoutineStep({
@@ -12,7 +46,7 @@ class RoutineStep {
     this.description = '',
     this.mindfulIntention = '',
     this.portionGoal = '',
-    this.subSteps = const [],
+    this.guides = const [],
     this.isCompleted = false,
   });
 
@@ -25,7 +59,9 @@ class RoutineStep {
   final String description;
   final String mindfulIntention;
   final String portionGoal;
-  final List<String> subSteps;
+
+  /// Ordered sub-moves played inside this step; empty when it has none.
+  final List<RoutineGuide> guides;
 
   /// Whether the step's habit is checked off for today.
   final bool isCompleted;
@@ -33,6 +69,18 @@ class RoutineStep {
   /// Each step is a habit, and a habit appears at most once per routine, so
   /// the step is keyed by its habit's id.
   String get habitId => id;
+
+  /// Index of the guide playing [elapsedSeconds] into the step, or null when
+  /// there are no guides. Past the last guide the last one stays active.
+  int? activeGuideIndex(int elapsedSeconds) {
+    if (guides.isEmpty) return null;
+    var end = 0;
+    for (final (i, guide) in guides.indexed) {
+      end += guide.durationSeconds;
+      if (elapsedSeconds < end) return i;
+    }
+    return guides.length - 1;
+  }
 
   RoutineStep copyWith({
     String? id,
@@ -44,7 +92,7 @@ class RoutineStep {
     String? description,
     String? mindfulIntention,
     String? portionGoal,
-    List<String>? subSteps,
+    List<RoutineGuide>? guides,
     bool? isCompleted,
   }) {
     return RoutineStep(
@@ -57,7 +105,7 @@ class RoutineStep {
       description: description ?? this.description,
       mindfulIntention: mindfulIntention ?? this.mindfulIntention,
       portionGoal: portionGoal ?? this.portionGoal,
-      subSteps: subSteps ?? this.subSteps,
+      guides: guides ?? this.guides,
       isCompleted: isCompleted ?? this.isCompleted,
     );
   }
@@ -156,10 +204,13 @@ class Routine {
               'Open your chest, lengthen your spine, and gently loosen your neck and shoulders with slow, steady breaths.',
           mindfulIntention:
               'Feel each vertebra align. Breathe through any tightness with gentle patience.',
-          subSteps: [
-            'Cat-Cow spinal rolls (Active · 1m)',
-            'Standing chest opener (2 min)',
-            'Slow forward bend & hip release (2 min)',
+          guides: [
+            RoutineGuide(title: 'Cat-Cow spinal rolls', durationSeconds: 60),
+            RoutineGuide(title: 'Standing chest opener', durationSeconds: 120),
+            RoutineGuide(
+              title: 'Slow forward bend & hip release',
+              durationSeconds: 120,
+            ),
           ],
         ),
         const RoutineStep(

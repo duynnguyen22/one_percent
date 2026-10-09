@@ -83,8 +83,23 @@ model RoutineHabit {
   durationMinutes Int     @default(5)
   habit           Habit   @relation(fields: [habitId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_habitId_fkey")
   routine         Routine @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "routine_habits_routineId_fkey", index: false)
+  guides          RoutineStepGuide[]
 
   @@id([routineId, habitId], map: "routine_habits_pkey")
   @@index([habitId], map: "routine_habits_habitId_idx")
   @@map("routine_habits")
+}
+
+/// An ordered sub-move inside one routine step, e.g. "Cat-Cow spinal rolls".
+model RoutineStepGuide {
+  id              String       @id @default(uuid())
+  routineId       String
+  habitId         String
+  order           Int
+  title           String
+  durationSeconds Int
+  step            RoutineHabit @relation(fields: [routineId, habitId], references: [routineId, habitId], onDelete: Cascade, onUpdate: Cascade, map: "routine_step_guides_step_fkey", index: false)
+
+  @@index([routineId, habitId, order], map: "routine_step_guides_step_order_idx")
+  @@map("routine_step_guides")
 }

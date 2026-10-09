@@ -75,6 +75,45 @@ describe('CreateRoutineDto', () => {
       'steps.0.durationMinutes',
     ],
     [
+      'blank guide title',
+      {
+        steps: [
+          {
+            habitId: HABIT_A,
+            guides: [{ title: ' ', durationSeconds: 60 }],
+          },
+        ],
+      },
+      'steps.0.guides.0.title',
+    ],
+    [
+      'guide shorter than 5s',
+      {
+        steps: [
+          {
+            habitId: HABIT_A,
+            guides: [{ title: 'x', durationSeconds: 4 }],
+          },
+        ],
+      },
+      'steps.0.guides.0.durationSeconds',
+    ],
+    [
+      'too many guides',
+      {
+        steps: [
+          {
+            habitId: HABIT_A,
+            guides: Array.from({ length: 21 }, () => ({
+              title: 'x',
+              durationSeconds: 5,
+            })),
+          },
+        ],
+      },
+      'steps.0.guides',
+    ],
+    [
       'fractional minutes',
       { steps: [{ habitId: HABIT_A, durationMinutes: 1.5 }] },
       'steps.0.durationMinutes',
@@ -90,6 +129,20 @@ describe('CreateRoutineDto', () => {
       'name',
       'steps',
     ]);
+  });
+
+  it('accepts a step with guides', async () => {
+    expect(
+      await failures(CreateRoutineDto, {
+        name: 'x',
+        steps: [
+          {
+            habitId: HABIT_A,
+            guides: [{ title: 'Cat-Cow', durationSeconds: 60 }],
+          },
+        ],
+      }),
+    ).toEqual([]);
   });
 
   it('trims name and cadence', () => {

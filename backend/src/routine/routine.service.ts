@@ -16,6 +16,7 @@ import { GetRoutinesQueryDto } from './dto/get-routines-query.dto';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
 import { RoutineStepDto } from './dto/routine-step.dto';
+import { RoutineGuideDto } from './dto/routine-guide.dto';
 
 const DEFAULT_STEP_MINUTES = 5;
 
@@ -33,7 +34,21 @@ const respond = <T>(statusCode: number, message: string, data: T) => ({
   data,
 });
 
-/** Array position is the step order (1-based). */
+const stepKey = (routineId: string, habitId: string) =>
+  `${routineId}:${habitId}`;
+
+/** Array position is the order, for steps and for guides (1-based). */
+const toGuideRows = (routineId: string, steps: RoutineStepDto[]) =>
+  steps.flatMap((s) =>
+    (s.guides ?? []).map((g, index) => ({
+      routineId,
+      habitId: s.habitId,
+      order: index + 1,
+      title: g.title,
+      durationSeconds: g.durationSeconds,
+    })),
+  );
+
 const toStepRows = (routineId: string, steps: RoutineStepDto[]) =>
   steps.map((s, index) => ({
     routineId,
@@ -73,7 +88,7 @@ export class RoutineService {
         createdAt: now,
         updatedAt: now,
       });
-      await orm.RoutineHabit.createAndCount(toStepRows(id, steps));
+      await this.writeSteps(orm, id, steps);
       return this.findOwned(userId, id, orm);
     });
 
@@ -90,8 +105,9 @@ export class RoutineService {
 
       if (steps) {
         await this.assertUsableHabits(orm, userId, steps);
+        const kept = await this.withExistingGuides(orm, id, steps);
         await orm.RoutineHabit.where({ routineId: id }).deleteAndCount();
-        await orm.RoutineHabit.createAndCount(toStepRows(id, steps));
+        await this.writeSteps(orm, id, kept);
       }
 
       await orm.Routine.where({ id }).update({
@@ -119,6 +135,45 @@ export class RoutineService {
       `Deleted successfully the routine with id: ${id}`,
       null,
     );
+  }
+
+  private async writeSteps(
+    orm: Orm,
+    routineId: string,
+    steps: RoutineStepDto[],
+  ) {
+    await orm.RoutineHabit.createAndCount(toStepRows(routineId, steps));
+    const guides = toGuideRows(routineId, steps);
+    if (guides.length) {
+      await orm.RoutineStepGuide.createAndCount(guides);
+    }
+  }
+
+  /**
+   * Replacing steps deletes and re-creates them, which cascades to their
+   * guides. A step that sends no `guides` keeps the ones it had; an explicit
+   * array (even empty) replaces them.
+   */
+  private async withExistingGuides(
+    orm: Orm,
+    routineId: string,
+    steps: RoutineStepDto[],
+  ): Promise<RoutineStepDto[]> {
+    if (steps.every((s) => s.guides != null)) return steps;
+
+    const existing = await orm.RoutineStepGuide.where({ routineId })
+      .orderBy((g) => g.order.asc())
+      .all();
+    const byHabit = new Map<string, RoutineGuideDto[]>();
+    for (const g of existing) {
+      const list = byHabit.get(g.habitId) ?? [];
+      list.push({ title: g.title, durationSeconds: g.durationSeconds });
+      byHabit.set(g.habitId, list);
+    }
+    return steps.map((s) => ({
+      ...s,
+      guides: s.guides ?? byHabit.get(s.habitId) ?? [],
+    }));
   }
 
   /** Every habit must be unique in the list, owned by the user and active. */
@@ -159,6 +214,36 @@ export class RoutineService {
   }
 
   /**
+   * One query for every step's guides, keyed by `stepKey`. Not a nested
+   * include: the ORM's include of the composite-key `guides` relation returns
+   * every guide of the routine for each step.
+   */
+  private async guidesByStep(routineIds: string[]) {
+    const byStep = new Map<
+      string,
+      { order: number; title: string; durationSeconds: number }[]
+    >();
+    if (!routineIds.length) return byStep;
+
+    const rows = await this.prisma.orm.RoutineStepGuide.where((g) =>
+      g.routineId.in(routineIds),
+    )
+      .orderBy((g) => g.order.asc())
+      .all();
+    for (const g of rows) {
+      const key = stepKey(g.routineId, g.habitId);
+      const list = byStep.get(key) ?? [];
+      list.push({
+        order: g.order,
+        title: g.title,
+        durationSeconds: g.durationSeconds,
+      });
+      byStep.set(key, list);
+    }
+    return byStep;
+  }
+
+  /**
    * Shapes routines for the API. Steps whose habit is archived are hidden but
    * their join rows are kept, so un-archiving the habit brings the step back.
    * With a date, one entries query covers every step of every routine.
@@ -183,6 +268,8 @@ export class RoutineService {
       done = new Set(found.map((e) => e.habitId));
     }
 
+    const guides = await this.guidesByStep(routines.map((r) => r.id));
+
     return active.map(({ routine, steps }) => {
       const stepViews = steps.map((s) => ({
         habitId: s.habitId,
@@ -190,6 +277,7 @@ export class RoutineService {
         color: s.habit.color,
         order: s.order,
         durationMinutes: s.durationMinutes,
+        guides: guides.get(stepKey(routine.id, s.habitId)) ?? [],
         ...(done && { doneToday: done.has(s.habitId) }),
       }));
 

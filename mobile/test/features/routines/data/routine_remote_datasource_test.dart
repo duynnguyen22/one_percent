@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/network/api_client.dart';
+import 'package:mobile/features/routines/domain/entities/routine.dart';
 import 'package:mobile/features/routines/data/datasources/routine_remote_datasource.dart';
 import 'package:mobile/features/routines/domain/entities/routine_draft.dart';
 import 'package:mocktail/mocktail.dart';
@@ -59,6 +60,52 @@ void main() {
   setUp(() {
     client = MockApiClient();
     dataSource = RoutineRemoteDataSourceImpl(client);
+  });
+
+  test('saveRoutine sends guides only when the draft carries them', () async {
+    const withGuides = RoutineDraft(
+      name: 'Morning Ritual',
+      description: '',
+      color: '#4D6054',
+      cadence: '',
+      steps: [
+        RoutineStepDraft(
+          habitId: 'habit-1',
+          durationMinutes: 5,
+          guides: [RoutineGuide(title: 'Cat-Cow', durationSeconds: 60)],
+        ),
+        RoutineStepDraft(habitId: 'habit-2', durationMinutes: 5, guides: []),
+        RoutineStepDraft(habitId: 'habit-3', durationMinutes: 5),
+      ],
+    );
+    when(
+      () => client.post<Map<String, dynamic>>(
+        ApiConstants.routines,
+        data: any(named: 'data'),
+      ),
+    ).thenAnswer((_) async => envelope(row()));
+
+    await dataSource.createRoutine(withGuides);
+
+    final body =
+        verify(
+              () => client.post<Map<String, dynamic>>(
+                ApiConstants.routines,
+                data: captureAny(named: 'data'),
+              ),
+            ).captured.single
+            as Map<String, dynamic>;
+    expect(body['steps'], [
+      {
+        'habitId': 'habit-1',
+        'durationMinutes': 5,
+        'guides': [
+          {'title': 'Cat-Cow', 'durationSeconds': 60},
+        ],
+      },
+      {'habitId': 'habit-2', 'durationMinutes': 5, 'guides': []},
+      {'habitId': 'habit-3', 'durationMinutes': 5},
+    ]);
   });
 
   test('getRoutines unwraps the envelope and sends the day', () async {

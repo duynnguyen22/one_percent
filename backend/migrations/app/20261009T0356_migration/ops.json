@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table.routine_step_guides",
+    "label": "Create table \"routine_step_guides\"",
+    "summary": "Creates table \"routine_step_guides\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "routine_step_guides"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"routine_step_guides\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_step_guides\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"routine_step_guides\"",
+        "sql": "CREATE TABLE \"public\".\"routine_step_guides\" (\n  \"durationSeconds\" int4 NOT NULL,\n  \"habitId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"order\" int4 NOT NULL,\n  \"routineId\" text NOT NULL,\n  \"title\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"routine_step_guides\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_step_guides\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.routine_step_guides.routine_step_guides_step_order_idx",
+    "label": "Create index \"routine_step_guides_step_order_idx\" on \"routine_step_guides\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "routine_step_guides_step_order_idx",
+        "table": "routine_step_guides"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"routine_step_guides_step_order_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_step_guides_step_order_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"routine_step_guides_step_order_idx\"",
+        "sql": "CREATE INDEX \"routine_step_guides_step_order_idx\" ON \"public\".\"routine_step_guides\" (\"routineId\", \"habitId\", \"order\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"routine_step_guides_step_order_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"routine_step_guides_step_order_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.routine_step_guides.routine_step_guides_step_fkey",
+    "label": "Add foreign key \"routine_step_guides_step_fkey\" on \"routine_step_guides\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "routine_step_guides_step_fkey",
+        "table": "routine_step_guides"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"routine_step_guides_step_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_step_guides_step_fkey",
+          "public",
+          "\"public\".\"routine_step_guides\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"routine_step_guides_step_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"routine_step_guides\"\nADD CONSTRAINT \"routine_step_guides_step_fkey\"\nFOREIGN KEY (\"routineId\", \"habitId\")\nREFERENCES \"public\".\"routine_habits\" (\"routineId\", \"habitId\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"routine_step_guides_step_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "routine_step_guides_step_fkey",
+          "public",
+          "\"public\".\"routine_step_guides\""
+        ]
+      }
+    ]
+  }
+]

@@ -49,7 +49,24 @@ class RoutineModel extends Routine {
       durationMinutes: json['durationMinutes'] as int,
       category: 'Daily habit',
       isCompleted: json['doneToday'] as bool? ?? false,
+      guides: _guidesFromJson(json['guides']),
     );
+  }
+
+  /// Sorted by `order`; a missing or null list (older server) means none.
+  static List<RoutineGuide> _guidesFromJson(Object? raw) {
+    final rows =
+        (raw as List<dynamic>? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .toList()
+          ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+    return [
+      for (final row in rows)
+        RoutineGuide(
+          title: row['title'] as String,
+          durationSeconds: row['durationSeconds'] as int,
+        ),
+    ];
   }
 
   static final RegExp _hex = RegExp(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$');

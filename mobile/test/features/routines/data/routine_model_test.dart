@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/features/routines/data/models/routine_model.dart';
+import 'package:mobile/features/routines/domain/entities/routine.dart';
 
 void main() {
   Map<String, dynamic> routineJson() => {
@@ -86,6 +87,22 @@ void main() {
         }).accentColorHex,
         RoutineModel.defaultColor,
       );
+    });
+
+    test('parses guides in order and tolerates a missing list', () {
+      final json = routineJson();
+      (json['steps'] as List)[1]['guides'] = [
+        {'order': 2, 'title': 'Chest opener', 'durationSeconds': 120},
+        {'order': 1, 'title': 'Cat-Cow', 'durationSeconds': 60},
+      ];
+
+      final steps = RoutineModel.fromJson(json).steps;
+
+      expect(steps[0].guides, const [
+        RoutineGuide(title: 'Cat-Cow', durationSeconds: 60),
+        RoutineGuide(title: 'Chest opener', durationSeconds: 120),
+      ]);
+      expect(steps[1].guides, isEmpty);
     });
   });
 }

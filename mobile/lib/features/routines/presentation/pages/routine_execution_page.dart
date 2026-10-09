@@ -606,6 +606,18 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                 ),
               ],
 
+              // The current step's sub-moves, with the one now playing marked.
+              if (step.guides.isNotEmpty) ...[
+                _GuidedSequence(
+                  guides: step.guides,
+                  activeIndex: step.activeGuideIndex(
+                    step.durationMinutes * 60 - _secondsRemaining,
+                  ),
+                  accentColor: accentColor,
+                ),
+                const SizedBox(height: 16),
+              ],
+
               // The routine's own steps, so the user sees where they are.
               Container(
                 width: double.infinity,
@@ -631,7 +643,11 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
                         key: ValueKey('sequence-step-${step.habitId}'),
                         number: '${i + 1}',
                         title: step.title,
-                        durationMinutes: step.durationMinutes,
+                        badge: i == _currentStepIndex
+                            ? 'Active · ${step.durationMinutes}m'
+                            : _logged.contains(i) || step.isCompleted
+                            ? 'Done'
+                            : '${step.durationMinutes} min',
                         isActive: i == _currentStepIndex,
                         isDone: _logged.contains(i) || step.isCompleted,
                         accentColor: accentColor,
@@ -764,12 +780,64 @@ class _RoutineExecutionPageState extends ConsumerState<RoutineExecutionPage> {
   }
 }
 
+class _GuidedSequence extends StatelessWidget {
+  const _GuidedSequence({
+    required this.guides,
+    required this.activeIndex,
+    required this.accentColor,
+  });
+
+  final List<RoutineGuide> guides;
+  final int? activeIndex;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('guided-sequence'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: AppSpacing.borderRadiusCard,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'GUIDED SEQUENCE',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.outline,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+          for (final (i, guide) in guides.indexed) ...[
+            SizedBox(height: i == 0 ? 12 : 8),
+            _SequenceStepItem(
+              key: ValueKey('guide-$i'),
+              number: '${i + 1}',
+              title: guide.title,
+              badge: i == activeIndex
+                  ? 'Active · ${guide.compactLabel}'
+                  : guide.durationLabel,
+              isActive: i == activeIndex,
+              isDone: activeIndex != null && i < activeIndex!,
+              accentColor: accentColor,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _SequenceStepItem extends StatelessWidget {
   const _SequenceStepItem({
     super.key,
     required this.number,
     required this.title,
-    required this.durationMinutes,
+    required this.badge,
     required this.isActive,
     required this.isDone,
     required this.accentColor,
@@ -777,19 +845,13 @@ class _SequenceStepItem extends StatelessWidget {
 
   final String number;
   final String title;
-  final int durationMinutes;
+  final String badge;
   final bool isActive;
   final bool isDone;
   final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
-    final badge = isActive
-        ? 'Active · ${durationMinutes}m'
-        : isDone
-        ? 'Done'
-        : '$durationMinutes min';
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
