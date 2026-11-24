@@ -7,9 +7,9 @@
 A full-stack habit tracker: plant a few habits, check them off once a day, and watch your streaks bloom.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.11-02569B?logo=flutter&logoColor=white)
-![Riverpod](https://img.shields.io/badge/Riverpod-3-00B4AB)
+![Riverpod](https://img.shields.io/badge/Riverpod-3-0175C2?logo=dart&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-8-2D3748?logo=prisma&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-8-2D3748?style=flat&logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 
